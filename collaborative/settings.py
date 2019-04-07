@@ -14,7 +14,8 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_ROOT = os.path.join(BASE_DIR, "www/assets")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -37,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -54,7 +57,7 @@ ROOT_URLCONF = 'collaborative.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -62,6 +65,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -99,6 +104,78 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.slack.SlackOAuth2',
+    'django.contrib.auth.backends.ModelBackend',
+)
+
+# Google Sign In
+# 1. Go to: https://console.developers.google.com/
+# 2. Create a new project.
+# 3. Go to "APIs and authentication" -> "Authorization screen"
+# 4. Give your product a name. Click "Save".
+# 5. Go to "APIs and authentication" -> "Credentials". Under "OAuth", click "Create New Client ID".
+# 6. Add "http://[DOMAIN HERE]/complete/google-oauth2/" should be listed as a callback URL.
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ""
+
+# Slack Sign In
+SOCIAL_AUTH_SLACK_KEY = ""
+SOCIAL_AUTH_SLACK_SECRET = ""
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = "/admin/"
+SOCIAL_AUTH_SLACK_TEAM = ""
+
+SOCIAL_AUTH_PIPELINE = (
+    # Get the information we can about the user and return it in a simple
+    # format to create the user instance later. On some cases the details are
+    # already part of the auth response from the provider, but sometimes this
+    # could hit a provider API.
+    'social_core.pipeline.social_auth.social_details',
+
+    # Get the social uid from whichever service we're authing thru. The uid is
+    # the unique identifier of the given user in the provider.
+    'social_core.pipeline.social_auth.social_uid',
+
+    # Verifies that the current auth process is valid within the current
+    # project, this is where emails and domains whitelists are applied (if
+    # defined).
+    'social_core.pipeline.social_auth.auth_allowed',
+
+    # Make sure the user is in the configured Slack team
+    'collaborative.user.enforce_slack_team',
+
+    # Checks if the current social-account is already associated in the site.
+    'social_core.pipeline.social_auth.social_user',
+
+    # Make up a username for this person, appends a random string at the end if
+    # there's any collision.
+    'social_core.pipeline.user.get_username',
+
+    # Send a validation email to the user to verify its email address.
+    # Disabled by default.
+    # 'social.pipeline.mail.mail_validation',
+
+    # Associates the current social details with another user account with
+    # a similar email address. Disabled by default.
+    # 'social.pipeline.social_auth.associate_by_email',
+
+    # Create a user account if we haven't found one yet.
+    'social_core.pipeline.user.create_user',
+
+    # Set the user account to is_staff (else they can't use the Admin panel):
+    'collaborative.user.set_staff_status',
+
+    # Create the record that associated the social account with this user.
+    'social_core.pipeline.social_auth.associate_user',
+
+    # Populate the extra_data field in the social record with the values
+    # specified by settings (and the default ones like access_token, etc).
+    'social_core.pipeline.social_auth.load_extra_data',
+
+    # Update the user record with any changed info from the auth service.
+    'social_core.pipeline.user.user_details',
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
@@ -117,4 +194,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
+# The URL that static assets will get accessed via the browser
 STATIC_URL = '/static/'
+
+# Where static assets are stored for this module
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
