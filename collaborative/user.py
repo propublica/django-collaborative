@@ -2,7 +2,7 @@ from django.conf import settings
 from social_core.exceptions import AuthForbidden
 
 
-def set_staff_status(user, response, *args, **kwargs):
+def set_staff_status(user, *args, **kwargs):
     """
     Users need to be staff in order to use the Django Admin. Hence,
     all users who log into the system ought to be staff. We use this
