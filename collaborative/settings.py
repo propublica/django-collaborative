@@ -16,6 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_ROOT = os.path.join(BASE_DIR, "www/assets")
+LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
@@ -181,7 +182,13 @@ SOCIAL_AUTH_PIPELINE = (
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
 
+# Language of the codebase
 LANGUAGE_CODE = 'en-us'
+# UI languages (for translation)
+LANGUAGES = [
+    ('es', 'Spanish'),
+    ('en', 'English'),
+]
 
 TIME_ZONE = 'UTC'
 
@@ -190,7 +197,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
