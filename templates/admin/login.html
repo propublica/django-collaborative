@@ -21,11 +21,11 @@ function toggleLogin() {
     var loginForm = document.getElementById("login-form");
     var socialLogin = document.getElementById("social-login");
     if (!loginForm.style.display || loginForm.style.display == "none") {
-        toggleButton.text = '{% trans "I want to use social sign in" %}';
+        toggleButton.text = "{% trans 'I want to use social sign in' %}";
         loginForm.style.display = "block";
         socialLogin.style.display = "none";
     } else {
-        toggleButton.text = '{% trans "Or, sign in with a password" %}';
+        toggleButton.text = "{% trans 'Or, sign in with a password' %}";
         loginForm.style.display = "none";
         socialLogin.style.display = "block";
     }
@@ -79,7 +79,7 @@ function toggleLogin() {
         <div class="form-row">
             {{ form.password.errors }}
             {{ form.password.label_tag }} {{ form.password }}
-            <input type="hidden" name="next" value="{{ next }}" />
+            <input type="hidden" name="next" value="{% url 'begin-setup' %}" />
         </div>
         {% url 'admin_password_reset' as password_reset_url %}
         {% if password_reset_url %}

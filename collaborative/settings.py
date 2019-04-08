@@ -119,6 +119,8 @@ AUTHENTICATION_BACKENDS = (
 # 4. Give your product a name. Click "Save".
 # 5. Go to "APIs and authentication" -> "Credentials". Under "OAuth", click "Create New Client ID".
 # 6. Add "http://[DOMAIN HERE]/complete/google-oauth2/" should be listed as a callback URL.
+
+
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ""
 
@@ -208,3 +210,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
+
+try:
+   from collaborative.settings_dev import *
+except:
+   from collaborative.settings_prod import *
