@@ -22,34 +22,37 @@ def fix_models_py():
 
 
 def setup_complete(request):
-    # Landing
-    return render(request, 'setup-complete.html', {})
+    if request.method == "GET":
+        return render(request, 'setup-complete.html', {})
+    elif  request.method == "POST":
+        return redirect('/')
 
 
 def setup_auth(request):
-    # Landing
-    return render(request, 'setup-auth.html', {})
-    # Submit
-    return redirect('setup-complete')
+    if request.method == "GET":
+        return render(request, 'setup-auth.html', {})
+    elif  request.method == "POST":
+        return redirect('setup-complete')
 
 
 def setup_refine_schema(request):
-    # Landing
-    return render(request, 'setup-refine-schema.html', {})
-    # Submit
-    return redirect('setup-auth')
+    if request.method == "GET":
+        return render(request, 'setup-refine-schema.html', {})
+    elif  request.method == "POST":
+        return redirect('setup-auth')
 
 
 def setup_schema(request):
-    # get params from request
-    # fetch sheet CSV
-    # re-work the sheet headers into good column names
-    # build sql from sheet CSV
-    # create these tables in our DB (or new DB?)
-    # build models.py from this DB
-    return render(request, 'setup-schema.html', {})
-    # Submit
-    return redirect('setup-refine-schema')
+    if request.method == "GET":
+        return render(request, 'setup-schema.html', {})
+    elif  request.method == "POST":
+        # get params from request
+        # fetch sheet CSV
+        # re-work the sheet headers into good column names
+        # build sql from sheet CSV
+        # create these tables in our DB (or new DB?)
+        # build models.py from this DB
+        return redirect('setup-refine-schema')
 
 
 def setup_begin(request):
@@ -59,4 +62,7 @@ def setup_begin(request):
     ready to configure the database, schema (via Google sheets URL) and
     any authentication backends (Google Oauth2, Slack, etc).
     """
-    return render(request, 'setup-begin.html', {})
+    if request.method == "GET":
+        return render(request, 'setup-begin.html', {})
+    elif  request.method == "POST":
+        return redirect('setup-schema')

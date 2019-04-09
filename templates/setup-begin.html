@@ -6,76 +6,16 @@ System Setup | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-  <h2>System Setup</h2>
-  <form>
+<h2>System Setup</h2>
+<form action="{% url 'setup-begin' %}" method="POST">
     <div class="base-config">
-      {% trans 'Google Sheet URL' as sheets_label %}
-      <label for="sheets_url">{{ sheets_label }}</label>
-      <input name="sheets_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
+        {% trans 'Google Sheet URL' as sheets_label %}
+        <label for="sheets_url">{{ sheets_label }}</label>
+        <input name="sheets_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
     </div>
 
-    <div class="authentication">
-      <h3>Google Sign In</h3>
-      <p class="instructions">
-        {% blocktrans trimmed %}
-        In order to allow users to sign in with their Google account, you need
-        to request access from Google to do this. Specifically, you need
-        something called OAuth2 keys from Google. To get these keys, follow
-        these steps:
-        <ol>
-          <li>
-            Go to the <a href="https://console.developers.google.com/" target="_blank">Google Developer's Console</a>.
-          </li>
-          <li>
-            Create a new project.
-          </li>
-          <li>
-            On the left, select "Credentials"
-          </li>
-          <li>
-            Select the "OAuth consent screen"
-          </li>
-          <li>
-            Give your application a name and support email. Click "Save" at the
-            bottom.
-          </li>
-          <li>
-            Go back to the "Credentials" tab. Click "Create credentials" &rarr;
-            "OAuth client ID".
-          </li>
-          <li>
-            Select "Web application". This will expose more options.
-          </li>
-          <li>
-            Under "Authorized JavaScript origins" enter:
-            <code>http://localhost/</code><br/>
-            Under "Authorized redirect URIs" enter:
-            <code>http://localhost/complete/google-oauth2/</code><br/>
-            Click "Save".
-          </li>
-          <li>
-            This will bring up a prompt containing the Google
-            OAuth2 Key and Secret. Copy each to the below input boxes.
-          </li>
-        </ol>
-        {% endblocktrans %}
-      </p>
-      <div>
-        <p>
-          {% trans 'Google OAuth2 Key' as google_oauth_key %}
-          <label for="google_oauth_key">{{ google_oauth_key }}</label>
-          <input name="google_oauth_key" type="text" placeholder="long code, e.g., 327832290-ajn..." />
-        </p>
-
-        <p>
-          {% trans 'Google OAuth2 Secret' as google_oauth_secret %}
-          <label for="google_oauth_secret">{{ google_oauth_secret }}</label>
-          <input name="google_oauth_secret" type="text" placeholder="short code, e.g., a708absY_s..." />
-        </p>
-      </div>
+    <div class="continue">
+        <input type="submit" value="{% trans 'Continue' %}" />
     </div>
-    <div>
-      <input type="submit" value="{% trans 'Continue' %}" />
-    </div>
-  </form>
+</form>
 {% endblock %}

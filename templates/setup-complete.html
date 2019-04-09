@@ -6,8 +6,10 @@ System Setup | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-  <h2></h2>
-  <form>
-      <input type="submit" value="{% trans 'Continue' %}" />
-  </form>
+<h2></h2>
+<form action="{% url 'setup-complete' %}" method="POST">
+    <div class="continue">
+        <input type="submit" value="{% trans 'Continue' %}" />
+    </div>
+</form>
 {% endblock %}
