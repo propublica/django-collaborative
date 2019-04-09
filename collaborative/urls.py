@@ -25,6 +25,12 @@ urlpatterns = [
     url(r'^$', RedirectView.as_view(url='admin/')),
     url('', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
-    path('begin-setup/', views.begin_setup, name='begin-setup'),
     path('request-access/', views.request_access, name='request-access'),
+    path('setup-begin/', views.setup_begin, name='setup-begin'),
+    path('setup-schema/', views.setup_schema, name='setup-schema'),
+    path('setup-refine-schema/',
+         views.setup_refine_schema,
+         name='setup-refine-schema'),
+    path('setup-auth/', views.setup_auth, name='setup-auth'),
+    path('setup-complete/', views.setup_complete, name='setup-complete'),
 ]

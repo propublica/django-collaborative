@@ -1,0 +1,13 @@
+{% extends "setup-base.html" %}
+{% load i18n static %}
+
+{% block title %}
+System Setup | {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <h2></h2>
+  <form>
+      <input type="submit" value="{% trans 'Continue' %}" />
+  </form>
+{% endblock %}
