@@ -1,0 +1,25 @@
+{% extends "setup-base.html" %}
+{% load i18n static %}
+
+{% block title %}
+Access Denied | {{ block.super }}
+{% endblock %}
+
+{% block content %}
+  <h2>Access Denied</h2>
+  <div>
+      <p>
+      In order to access this system, you need an admin to create
+      an account for you. When using a third party sign in, this
+      account needs to match the email registered with the third
+      party.
+      </p>
+      <p>
+      You can resume the login process in the future using this
+      link:
+      </p>
+      <p class="resume-link">
+          <a href="{{ resume_url }}">{{ resume_url }}</a>
+      </p>
+{% endblock %}
+
