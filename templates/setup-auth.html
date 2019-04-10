@@ -6,8 +6,28 @@ System Setup | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-  <h2></h2>
+  <h2>Setup User Sign In</h2>
   <form action="{% url 'setup-auth' %}" method="POST">
+    <div class="authentication">
+      <h3>Set Admin Password</h3>
+      <p>
+      Please set a strong password for the admin account.
+      </p>
+      <p>
+          <label for="password">Enter password</label>
+          <input name="password"
+                 type="password"
+                 required
+                 placeholder="Enter password..." />
+      </p>
+      <p>
+          <label for="password_confirm">Confirm password</label>
+          <input name="password_confirm"
+                 type="password"
+                 required
+                 placeholder="Enter password again..." />
+      </p>
+    </div>
     <div class="authentication">
       <h3>Google Sign In</h3>
       <p class="instructions">
@@ -71,5 +91,6 @@ System Setup | {{ block.super }}
     <div class="continue">
         <input type="submit" value="{% trans 'Continue' %}" />
     </div>
+    {% csrf_token %}
   </form>
 {% endblock %}

@@ -6,10 +6,28 @@ System Setup | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-<h2></h2>
-<form action="{% url 'setup-complete' %}" method="POST">
-    <div class="continue">
-        <input type="submit" value="{% trans 'Continue' %}" />
-    </div>
-</form>
+<h2>Almost Done</h2>
+<div>
+    <p>
+    {% blocktrans trimmed %}
+    Congratulations, you've successfully configured your collaborative
+    tip-gathering system. Clicking below will complete the process,
+    bringing you the login screen, where you'll log in using:
+    </p>
+    <p>
+    Username: admin<br/>
+    Password is what you set it to on the previous screen.</br>
+    </p>
+    <p>
+    From there, you can add users and start building stories. Good luck!
+    </p>
+    {% endblocktrans %}
+    </p>
+    <form action="{% url 'setup-complete' %}" method="POST">
+        <div class="continue">
+            <input type="submit" value="{% trans 'Complete' %}" />
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
 {% endblock %}

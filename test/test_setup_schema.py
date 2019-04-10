@@ -3,6 +3,7 @@ import re
 from django.test import TestCase
 
 from collaborative.views.setup import (
+    extract_key_from_share_url,
     execute_sql, models_py_from_database, fix_models_py
 )
 
@@ -29,7 +30,11 @@ CREATE TABLE %s (
         "What time?" VARCHAR NOT NULL
 );
 """ % self.table_name
-        self.models_py = None
+        self.share_url = "https://docs.google.com/spreadsheets/d/18I8_so8_lCWEQLZ8LsBfOgz_SRRSIokZ06duc/edit?usp=sharing"
+
+    def test_can_extract_key_from_share_url(self):
+        key = extract_key_from_share_url(self.share_url)
+        self.assertEqual(key, "18I8_so8_lCWEQLZ8LsBfOgz_SRRSIokZ06duc")
 
     def test_can_execute_sql_against_secondary_db(self):
         table_name = execute_sql(self.create_table)

@@ -9,7 +9,9 @@ System Setup | {{ block.super }}
 <h2></h2>
 <form action="{% url 'setup-schema' %}" method="POST">
     <div class="continue">
+        {% csrf_token %}
         <input type="submit" value="{% trans 'Continue' %}" />
     </div>
+    {% csrf_token %}
 </form>
 {% endblock %}

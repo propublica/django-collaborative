@@ -6,10 +6,11 @@ System Setup | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-<h2></h2>
+<h2>Refine Database & Import</h2>
 <form action="{% url 'setup-refine-schema' %}" method="POST">
     <div class="continue">
         <input type="submit" value="{% trans 'Continue' %}" />
     </div>
+    {% csrf_token %}
 </form>
 {% endblock %}

@@ -17,5 +17,6 @@ System Setup | {{ block.super }}
     <div class="continue">
         <input type="submit" value="{% trans 'Continue' %}" />
     </div>
+    {% csrf_token %}
 </form>
 {% endblock %}

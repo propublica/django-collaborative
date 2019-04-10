@@ -6,6 +6,7 @@ import tempfile
 
 from csvkit.utilities.csvsql import CSVSQL
 from django.db import connections, transaction
+from django.contrib.auth.models import User
 from django.core.management.commands.inspectdb import Command
 from django.shortcuts import render, redirect
 import requests
@@ -17,6 +18,7 @@ SEC_DB_ALIAS = 'schemabuilding'
 
 
 def extract_key_from_share_url(url):
+    print("extracting key from", url)
     matches = re.findall(
         "https://docs.google.com/spreadsheets/d/([^/]+)/edit",
         url
@@ -38,8 +40,38 @@ def fetch_sheet(share_url):
         key
     )
     r = requests.get(url)
-    data = r.content
+    data = r.text
     return data
+
+
+class FakeArgs():
+    encoding= "utf-8"
+    skip_lines = 0
+    table_names = None
+    query = None
+    unique_constraint = None
+    connection_string = None
+    insert = False
+    no_create = False
+    create_if_not_exists = False
+    overwrite = None
+    before_insert = None
+    after_insert = None
+    chunk_size = None
+    sniff_limit = 1000
+    no_inference = False
+    date_format = None
+    datetime_format = None
+    locale = 'en_US'
+    db_schema = None
+    no_constraints = False
+
+
+class CSVSQLWrap(CSVSQL):
+    reader_kwargs = {}
+
+    def __init__(self):
+        self.args = FakeArgs()
 
 
 def sheet_to_sql_create(sheet):
@@ -58,7 +90,8 @@ def sheet_to_sql_create(sheet):
     except Exception as e:
         pass # this means we're on a unix env
     f_out = io.StringIO()
-    csvsql = CSVSQL()
+    # csvsql = CSVSQLWrap()
+    csvsql = CSVSQLWrap()
     csvsql.args.dialect = "sqlite"
     csvsql.args.skipinitialspace = True
     csvsql.args.input_paths = [f_in.name]
@@ -75,7 +108,7 @@ def execute_sql(sql):
     conn = connections[SEC_DB_ALIAS]
     cursor = conn.cursor()
     cursor.execute(sql)
-    table_name = re.findall("CREATE TABLE ([^\s]+) (", sql)[0]
+    table_name = re.findall("CREATE TABLE ([^ ]+) \(", sql)[0]
     return table_name
 
 def models_py_from_database(table_name=None):
@@ -152,7 +185,8 @@ def fix_models_py(models_py):
 
 
 def write_models_py(models_py):
-    with open(os.path.join(BASE_DIR, "models.py"), "w") as f:
+    models_py_path = os.path.join(BASE_DIR, "collaborative", "models.py")
+    with open(models_py_path, "w") as f:
         f.write(models_py)
 
 
@@ -160,13 +194,23 @@ def setup_complete(request):
     if request.method == "GET":
         return render(request, 'setup-complete.html', {})
     elif  request.method == "POST":
+        # cleanup
+        # system command to restart server
         return redirect('/')
 
 
 def setup_auth(request):
     if request.method == "GET":
         return render(request, 'setup-auth.html', {})
-    elif  request.method == "POST":
+    elif request.method == "POST":
+        password = request.POST.get("password")
+        password_confirm = request.POST.get("password_confirm")
+        google_oauth_key = request.POST.get("google_oauth_key")
+        google_oauth_secret = request.POST.get("google_oauth_secret")
+        if password != password_confirm:
+            raise ValueError("Passwords do not match!")
+        admin = User.objects.get(username="admin")
+        admin.set_password(password)
         return redirect('setup-complete')
 
 
@@ -181,18 +225,6 @@ def setup_schema(request):
     if request.method == "GET":
         return render(request, 'setup-schema.html', {})
     elif  request.method == "POST":
-        # get params from request
-        share_url = request.POST.get("share_url")
-        # fetch sheet CSV
-        sheet = fetch_sheet(share_url)
-        # build sql from sheet CSV
-        sql = sheet_to_sql_create(sheet)
-        # create these tables in our DB (or new DB?)
-        table_name = execute_sql(sql)
-        # build models.py from this DB
-        models_py = models_py_from_database(table_name=table_name)
-        fixed_models_py = fix_models_py(models_py)
-        write_models_py(fixed_models_py)
         return redirect('setup-refine-schema')
 
 
@@ -206,4 +238,17 @@ def setup_begin(request):
     if request.method == "GET":
         return render(request, 'setup-begin.html', {})
     elif  request.method == "POST":
-        return redirect('setup-schema')
+        # get params from request
+        share_url = request.POST.get("sheets_url")
+        # fetch sheet CSV
+        sheet = fetch_sheet(share_url)
+        # build sql from sheet CSV
+        sql = sheet_to_sql_create(sheet)
+        # create these tables in our DB (or new DB?)
+        table_name = execute_sql(sql)
+        # build models.py from this DB
+        models_py = models_py_from_database(table_name=table_name)
+        fixed_models_py = fix_models_py(models_py)
+        write_models_py(fixed_models_py)
+        return redirect('setup-refine-schema')
+
