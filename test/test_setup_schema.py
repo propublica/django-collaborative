@@ -32,8 +32,8 @@ CREATE TABLE %s (
         self.models_py = None
 
     def test_can_execute_sql_against_secondary_db(self):
-        result = execute_sql(self.create_table)
-        self.assertIs(result, None)
+        table_name = execute_sql(self.create_table)
+        self.assertEqual(table_name, self.table_name)
 
     def test_can_run_inspectdb_against_secondary_db(self):
         execute_sql(self.create_table)

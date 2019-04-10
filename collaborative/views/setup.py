@@ -1,4 +1,5 @@
 import io
+import os
 import re
 import sqlite3
 import tempfile
@@ -8,6 +9,8 @@ from django.db import connections, transaction
 from django.core.management.commands.inspectdb import Command
 from django.shortcuts import render, redirect
 import requests
+
+from collaborative.settings import BASE_DIR
 
 
 SEC_DB_ALIAS = 'schemabuilding'
@@ -72,7 +75,8 @@ def execute_sql(sql):
     conn = connections[SEC_DB_ALIAS]
     cursor = conn.cursor()
     cursor.execute(sql)
-
+    table_name = re.findall("CREATE TABLE ([^\s]+) (", sql)[0]
+    return table_name
 
 def models_py_from_database(table_name=None):
     """
@@ -102,6 +106,11 @@ def models_py_from_database(table_name=None):
 
 
 def fix_models_py(models_py):
+    """
+    The output of inspectdb is pretty messy, so here we trim down
+    some of the mess, add mandatory ID field and fix the bad
+    conversion to CharField (we use TextField instead).
+    """
     lines = models_py.split("\n")
     fixed_lines = []
     for line in lines:
@@ -142,6 +151,11 @@ def fix_models_py(models_py):
     return "\n".join(fixed_lines)
 
 
+def write_models_py(models_py):
+    with open(os.path.join(BASE_DIR, "models.py"), "w") as f:
+        f.write(models_py)
+
+
 def setup_complete(request):
     if request.method == "GET":
         return render(request, 'setup-complete.html', {})
@@ -168,11 +182,17 @@ def setup_schema(request):
         return render(request, 'setup-schema.html', {})
     elif  request.method == "POST":
         # get params from request
+        share_url = request.POST.get("share_url")
         # fetch sheet CSV
-        # re-work the sheet headers into good column names
+        sheet = fetch_sheet(share_url)
         # build sql from sheet CSV
+        sql = sheet_to_sql_create(sheet)
         # create these tables in our DB (or new DB?)
+        table_name = execute_sql(sql)
         # build models.py from this DB
+        models_py = models_py_from_database(table_name=table_name)
+        fixed_models_py = fix_models_py(models_py)
+        write_models_py(fixed_models_py)
         return redirect('setup-refine-schema')
 
 

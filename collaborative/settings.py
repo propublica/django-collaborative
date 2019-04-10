@@ -212,4 +212,4 @@ STATICFILES_DIRS = [
 try:
    from collaborative.settings_dev import *
 except:
-   from collaborative.settings_prod import *
+    pass
