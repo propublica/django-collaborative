@@ -101,8 +101,45 @@ def models_py_from_database(table_name=None):
     return "\n".join(list(gen))
 
 
-def fix_models_py():
-    pass
+def fix_models_py(models_py):
+    lines = models_py.split("\n")
+    fixed_lines = []
+    for line in lines:
+        # Postgres TextFields are preferable. No performance
+        # hit compared to CharField and we don't need to
+        # specify a max length
+        line = line.replace(
+            "CharField", "TextField"
+        )
+
+        # Strip out comments. They're super long and repetitive
+        try:
+            comment_ix = line.index("#")
+        except ValueError as e:
+            comment_ix = -1
+        if comment_ix == 0:
+            continue
+        elif comment_ix != -1:
+            line = line[0:comment_ix]
+
+        # Skip the managed part. We're going to actually
+        # use a managed model, derived from the auto-generated
+        # models.py
+        if "class Meta:" in line:
+            continue
+        elif "managed = False" in line:
+            continue
+        elif "db_table = " in line:
+            continue
+
+        # We need to add an ID field as these are missing
+        if '(models.Model):' in line:
+            fixed_lines.append(line)
+            fixed_lines.append("    id = models.AutoField(primary_key=True)")
+        else:
+            fixed_lines.append(line)
+
+    return "\n".join(fixed_lines)
 
 
 def setup_complete(request):

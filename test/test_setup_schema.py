@@ -2,7 +2,9 @@ import re
 
 from django.test import TestCase
 
-from collaborative.views.setup import execute_sql, models_py_from_database
+from collaborative.views.setup import (
+    execute_sql, models_py_from_database, fix_models_py
+)
 
 
 class SchemaBuildingTestCase(TestCase):
@@ -27,6 +29,7 @@ CREATE TABLE %s (
         "What time?" VARCHAR NOT NULL
 );
 """ % self.table_name
+        self.models_py = None
 
     def test_can_execute_sql_against_secondary_db(self):
         result = execute_sql(self.create_table)
@@ -41,3 +44,16 @@ CREATE TABLE %s (
         model_match = "class Tmp4Wlpvd0C\(models.Model\):"
         models_py_flat = " ".join(models_py.split("\n"))
         self.assertEqual(len(re.findall(model_match, models_py_flat)), 1)
+
+    def test_fix_models_py(self):
+        execute_sql(self.create_table)
+        models_py = models_py_from_database(table_name=self.table_name)
+
+        fixed_models_py = fix_models_py(models_py)
+        print("fixed_models_py", fixed_models_py)
+        models_py_flat = " ".join(fixed_models_py.split("\n"))
+        self.assertIsNot(fixed_models_py, None)
+        self.assertGreater(len(fixed_models_py), 0)
+        self.assertEqual("class Meta" in models_py_flat, False)
+        self.assertEqual("managed =" in models_py_flat, False)
+        self.assertEqual("#" in models_py_flat, False)
