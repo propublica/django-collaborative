@@ -5,9 +5,9 @@ import sqlite3
 import tempfile
 
 from csvkit.utilities.csvsql import CSVSQL
-from django.db import connections, transaction
+from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.contrib.auth.models import User
-from django.core.management.commands.inspectdb import Command
+from django.core.management.commands import makemigrations, migrate, inspectdb
 from django.shortcuts import render, redirect
 import requests
 
@@ -120,7 +120,7 @@ def models_py_from_database(table_name=None):
 
     Returns the generated models.py
     """
-    inspectdb = Command()
+    cmd = inspectdb.Command()
     options = {
         'verbosity': 1,
         'settings': None,
@@ -134,7 +134,7 @@ def models_py_from_database(table_name=None):
         'include_views': False
     }
     # This command returns a generator of models.py text lines
-    gen = inspectdb.handle_inspection(options)
+    gen = cmd.handle_inspection(options)
     return "\n".join(list(gen))
 
 
@@ -185,12 +185,45 @@ def write_models_py(models_py):
         f.write(models_py)
 
 
+def make_and_apply_migrations():
+    """
+    Runs the equivalent of makemigrations on our collaborative
+    models.py and then applies he migrations via migrate.
+    """
+    # apply the model to the DB
+    mkmigrate_cmd = makemigrations.Command()
+    args = []
+    options = {
+        'verbosity': 1,
+        'interactive': False,
+        'dry_run': False,
+        'merge': False,
+        'empty': False,
+        'name': "collaboration",
+        'include_header': False,
+        'check_changes': False,
+    }
+    mkmigrate_cmd.handle(*args, **options)
+    # apply the migrations
+    migrate_cmd = migrate.Command()
+    options = {
+        'verbosity': 1,
+        'interactive': False,
+        'database': DEFAULT_DB_ALIAS,
+        'run_syncdb': False,
+        'app_label': None,
+        'plan': None,
+        'fake': False,
+        'fake_initial': False,
+    }
+    migrate_cmd.handle(*args, **options)
+
+
 def setup_complete(request):
     if request.method == "GET":
         return render(request, 'setup-complete.html', {})
     elif  request.method == "POST":
-        # cleanup
-        # system command to restart server
+        # cleanup, reboot server if deployed?
         return redirect('/')
 
 
@@ -245,5 +278,5 @@ def setup_begin(request):
         models_py = models_py_from_database(table_name=table_name)
         fixed_models_py = fix_models_py(models_py)
         write_models_py(fixed_models_py)
+        make_and_apply_migrations()
         return redirect('setup-refine-schema')
-
