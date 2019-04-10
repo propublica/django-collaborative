@@ -1,5 +1,8 @@
+import io
 import re
+import tempfile
 
+from csvkit.utilities.csvsql import CSVSQL
 from django.shortcuts import render, redirect
 import requests
 
@@ -31,7 +34,28 @@ def fetch_sheet(share_url):
 
 
 def sheet_to_sql_create(sheet):
-    pass
+    """
+    Runs the equivalent of:
+        csvsql -S -i postgresql sheet.csv
+
+    Returns a SQL CREATE TABLE command.
+    """
+    f_in = tempfile.NamedTemporaryFile(mode='w', delete=False)
+    f_in.write(sheet)
+    f_in.flush()
+    try:
+        # We have to close this in Windows
+        f_in.close()
+    except Exception as e:
+        pass # this means we're on a unix env
+    f_out = io.StringIO()
+    csvsql = CSVSQL()
+    csvsql.args.dialect = "postgresql"
+    csvsql.args.skipinitialspace = True
+    csvsql.args.input_paths = [f_in.name]
+    csvsql.output_file = f_out
+    csvsql.main()
+    return f_out.getvalue()
 
 
 def execute_sql(sql):
