@@ -174,12 +174,7 @@ def fix_models_py(models_py):
         elif "db_table = " in line:
             continue
 
-        # We need to add an ID field as these are missing
-        if '(models.Model):' in line:
-            fixed_lines.append(line)
-            fixed_lines.append("    id = models.AutoField(primary_key=True)")
-        else:
-            fixed_lines.append(line)
+        fixed_lines.append(line)
 
     return "\n".join(fixed_lines)
 
