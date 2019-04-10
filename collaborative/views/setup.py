@@ -5,9 +5,10 @@ import sqlite3
 import tempfile
 
 from csvkit.utilities.csvsql import CSVSQL
-from django.db import DEFAULT_DB_ALIAS, connections, transaction
+from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.core.management.commands import makemigrations, migrate, inspectdb
+from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.shortcuts import render, redirect
 import requests
 
@@ -224,6 +225,7 @@ def setup_complete(request):
         return render(request, 'setup-complete.html', {})
     elif  request.method == "POST":
         # cleanup, reboot server if deployed?
+        logout(request)
         return redirect('/')
 
 
