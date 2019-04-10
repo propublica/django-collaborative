@@ -1,10 +1,16 @@
 import io
 import re
+import sqlite3
 import tempfile
 
 from csvkit.utilities.csvsql import CSVSQL
+from django.db import connections, transaction
+from django.core.management.commands.inspectdb import Command
 from django.shortcuts import render, redirect
 import requests
+
+
+SEC_DB_ALIAS = 'schemabuilding'
 
 
 def extract_key_from_share_url(url):
@@ -50,7 +56,7 @@ def sheet_to_sql_create(sheet):
         pass # this means we're on a unix env
     f_out = io.StringIO()
     csvsql = CSVSQL()
-    csvsql.args.dialect = "postgresql"
+    csvsql.args.dialect = "sqlite"
     csvsql.args.skipinitialspace = True
     csvsql.args.input_paths = [f_in.name]
     csvsql.output_file = f_out
@@ -58,12 +64,41 @@ def sheet_to_sql_create(sheet):
     return f_out.getvalue()
 
 
+@transaction.atomic(using=SEC_DB_ALIAS)
 def execute_sql(sql):
-    pass
+    """
+    Run a SQL query against our secondary in-memory database.
+    """
+    conn = connections[SEC_DB_ALIAS]
+    cursor = conn.cursor()
+    cursor.execute(sql)
 
 
-def models_py_from_database():
-    pass
+def models_py_from_database(table_name=None):
+    """
+    Run inspectdb against our secondary in-memory database. Basically,
+    we're running the equivalent of this manage.py command:
+
+        ./manage.py inspectdb --database schemabuilding
+
+    Returns the generated models.py
+    """
+    inspectdb = Command()
+    options = {
+        'verbosity': 1,
+        'settings': None,
+        'pythonpath': None,
+        'traceback': False,
+        'no_color': False,
+        'force_color': False,
+        'table': [table_name] or [],
+        'database': SEC_DB_ALIAS,
+        'include_partitions': False,
+        'include_views': False
+    }
+    # This command returns a generator of models.py text lines
+    gen = inspectdb.handle_inspection(options)
+    return "\n".join(list(gen))
 
 
 def fix_models_py():

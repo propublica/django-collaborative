@@ -12,7 +12,7 @@ class CSVSQLTestCase(TestCase):
         with open(path, "r") as f:
             self.sheet = f.read()
 
-    def test_animals_can_speak(self):
+    def test_can_generate_sql_from_csv(self):
         create_string = sheet_to_sql_create(self.sheet)
         print("Got create_string: %s" % create_string)
         self.assertTrue("CREATE TABLE" in create_string)
