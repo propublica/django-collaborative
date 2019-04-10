@@ -1,8 +1,33 @@
+import re
+
 from django.shortcuts import render, redirect
+import requests
 
 
-def fetch_sheet(url):
-    pass
+def extract_key_from_share_url(url):
+    matches = re.findall(
+        "https://docs.google.com/spreadsheets/d/([^/]+)/edit",
+        url
+    )
+    if not matches:
+        raise ValueError("Invalid Google Sheets share URL")
+    return matches[0]
+
+
+def fetch_sheet(share_url):
+    """
+    Take a Google Sheet share link like this:
+        https://docs.google.com/spreadsheets/d/KEY_HERE/edit#gid=09232
+
+    And return the corresponding CSV.
+    """
+    key = extract_key_from_share_url(share_url)
+    url = 'https://docs.google.com/spreadsheet/ccc?key=%s&output=csv' % (
+        key
+    )
+    r = requests.get(url)
+    data = r.content
+    return data
 
 
 def sheet_to_sql_create(sheet):
