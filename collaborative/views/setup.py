@@ -186,6 +186,16 @@ def write_models_py(models_py):
         f.write(models_py)
 
 
+def write_settings_py(oauth_key, oauth_secret):
+    path = os.path.join(BASE_DIR, "collaborative", "settings_config.py")
+    settings_py = """
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "%s"
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "%s"
+""" % ( oauth_key, oauth_secret)
+    with open(path, "w") as f:
+        f.write(settings_py)
+
+
 def make_and_apply_migrations():
     """
     Runs the equivalent of makemigrations on our collaborative
@@ -241,6 +251,7 @@ def setup_auth(request):
             raise ValueError("Passwords do not match!")
         admin = User.objects.get(username="admin")
         admin.set_password(password)
+        write_settings_py(google_oauth_key, google_oauth_secret)
         return redirect('setup-complete')
 
 
