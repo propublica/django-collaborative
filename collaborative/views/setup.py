@@ -10,8 +10,11 @@ from django.contrib.auth.models import User
 from django.core.management.commands import makemigrations, migrate, inspectdb
 from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.shortcuts import render, redirect
+from import_export.resources import modelresource_factory
 import requests
+from tablib import Dataset
 
+from collaborative import models
 from collaborative.settings import BASE_DIR
 
 
@@ -19,7 +22,6 @@ SEC_DB_ALIAS = 'schemabuilding'
 
 
 def extract_key_from_share_url(url):
-    print("extracting key from", url)
     matches = re.findall(
         "https://docs.google.com/spreadsheets/d/([^/]+)/edit",
         url
@@ -230,6 +232,42 @@ def make_and_apply_migrations():
     migrate_cmd.handle(*args, **options)
 
 
+def import_users_list(sheet):
+    """
+    Take a fetched CSV and turn it into a tablib Dataset, with
+    a row ID column and all headers translated to model field names.
+    """
+    data = Dataset().load(sheet)
+    data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
+    # TODO: re-map the columns here data.columns = [...]
+    return data
+
+
+def import_users(sheet, model):
+    """
+    Take a fetched sheet CSV, parse it into user rows for
+    insertion and attempt to import the data into the
+    specified model.
+
+    This performs a pre-import routine which will return
+    failure information we can display and let the user fix
+    the sheet before trying again. On success this function
+    returns None.
+
+    TODO: Only show N number of errors. If there are more,
+    tell the user more errors have been supressed and to
+    fix the ones listed before continuing. We don't want
+    to overwhelm the user with error messages.
+    """
+    resource = modelresource_factory(model=model)()
+    dataset = import_users_list(sheet)
+    result = resource.import_data(dataset, dry_run=True)
+    # TODO: transform errors to something readable
+    if result.has_errors():
+        return result.row_errors()
+    resource.import_data(dataset, dry_run=False)
+
+
 def setup_complete(request):
     if request.method == "GET":
         return render(request, 'setup-complete.html', {})
@@ -259,7 +297,19 @@ def setup_refine_schema(request):
     if request.method == "GET":
         return render(request, 'setup-refine-schema.html', {})
     elif  request.method == "POST":
-        return redirect('setup-auth')
+        # TODO: remove this. we should save this information as we
+        # go along in a temporary part (or permanant config?) of
+        # the database. for now we'll just enter twice.
+        share_url = request.POST.get("sheets_url")
+        sheet = fetch_sheet(share_url)
+        # TODO: replace with config
+        Model = getattr(models, models.model_name)
+        errors = import_users(sheet, Model)
+        if not errors:
+            return redirect('setup-auth')
+        return render(request, 'setup-refine-schema.html', {
+            "errors": errors
+        })
 
 
 def setup_schema(request):
@@ -290,6 +340,6 @@ def setup_begin(request):
         # build models.py from this DB
         models_py = models_py_from_database(table_name=table_name)
         fixed_models_py = fix_models_py(models_py)
-        write_models_py(fixed_models_py)
+        # write_models_py(fixed_models_py)
         make_and_apply_migrations()
         return redirect('setup-refine-schema')

@@ -1,8 +1,13 @@
+import logging
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
 from django.apps import apps
+from import_export.resources import modelresource_factory
 
+
+logger = logging.getLogger(__name__)
 
 UserAdmin.list_display = ("username","email","first_name","last_name")
 # UserAdmin.list_editable = ("first_name", "last_name")
@@ -19,10 +24,16 @@ admin.site.register(LogEntry)
 # models
 models = apps.get_models()
 for model in models:
-    if "collaborative.models" not in str(model):
+    model_str = str(model)
+    if "collaborative.models" not in model_str:
         continue
     try:
         admin.site.register(model)
     except admin.sites.AlreadyRegistered:
-        pass
+        logger.warn("WARNING! Not registering model: %s. Already exists." % (
+            model_str
+        ))
+        continue
 
+    # set up a django-import-export class for this model
+    modelresource_factory(model)

@@ -8,6 +8,22 @@ System Setup | {{ block.super }}
 {% block content %}
 <h2>Refine Database & Import</h2>
 <form action="{% url 'setup-refine-schema' %}" method="POST">
+    <input name="sheets_url"
+           type="text"
+           placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..."
+           value="{{ sheets_url }}"
+           required />
+    {% if errors %}
+    <h3>Import Errors</h3>
+    {% for pk, errs in errors %}
+        <p>
+            <b>Row {{ pk }}:</b><br/>
+            {% for e in errs %}
+                {{ e.error.args  }}<br/>
+            {% endfor %}
+        </p>
+    {% endfor %}
+    {% endif %}
     <div class="continue">
         <input type="submit" value="{% trans 'Continue' %}" />
     </div>
