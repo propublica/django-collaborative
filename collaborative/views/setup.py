@@ -239,7 +239,12 @@ def import_users_list(sheet):
     """
     data = Dataset().load(sheet)
     data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
-    # TODO: re-map the columns here data.columns = [...]
+    # Turn our CSV columns into model columns
+    for i in range(len(data.headers)):
+        header = data.headers[i]
+        model_header = models.TRANSLATION_TABLE.get(header)
+        if model_header and header != model_header:
+            data.headers[i] = model_header
     return data
 
 
@@ -289,6 +294,7 @@ def setup_auth(request):
             raise ValueError("Passwords do not match!")
         admin = User.objects.get(username="admin")
         admin.set_password(password)
+        admin.save()
         write_settings_py(google_oauth_key, google_oauth_secret)
         return redirect('setup-complete')
 
