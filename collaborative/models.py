@@ -1,4 +1,5 @@
 import json
+import logging
 import sys
 
 from django import forms
@@ -19,6 +20,9 @@ except ImportError:
     import six
 
 from collaborative.widgets import ColumnsWidget
+
+
+logger = logging.getLogger(__name__)
 
 
 # configurable field types for dynamic models
@@ -104,31 +108,30 @@ def create_models():
     in our database.
     """
     for sheet in SpreadSheet.objects.all():
-        print("Building sheet", sheet)
         attrs = create_model_attrs(sheet)
-        print("Attrs", attrs)
         model_name = sheet.name
-        print("model_name", model_name)
 
         if not attrs:
-            print("WARNING: skipping model: %s. bad columns record" % sheet.name)
+            logger.warn(
+                "WARNING: skipping model: %s. bad columns record" % sheet.name)
             continue
 
         # we have no fields defined
         if len(attrs.keys()) <= 2:
-            print("WARNING: skipping model: %s. not enough columns" % sheet.name)
+            logger.warn(
+                "WARNING: skipping model: %s. not enough columns" % sheet.name)
             continue
 
         # set DynRow w/o specifying it here
-        print("Creating model", model_name)
         _model = type(model_name, (models.Model,), attrs)
-        print("_model", _model)
         setattr(sys.modules[__name__], model_name, _model)
-        print("Created model", _model)
 
 
 create_models()
 
+
+# NOTE: commented out because this is the manual version of
+# the dynamic model.
 
 # model_name = "DynRow"
 # attrs = {
@@ -174,7 +177,6 @@ create_models()
 #     '__module__': 'collaborative.models.%s' % model_name
 # }
 
-# # TODO: Save this information during CSV -> model transformation
 # TRANSLATION_TABLE = {
 #     "Timestamp": "timestamp",
 #     "Question with short answer?": "question_with_short_answer_field",

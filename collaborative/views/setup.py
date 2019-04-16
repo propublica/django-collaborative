@@ -295,7 +295,7 @@ def setup_auth(request):
         admin = User.objects.get(username="admin")
         admin.set_password(password)
         admin.save()
-        write_settings_py(google_oauth_key, google_oauth_secret)
+        # write_settings_py(google_oauth_key, google_oauth_secret)
         return redirect('setup-complete')
 
 

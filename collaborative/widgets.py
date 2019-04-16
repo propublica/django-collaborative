@@ -29,18 +29,3 @@ class ColumnsWidget(JSONWidget):
             'template_name': self.template_name,
         }
         return context
-
-    # def render(self, name, value, attrs=None, renderer=None):
-    #     print("Render initial value", value, type(value))
-    #     if value is None:
-    #         value = []
-    #     if isinstance(value, six.string_types):
-    #         value = json.loads(value)
-    #     # if django.VERSION < (2, 0):
-    #     #     return super(ColumnsWidget, self).render(name, value, attrs)
-    #     print("Render parsed value", value, type(value))
-    #     context = self.get_context(name, value, attrs)
-    #     print("Context", context)
-    #     return super(ColumnsWidget, self)._render(
-    #         self.template_name, context, renderer
-    #     )
