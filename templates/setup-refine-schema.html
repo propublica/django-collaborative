@@ -8,12 +8,14 @@ System Setup | {{ block.super }}
 {% block content %}
 <h2>Refine Database & Import</h2>
 <form action="{% url 'setup-refine-schema' %}" method="POST">
-    <input name="sheets_url"
-           type="text"
-           placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..."
-           value="{{ sheets_url }}"
-           required />
-    {% if errors %}
+    {% if not errors %}
+    <p>
+    {% blocktrans trimmed %}
+        We are about to import users into the system. Feel free to check the
+        column names and types before we do this.
+    {% endblocktrans %}
+    </p>
+    {% else %}
     <h3>Import Errors</h3>
     {% for pk, errs in errors %}
         <p>

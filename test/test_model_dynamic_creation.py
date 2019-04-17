@@ -1,5 +1,5 @@
 from collaborative.models import (
-    SpreadSheet, create_model_attrs, create_models
+    Spreadsheet, create_model_attrs, create_models
 )
 
 from django.db import models
@@ -8,7 +8,7 @@ from django.test import TestCase
 
 class ModelDynamicCreationTestCase(TestCase):
     def setUp(self):
-        self.sheet = SpreadSheet.objects.create(
+        self.sheet = Spreadsheet.objects.create(
             name="SomeGoogleSheet",
             columns=[{
                 "name": "name",

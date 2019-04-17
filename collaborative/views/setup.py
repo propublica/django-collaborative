@@ -182,6 +182,71 @@ def fix_models_py(models_py):
     return "\n".join(fixed_lines)
 
 
+def extract_fields(models_py):
+    """
+    Take a models.py string and extract the lines that
+    declare model fields into a dictionary of the following
+    format:
+
+        { "FIELD_NAME": "models.FieldType(arguments...)" }
+    """
+    fields = {}
+    for line in models_py.split("\n"):
+        # skip imports
+        if re.match(".*from.*import.*", line):
+            continue
+        # skip class declarations
+        if re.match(".*class\s+.*models\.Model.*", line):
+            continue
+        # extract field name
+        field_matches = re.match("\s*([^\s\-=]+)\s*=\s*(.*)$", line)
+        if not field_matches or not field_matches.groups():
+            continue
+        field, declaration = field_matches.groups()
+        fields[field] = declaration
+    return fields
+
+
+def extract_field_declaration_args(declaration_str):
+    matches = re.match(".*\((.*)\)", declaration_str)
+    args_str = matches.groups()[0]
+    indiv_args = re.split(",\s*", args_str)
+    kw_arguments = {}
+    for arg in indiv_args:
+        key, value = arg.split("=", 1)
+        kw_arguments[key] = eval(value)
+    return kw_arguments
+
+
+def extract_field_type(declaration_str):
+    matches = re.match(".*(models\.[A-Za-z0-9_]+)\(", declaration_str)
+    field_class_str = matches.groups()[0]
+    # TODO: default here? or use default dict in TYPE_TO_FIELDNAME
+    type_name = models.TYPE_TO_FIELDNAME[field_class_str]
+    return type_name
+
+
+def build_sheet_object(models_py, model_name, share_url):
+    fields = extract_fields(models_py)
+    columns = []
+    for name, declaration in fields.items():
+        kwargs = extract_field_declaration_args(declaration)
+        field_type = extract_field_type(declaration)
+        original_name = kwargs.pop("db_column")
+        columns.append({
+            "name": name,
+            "original_name": original_name,
+            "type": field_type,
+            "attrs": kwargs,
+        })
+    sheet = models.Spreadsheet(
+        name = model_name,
+        share_url = share_url,
+        columns = columns,
+    )
+    return sheet
+
+
 def write_models_py(models_py):
     models_py_path = os.path.join(BASE_DIR, "collaborative", "models.py")
     with open(models_py_path, "w") as f:
@@ -203,27 +268,34 @@ def make_and_apply_migrations():
     Runs the equivalent of makemigrations on our collaborative
     models.py and then applies he migrations via migrate.
     """
+    models.create_models()
     # apply the model to the DB
     mkmigrate_cmd = makemigrations.Command()
-    args = []
-    options = {
+    args = ('collaborative',)
+    options =  {
         'verbosity': 1,
-        'interactive': False,
+        'settings': None,
+        'pythonpath': None,
+        'traceback': False,
+        'no_color': False,
+        'force_color': False,
         'dry_run': False,
         'merge': False,
         'empty': False,
-        'name': "collaboration",
-        'include_header': False,
-        'check_changes': False,
+        'interactive': True,
+        'name': None,
+        'include_header': True,
+        'check_changes': False
     }
     mkmigrate_cmd.handle(*args, **options)
     # apply the migrations
     migrate_cmd = migrate.Command()
+    args = ()
     options = {
-        'verbosity': 1,
+        'verbosity': 3,
         'interactive': False,
         'database': DEFAULT_DB_ALIAS,
-        'run_syncdb': False,
+        'run_syncdb': True,
         'app_label': None,
         'plan': None,
         'fake': False,
@@ -232,23 +304,25 @@ def make_and_apply_migrations():
     migrate_cmd.handle(*args, **options)
 
 
-def import_users_list(sheet):
+# TODO: pass sheet mode lin here
+def import_users_list(csv, sheet):
     """
     Take a fetched CSV and turn it into a tablib Dataset, with
     a row ID column and all headers translated to model field names.
     """
-    data = Dataset().load(sheet)
+    data = Dataset().load(csv)
     data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
     # Turn our CSV columns into model columns
     for i in range(len(data.headers)):
         header = data.headers[i]
-        model_header = models.TRANSLATION_TABLE.get(header)
+        model_header = sheet.csv_header_to_model_header(header)
         if model_header and header != model_header:
             data.headers[i] = model_header
     return data
 
 
-def import_users(sheet, model):
+# TODO: pass sheet model in here
+def import_users(csv, Model, sheet):
     """
     Take a fetched sheet CSV, parse it into user rows for
     insertion and attempt to import the data into the
@@ -264,8 +338,8 @@ def import_users(sheet, model):
     fix the ones listed before continuing. We don't want
     to overwhelm the user with error messages.
     """
-    resource = modelresource_factory(model=model)()
-    dataset = import_users_list(sheet)
+    resource = modelresource_factory(model=Model)()
+    dataset = import_users_list(csv, sheet)
     result = resource.import_data(dataset, dry_run=True)
     # TODO: transform errors to something readable
     if result.has_errors():
@@ -300,17 +374,18 @@ def setup_auth(request):
 
 
 def setup_refine_schema(request):
+    sheet = models.Spreadsheet.objects.last()
     if request.method == "GET":
         return render(request, 'setup-refine-schema.html', {})
     elif  request.method == "POST":
         # TODO: remove this. we should save this information as we
         # go along in a temporary part (or permanant config?) of
         # the database. for now we'll just enter twice.
-        share_url = request.POST.get("sheets_url")
-        sheet = fetch_sheet(share_url)
+        share_url = sheet.share_url #request.POST.get("sheets_url")
+        csv = fetch_sheet(share_url)
         # TODO: replace with config
-        Model = getattr(models, models.model_name)
-        errors = import_users(sheet, Model)
+        Model = getattr(models, sheet.name)
+        errors = import_users(csv, Model, sheet)
         if not errors:
             return redirect('setup-auth')
         return render(request, 'setup-refine-schema.html', {
@@ -336,7 +411,8 @@ def setup_begin(request):
         return render(request, 'setup-begin.html', {})
     elif  request.method == "POST":
         # get params from request
-        share_url = request.POST.get("sheets_url")
+        share_url = request.POST.get("share_url")
+        name = request.POST.get("name")
         # fetch sheet CSV
         sheet = fetch_sheet(share_url)
         # build sql from sheet CSV
@@ -346,6 +422,8 @@ def setup_begin(request):
         # build models.py from this DB
         models_py = models_py_from_database(table_name=table_name)
         fixed_models_py = fix_models_py(models_py)
-        # write_models_py(fixed_models_py)
+        # TODO: convert models.py to JSON
+        sheet = build_sheet_object(fixed_models_py, name, share_url)
+        sheet.save()
         make_and_apply_migrations()
         return redirect('setup-refine-schema')
