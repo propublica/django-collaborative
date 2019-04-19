@@ -1,6 +1,5 @@
 import json
 
-import django
 from jsonfield.widgets import JSONWidget
 
 try:
@@ -11,6 +10,7 @@ except ImportError:
 
 class ColumnsWidget(JSONWidget):
     template_name = 'forms/widget/columnswidget.html'
+    attrs = {}
 
     def __init__(self, column_types, *args, **kwargs):
         self.COLUMN_TYPES = column_types
@@ -18,6 +18,8 @@ class ColumnsWidget(JSONWidget):
 
     def get_context(self, name, value, attrs):
         context = {}
+        attrs = self.build_attrs(self.attrs, attrs)
+        print("Attrs", attrs)
         context['widget'] = {
             'name': name,
             'is_hidden': self.is_hidden,
@@ -25,7 +27,7 @@ class ColumnsWidget(JSONWidget):
             'value_obj': json.loads(value),
             'value': value,
             'column_types': self.COLUMN_TYPES,
-            'attrs': self.build_attrs(self.attrs, attrs),
+            'attrs': attrs,
             'template_name': self.template_name,
         }
         return context

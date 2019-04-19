@@ -12,8 +12,9 @@ System Setup | {{ block.super }}
     <p>
     {% blocktrans trimmed %}
         We are about to import users into the system. Feel free to check the
-        column names and types before we do this.
+        column names and types before continuing.
     {% endblocktrans %}
+    {{ form }}
     </p>
     {% else %}
     <h3>Import Errors</h3>

@@ -15,7 +15,10 @@ import requests
 from tablib import Dataset
 
 from collaborative import models
+# from collaborative.fields import ColumnsField
+from collaborative.forms import SchemaRefineForm #, ColumnsFormField
 from collaborative.settings import BASE_DIR
+# from collaborative.widgets import ColumnsWidget
 
 
 SEC_DB_ALIAS = 'schemabuilding'
@@ -376,20 +379,28 @@ def setup_auth(request):
 def setup_refine_schema(request):
     sheet = models.Spreadsheet.objects.last()
     if request.method == "GET":
-        return render(request, 'setup-refine-schema.html', {})
+        refine_form = SchemaRefineForm({
+            "columns": sheet.columns
+        })
+        return render(request, 'setup-refine-schema.html', {
+            "form": refine_form,
+        })
     elif  request.method == "POST":
-        # TODO: remove this. we should save this information as we
-        # go along in a temporary part (or permanant config?) of
-        # the database. for now we'll just enter twice.
-        share_url = sheet.share_url #request.POST.get("sheets_url")
+        refine_form = SchemaRefineForm(request.POST)
+        if not refine_form.is_valid():
+            return render(request, 'setup-refine-schema.html', {
+                "form": refine_form,
+            })
+
+        share_url = sheet.share_url
         csv = fetch_sheet(share_url)
-        # TODO: replace with config
         Model = getattr(models, sheet.name)
         errors = import_users(csv, Model, sheet)
         if not errors:
             return redirect('setup-auth')
         return render(request, 'setup-refine-schema.html', {
-            "errors": errors
+            "form": refine_form,
+            "errors": errors,
         })
 
 

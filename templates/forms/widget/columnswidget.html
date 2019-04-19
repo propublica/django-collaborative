@@ -3,7 +3,7 @@ we need the json.dumps version here, by default, in case the
 user saves this before editing. the JS of this widget will
 overwrite this with proper JSON as users modify it
 {% endcomment %}
-<textarea style="display:none;"
+<textarea {#style="display:none;"#}
            name="{{ widget.name }}"
            {% include "django/forms/widgets/attrs.html" %}>
 {% if widget.value %}{{ widget.value }}{% endif %}
