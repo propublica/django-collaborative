@@ -3,6 +3,7 @@ import os
 import re
 import sqlite3
 import tempfile
+import time
 
 from csvkit.utilities.csvsql import CSVSQL
 from django.contrib.auth import logout
@@ -305,6 +306,10 @@ def make_and_apply_migrations():
         'fake_initial': False,
     }
     migrate_cmd.handle(*args, **options)
+    # short pause to allow for migration to complete. eventually
+    # we may want to use JS to test for the server to complete the
+    # cycle, during a middle phase during which we do the migration
+    time.sleep(2)
 
 
 # TODO: pass sheet mode lin here
@@ -392,6 +397,10 @@ def setup_refine_schema(request):
                 "form": refine_form,
             })
 
+        columns = refine_form.cleaned_data["columns"]
+        sheet.columns = columns
+        sheet.save()
+        make_and_apply_migrations()
         share_url = sheet.share_url
         csv = fetch_sheet(share_url)
         Model = getattr(models, sheet.name)
