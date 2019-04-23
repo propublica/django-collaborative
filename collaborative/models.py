@@ -45,6 +45,7 @@ class Spreadsheet(models.Model):
     name = models.TextField(max_length=255)
     share_url = models.URLField(null=True, blank=True)
     columns = ColumnsField(null=True, blank=True)
+    token = models.CharField(max_length=16, null=True, blank=True)
 
     def __unicode__(self):
         return "Spreadsheet: %s" % self.name

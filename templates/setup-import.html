@@ -1,0 +1,51 @@
+{% extends "setup-base.html" %}
+{% load i18n static %}
+
+{% block title %}
+Import Data | {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+<script type="text/javascript">
+const done = () => {
+  document.getElementById("continue").click();
+};
+setTimeout(done, 1000);
+</script>
+{% endblock %}
+
+{% block content %}
+<h2>Import Data</h2>
+<form action="{% url 'setup-import' %}" method="POST">
+    {% if not errors %}
+    <p>
+    {% blocktrans trimmed %}
+        We are about to import responses from the sheet into the system.
+        You will be redirected shortly.
+    {% endblocktrans %}
+    </p>
+    {% else %}
+    <h3>Import Errors</h3>
+    <p>
+    {% blocktrans trimmed %}
+        The following errors were encountered while importing the sheet.
+        To fix these errors, you can either correct the problems in
+        your sheet or you can go back and
+        <a href="/setup-refine-schema">change the column types</a>.
+    {% endblocktrans %}
+    </p>
+    {% for pk, errs in errors %}
+        <p>
+            <b>Row {{ pk }}:</b><br/>
+            {% for e in errs %}
+                {{ e.error.args  }}<br/>
+            {% endfor %}
+        </p>
+    {% endfor %}
+    {% endif %}
+    <div class="continue">
+        <input id="continue" type="submit" value="{% trans 'Continue' %}" />
+    </div>
+    {% csrf_token %}
+</form>
+{% endblock %}

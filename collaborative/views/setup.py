@@ -10,16 +10,18 @@ from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.core.management.commands import makemigrations, migrate, inspectdb
 from django.db import DEFAULT_DB_ALIAS, connections, transaction
-from django.shortcuts import render, redirect
+from django.http import HttpResponseBadRequest, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from django.views.decorators.csrf import csrf_exempt
 from import_export.resources import modelresource_factory
 import requests
 from tablib import Dataset
 
 from collaborative import models
-# from collaborative.fields import ColumnsField
 from collaborative.forms import SchemaRefineForm #, ColumnsFormField
 from collaborative.settings import BASE_DIR
-# from collaborative.widgets import ColumnsWidget
 
 
 SEC_DB_ALIAS = 'schemabuilding'
@@ -31,7 +33,7 @@ def extract_key_from_share_url(url):
         url
     )
     if not matches:
-        raise ValueError("Invalid Google Sheets share URL")
+        raise ValueError(_("Invalid Google Sheets share URL"))
     return matches[0]
 
 
@@ -247,7 +249,9 @@ def build_sheet_object(models_py, model_name, share_url):
         name = model_name,
         share_url = share_url,
         columns = columns,
+        token = User.objects.make_random_password(length=16),
     )
+    sheet.save()
     return sheet
 
 
@@ -255,16 +259,6 @@ def write_models_py(models_py):
     models_py_path = os.path.join(BASE_DIR, "collaborative", "models.py")
     with open(models_py_path, "w") as f:
         f.write(models_py)
-
-
-def write_settings_py(oauth_key, oauth_secret):
-    path = os.path.join(BASE_DIR, "collaborative", "settings_config.py")
-    settings_py = """
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = "%s"
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = "%s"
-""" % ( oauth_key, oauth_secret)
-    with open(path, "w") as f:
-        f.write(settings_py)
 
 
 def make_and_apply_migrations():
@@ -306,13 +300,8 @@ def make_and_apply_migrations():
         'fake_initial': False,
     }
     migrate_cmd.handle(*args, **options)
-    # short pause to allow for migration to complete. eventually
-    # we may want to use JS to test for the server to complete the
-    # cycle, during a middle phase during which we do the migration
-    time.sleep(2)
 
 
-# TODO: pass sheet mode lin here
 def import_users_list(csv, sheet):
     """
     Take a fetched CSV and turn it into a tablib Dataset, with
@@ -329,7 +318,6 @@ def import_users_list(csv, sheet):
     return data
 
 
-# TODO: pass sheet model in here
 def import_users(csv, Model, sheet):
     """
     Take a fetched sheet CSV, parse it into user rows for
@@ -356,15 +344,22 @@ def import_users(csv, Model, sheet):
 
 
 def setup_complete(request):
+    """
+    Setup is complete. Show users some diagnostic information and let
+    them continue.
+    """
     if request.method == "GET":
         return render(request, 'setup-complete.html', {})
     elif  request.method == "POST":
-        # cleanup, reboot server if deployed?
         logout(request)
         return redirect('/')
 
 
 def setup_auth(request):
+    """
+    Force the user to change the password and let them setup
+    OAuth social login.
+    """
     if request.method == "GET":
         return render(request, 'setup-auth.html', {})
     elif request.method == "POST":
@@ -377,11 +372,85 @@ def setup_auth(request):
         admin = User.objects.get(username="admin")
         admin.set_password(password)
         admin.save()
-        # write_settings_py(google_oauth_key, google_oauth_secret)
+        # TODO: store (google_oauth_key, google_oauth_secret) somewhere
         return redirect('setup-complete')
 
 
+def setup_import(request):
+    """
+    Loads the rows found in the sheet into the database. This is
+    done once the user has had a chance to change the column names
+    and types.
+
+    NOTE: We do the import as a POST as a security precaution. The
+    GET phase isn't really necessary, so the page just POSTs the
+    form automatically via JS on load.
+    """
+    sheet = models.Spreadsheet.objects.last()
+    if request.method == "GET":
+        return render(request, 'setup-import.html')
+    elif request.method == "POST":
+        share_url = sheet.share_url
+        csv = fetch_sheet(share_url)
+        Model = getattr(models, sheet.name)
+        errors = import_users(csv, Model, sheet)
+        if not errors:
+            return redirect("setup-auth")
+        return render(request, 'setup-import.html', {
+            "errors": errors,
+        })
+
+
+@csrf_exempt
+def setup_migrate(request):
+    """
+    Triggers a makemigrations and migrate via the API. The token
+    is one-time use, as it's cleared here, pre-migrate.
+
+    NOTE: This will cause the local server to restart, so we use
+    it in conjunction with the setup-wait enpoint that triggers
+    this endpoint, then waits for the server to come back up via
+    JavaScript and then moves to the next part of the setup flow.
+
+    Example:
+
+        POST /setup-migrate
+
+        { "token": "SHEET TOKEN HERE" }
+    """
+    if request.method != "POST":
+        return HttpResponseBadRequest("Bad method")
+    token = request.POST.get("token")
+    if not token:
+        return HttpResponseBadRequest("Bad token provided")
+    # security check
+    sheet = get_object_or_404(models.Spreadsheet, token=token)
+    sheet.token = None
+    sheet.save()
+    make_and_apply_migrations()
+    return HttpResponse(200, "OK")
+
+
+def setup_wait(request):
+    """
+    This view triggers a makemigrations/migrate via JS and
+    waits for the server to come back online. It then automatically
+    redirects the user to the view specified in the "next" param.
+    """
+    next = request.GET["next"] # required
+    token = request.GET["token"] # required
+    sheet = get_object_or_404(models.Spreadsheet, token=token)
+    return render(request, 'setup-wait.html', {
+        "next": next,
+        "token": token,
+    })
+
+
 def setup_refine_schema(request):
+    """
+    Allow the user to modify the auto-generated column types and
+    names. This is done before we import the sheet data.
+    """
     sheet = models.Spreadsheet.objects.last()
     if request.method == "GET":
         refine_form = SchemaRefineForm({
@@ -400,24 +469,10 @@ def setup_refine_schema(request):
         columns = refine_form.cleaned_data["columns"]
         sheet.columns = columns
         sheet.save()
-        make_and_apply_migrations()
-        share_url = sheet.share_url
-        csv = fetch_sheet(share_url)
-        Model = getattr(models, sheet.name)
-        errors = import_users(csv, Model, sheet)
-        if not errors:
-            return redirect('setup-auth')
-        return render(request, 'setup-refine-schema.html', {
-            "form": refine_form,
-            "errors": errors,
-        })
-
-
-def setup_schema(request):
-    if request.method == "GET":
-        return render(request, 'setup-schema.html', {})
-    elif  request.method == "POST":
-        return redirect('setup-refine-schema')
+        url = reverse("setup-wait")
+        next = reverse("setup-import")
+        to = "%s?next=%s&token=%s" % (url, next, sheet.token)
+        return redirect(to)
 
 
 def setup_begin(request):
@@ -444,6 +499,4 @@ def setup_begin(request):
         fixed_models_py = fix_models_py(models_py)
         # TODO: convert models.py to JSON
         sheet = build_sheet_object(fixed_models_py, name, share_url)
-        sheet.save()
-        make_and_apply_migrations()
         return redirect('setup-refine-schema')

@@ -6,13 +6,14 @@ System Setup | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-<h2>Refine Database & Import</h2>
+<h2>Refine Database</h2>
 <form action="{% url 'setup-refine-schema' %}" method="POST">
     {% if not errors %}
     <p>
     {% blocktrans trimmed %}
-        We are about to import users into the system. Feel free to check the
-        column names and types before continuing.
+        These are the column names and types we found in
+        your sheet. Feel free to double check and correct
+        any mistakes before continuing.
     {% endblocktrans %}
     {{ form }}
     </p>
@@ -28,7 +29,7 @@ System Setup | {{ block.super }}
     {% endfor %}
     {% endif %}
     <div class="continue">
-        <input type="submit" value="{% trans 'Continue' %}" />
+        <input type="submit" value="{% trans "Continue" %}" />
     </div>
     {% csrf_token %}
 </form>

@@ -1,0 +1,59 @@
+{% extends "setup-base.html" %}
+{% load i18n static %}
+
+{% block title %}
+Redirecting | {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+<script type="text/javascript">
+let interval = null;
+const httpGet = (url, cb) => {
+  const xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function() {
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+      cb(xmlHttp.responseText);
+  }
+  xmlHttp.open("GET", url, true);
+  xmlHttp.send(null);
+};
+const httpPost = (url, token, cb) => {
+  const xmlHttp = new XMLHttpRequest();
+  xmlHttp.onreadystatechange = function() {
+    if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+      cb(xmlHttp.responseText);
+  }
+  xmlHttp.open("POST", url, true);
+  xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xmlHttp.send(`token=${token}`);
+};
+const done = () => {
+  clearInterval(interval);
+  document.getElementById("nextPage").click();
+};
+const check = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const next = urlParams.get('next');
+  httpGet(next, done);
+};
+const startWait = () => {
+  interval = setInterval(check, 500);
+};
+const triggerMigrations = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const token = urlParams.get('token');
+  httpPost("/setup-migrate/", token, startWait);
+};
+window.TRIG = triggerMigrations;
+</script>
+{% endblock %}
+
+{% block content %}
+<h2>{% trans "System is loading, please wait..." %}</h2>
+<p>
+{% blocktrans trimmed %}
+You will be redirected once this is complete.
+If you are not redirected shortly, please <a id="nextPage" href="{{ next }}">click here</a>.
+{% endblocktrans %}
+</p>
+{% endblock %}
