@@ -500,3 +500,15 @@ def setup_begin(request):
         # TODO: convert models.py to JSON
         sheet = build_sheet_object(fixed_models_py, name, share_url)
         return redirect('setup-refine-schema')
+
+
+def setup_check(request):
+    """
+    Check to see if we have set up any spreadsheets, yet, and if
+    not redirect to the setup wizard. If we've already set up a sheet,
+    go to the normal admin.
+    """
+    sheet_count = models.Spreadsheet.objects.count()
+    if not sheet_count:
+        return redirect('setup-begin')
+    return redirect('admin')

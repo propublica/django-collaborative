@@ -26,6 +26,7 @@ urlpatterns = [
     url('', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
     path('request-access/', views.request_access, name='request-access'),
+    path('setup-check/', views.setup_check, name='setup-check'),
     path('setup-begin/', views.setup_begin, name='setup-begin'),
     path('setup-refine-schema/',
          views.setup_refine_schema,
