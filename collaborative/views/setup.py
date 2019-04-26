@@ -484,6 +484,10 @@ def setup_begin(request):
     any authentication backends (Google Oauth2, Slack, etc).
     """
     if request.method == "GET":
+        # Don't go back into this flow if we've already done it
+        sheet_count = models.Spreadsheet.objects.count()
+        if sheet_count and sheet_count > 0:
+            return redirect('/admin/')
         return render(request, 'setup-begin.html', {})
     elif  request.method == "POST":
         # get params from request

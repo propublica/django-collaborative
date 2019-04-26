@@ -55,6 +55,16 @@ function toggleLogin() {
     </p>
     {% endif %}
 
+    {% if first_login %}
+    <p>
+    {% blocktrans trimmed %}
+    You are about to set up the collaborative tip gathering system. Please
+    log in with the default username and password.
+    {% endblocktrans %}
+    </p>
+    {% endif %}
+
+
     {% if not first_login %}
     <div id="social-login" style="text-align: center">
         <a href="{% url 'social:begin' 'google-oauth2' %}">
