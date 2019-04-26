@@ -8,6 +8,7 @@ import time
 from csvkit.utilities.csvsql import CSVSQL
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
+from django.contrib.admin.sites import site
 from django.core.management.commands import makemigrations, migrate, inspectdb
 from django.db import DEFAULT_DB_ALIAS, connections, transaction
 from django.http import HttpResponseBadRequest, HttpResponse
@@ -512,3 +513,10 @@ def setup_check(request):
     if not sheet_count:
         return redirect('setup-begin')
     return redirect('admin')
+
+
+def setup_base(request):
+    sheet_count = models.Spreadsheet.objects.count()
+    return site.login(request, extra_context={
+        "first_login": not sheet_count
+    })

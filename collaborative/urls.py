@@ -16,13 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.conf.urls import include, url
 from django.urls import path
-from django.views.generic.base import RedirectView
 
 from collaborative import views
 
 
 urlpatterns = [
-    url(r'^$', RedirectView.as_view(url='admin/')),
+    url(r'^$', views.setup_base),
     url('', include('social_django.urls', namespace='social')),
     path('admin/', admin.site.urls),
     path('request-access/', views.request_access, name='request-access'),

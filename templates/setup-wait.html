@@ -44,7 +44,7 @@ const triggerMigrations = () => {
   const token = urlParams.get('token');
   httpPost("/setup-migrate/", token, startWait);
 };
-window.TRIG = triggerMigrations;
+setTimeout(triggerMigrations, 2000);
 </script>
 {% endblock %}
 

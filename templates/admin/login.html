@@ -4,9 +4,6 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
-#login-form {
-    display: none;
-}
 #lets-see {
     font-size: 0.7em;
 }
@@ -49,7 +46,6 @@ function toggleLogin() {
 {% endif %}
 
 <div id="content-main">
-
     {% if user.is_authenticated %}
     <p class="errornote">
     {% blocktrans trimmed %}
@@ -59,6 +55,7 @@ function toggleLogin() {
     </p>
     {% endif %}
 
+    {% if not first_login %}
     <div id="social-login" style="text-align: center">
         <a href="{% url 'social:begin' 'google-oauth2' %}">
             <img src="{% static 'collaborative/btn_google_signin_light_normal_web.png' %}" />
@@ -70,8 +67,12 @@ function toggleLogin() {
         </a>
         {% endcomment %}
     </div>
+    {% endif %}
 
-    <form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+    <form action="{{ app_path }}" method="post"
+          {% if not first_login %}style="display:none;"{% endif %}
+          id="login-form">
+        {% csrf_token %}
         <div class="form-row">
             {{ form.username.errors }}
             {{ form.username.label_tag }} {{ form.username }}
@@ -95,10 +96,13 @@ function toggleLogin() {
         </div>
     </form>
 
+    {% if not first_login %}
     <div style="text-align: center">
         <a id="lets-see" onclick="toggleLogin()" href="#">
             {% trans "Or, sign in with a password" %}
         </a>
     </div>
+    {% endif %}
+
 </div>
 {% endblock %}
