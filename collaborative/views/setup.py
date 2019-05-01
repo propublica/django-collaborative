@@ -7,6 +7,7 @@ import time
 
 from csvkit.utilities.csvsql import CSVSQL
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.admin.sites import site
 from django.core.management.commands import makemigrations, migrate, inspectdb
@@ -340,8 +341,12 @@ def import_users(csv, Model, sheet):
     result = resource.import_data(dataset, dry_run=True)
     # TODO: transform errors to something readable
     if result.has_errors():
-        return result.row_errors()
-    resource.import_data(dataset, dry_run=False)
+        errors = result.row_errors()
+        return errors
+    result = resource.import_data(dataset, dry_run=False)
+    if result.has_errors():
+        errors = result.row_errors()
+        return errors
 
 
 def setup_complete(request):
@@ -351,11 +356,9 @@ def setup_complete(request):
     """
     if request.method == "GET":
         return render(request, 'setup-complete.html', {})
-    elif  request.method == "POST":
-        logout(request)
-        return redirect('/')
 
 
+@login_required
 def setup_auth(request):
     """
     Force the user to change the password and let them setup
@@ -374,10 +377,11 @@ def setup_auth(request):
         admin.set_password(password)
         admin.save()
         # TODO: store (google_oauth_key, google_oauth_secret) somewhere
-        return redirect('setup-complete')
+        return redirect("setup-complete")
 
 
-def setup_import(request):
+@login_required
+def setup_import(request, id):
     """
     Loads the rows found in the sheet into the database. This is
     done once the user has had a chance to change the column names
@@ -387,9 +391,11 @@ def setup_import(request):
     GET phase isn't really necessary, so the page just POSTs the
     form automatically via JS on load.
     """
-    sheet = models.Spreadsheet.objects.last()
+    sheet = get_object_or_404(models.Spreadsheet, id=id)
     if request.method == "GET":
-        return render(request, 'setup-import.html')
+        return render(request, 'setup-import.html', {
+            "sheet": sheet
+        })
     elif request.method == "POST":
         share_url = sheet.share_url
         csv = fetch_sheet(share_url)
@@ -399,6 +405,7 @@ def setup_import(request):
             return redirect("setup-auth")
         return render(request, 'setup-import.html', {
             "errors": errors,
+            "sheet": sheet,
         })
 
 
@@ -432,6 +439,7 @@ def setup_migrate(request):
     return HttpResponse(200, "OK")
 
 
+@login_required
 def setup_wait(request):
     """
     This view triggers a makemigrations/migrate via JS and
@@ -447,35 +455,39 @@ def setup_wait(request):
     })
 
 
-def setup_refine_schema(request):
+@login_required
+def setup_refine_schema(request, id):
     """
     Allow the user to modify the auto-generated column types and
     names. This is done before we import the sheet data.
     """
-    sheet = models.Spreadsheet.objects.last()
+    sheet = get_object_or_404(models.Spreadsheet, id=id)
     if request.method == "GET":
         refine_form = SchemaRefineForm({
             "columns": sheet.columns
         })
         return render(request, 'setup-refine-schema.html', {
             "form": refine_form,
+            "sheet": sheet,
         })
     elif  request.method == "POST":
         refine_form = SchemaRefineForm(request.POST)
         if not refine_form.is_valid():
             return render(request, 'setup-refine-schema.html', {
                 "form": refine_form,
+                "sheet": sheet,
             })
 
         columns = refine_form.cleaned_data["columns"]
         sheet.columns = columns
         sheet.save()
         url = reverse("setup-wait")
-        next = reverse("setup-import")
+        next = reverse("setup-import", args=[sheet.id])
         to = "%s?next=%s&token=%s" % (url, next, sheet.token)
         return redirect(to)
 
 
+@login_required
 def setup_begin(request):
     """
     Entry point for setting up the rest of the system. At this point
@@ -504,7 +516,7 @@ def setup_begin(request):
         fixed_models_py = fix_models_py(models_py)
         # TODO: convert models.py to JSON
         sheet = build_sheet_object(fixed_models_py, name, share_url)
-        return redirect('setup-refine-schema')
+        return redirect('setup-refine-schema', sheet.id)
 
 
 def setup_check(request):
@@ -519,7 +531,12 @@ def setup_check(request):
     return redirect('admin')
 
 
-def setup_base(request):
+def root(request):
+    """
+    Landing page for website ("website.tld/"). Checks to see
+    if we have any sheet tables configured and passes this information
+    off to the site.login view (admin login).
+    """
     sheet_count = models.Spreadsheet.objects.count()
     return site.login(request, extra_context={
         "first_login": not sheet_count

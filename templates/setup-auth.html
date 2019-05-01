@@ -2,7 +2,7 @@
 {% load i18n static %}
 
 {% block title %}
-System Setup | {{ block.super }}
+Configure Sign In | {{ block.super }}
 {% endblock %}
 
 {% block content %}
@@ -13,11 +13,16 @@ System Setup | {{ block.super }}
       <p>
       Please set a strong password for the admin account.
       </p>
+      <input type="text"
+             autocomplete="username"
+             value="admin"
+             style="display: none">
       <p>
           <label for="password">Enter password</label>
           <input name="password"
                  type="password"
                  required
+                 autocomplete="new-password"
                  placeholder="Enter password..." />
       </p>
       <p>
@@ -25,6 +30,7 @@ System Setup | {{ block.super }}
           <input name="password_confirm"
                  type="password"
                  required
+                 autocomplete="new-password"
                  placeholder="Enter password again..." />
       </p>
     </div>
@@ -88,9 +94,9 @@ System Setup | {{ block.super }}
         </p>
       </div>
     </div>
+    {% csrf_token %}
     <div class="continue">
         <input type="submit" value="{% trans 'Continue' %}" />
     </div>
-    {% csrf_token %}
   </form>
 {% endblock %}
