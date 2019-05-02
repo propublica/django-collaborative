@@ -20,17 +20,16 @@ def begin(request):
     """
     if request.method == "GET":
         # Don't go back into this flow if we've already done it
-        sheet_count = models.DynamicModel.objects.count()
-        if sheet_count and sheet_count > 0:
+        models_count = models.DynamicModel.objects.count()
+        if models_count:
             return redirect('/admin/')
-        return render(request, 'setup-begin.html', {})
+        return render(request, 'begin.html', {})
     elif  request.method == "POST":
         # get params from request
         name = request.POST.get("name")
         csv_url = request.POST.get("csv_url")
-        sheet = from_csv_url(name, csv_url)
-        print("Sheet", sheet)
-        return redirect('csv_models:refine-schema', sheet.id)
+        dynmodel = from_csv_url(name, csv_url)
+        return redirect('csv_models:refine-schema', dynmodel.id)
 
 
 @login_required
@@ -44,16 +43,16 @@ def refine_schema(request, id):
         refine_form = SchemaRefineForm({
             "columns": dynmodel.columns
         })
-        return render(request, 'setup-refine-schema.html', {
+        return render(request, 'refine-schema.html', {
             "form": refine_form,
-            "sheet": dynmodel,
+            "dynmodel": dynmodel,
         })
     elif  request.method == "POST":
         refine_form = SchemaRefineForm(request.POST)
         if not refine_form.is_valid():
-            return render(request, 'setup-refine-schema.html', {
+            return render(request, 'refine-schema.html', {
                 "form": refine_form,
-                "sheet": dynmodel,
+                "dynmodel": dynmodel,
             })
 
         columns = refine_form.cleaned_data["columns"]
@@ -69,6 +68,7 @@ def refine_schema(request, id):
         print("Redirecting to", to)
         return redirect(to)
 
+
 @login_required
 def import_data(request, id):
     """
@@ -83,8 +83,8 @@ def import_data(request, id):
     """
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
     if request.method == "GET":
-        return render(request, 'setup-import.html', {
-            "sheet": dynmodel
+        return render(request, 'import-data.html', {
+            "dynmodel": dynmodel
         })
     elif request.method == "POST":
         next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
@@ -93,9 +93,9 @@ def import_data(request, id):
         csv = fetch_csv(csv_url)
         errors = import_records(csv, Model, dynmodel)
         if errors:
-            return render(request, 'setup-import.html', {
+            return render(request, 'import-data.html', {
                 "errors": errors,
-                "sheet": dynmodel,
+                "dynmodel": dynmodel,
             })
         if next:
             return redirect(next)
@@ -104,4 +104,3 @@ def import_data(request, id):
             "dynmodel": dynmodel,
             "n_records": Model.objects.count(),
         })
-

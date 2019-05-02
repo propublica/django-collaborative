@@ -16,11 +16,11 @@ setTimeout(done, 2500);
 
 {% block content %}
 <h2>Import Data</h2>
-<form action="{% url 'csv_models:import-data' sheet.id %}" method="POST">
+<form action="{% url 'csv_models:import-data' dynmodel.id %}" method="POST">
     {% if not errors %}
     <p>
     {% blocktrans trimmed %}
-        We are about to import responses from the sheet into the system.
+        We are about to import data from the sheet into the system.
         You will be redirected shortly.
     {% endblocktrans %}
     </p>

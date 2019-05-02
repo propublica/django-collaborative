@@ -51,7 +51,7 @@ def wait(request):
     next = request.GET["next"] # required
     token = request.GET["token"] # required
     sheet = get_object_or_404(DynamicModel, token=token)
-    return render(request, 'setup-wait.html', {
+    return render(request, 'wait.html', {
         "next": next,
         "token": token,
     })
