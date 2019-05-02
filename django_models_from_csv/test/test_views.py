@@ -372,4 +372,3 @@ class ImportViewTestCase(ViewsTestCaseBase):
 #        # make sure the field was actually updated
 #        Model = getattr(csv_models, dynmodel.name)
 #        self.assertEqual(Model.objects.count(), 1)
-#

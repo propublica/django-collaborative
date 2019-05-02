@@ -87,9 +87,9 @@ def run_migrate():
 
 def make_and_apply_migrations():
     """
-    Runs the equivalent of makemigrations on our collaborative
-    models.py and then applies he migrations via migrate.
+    Runs the equivalent of makemigrations on our dynamic
+    models.py and then applies the migrations via migrate.
     """
     # TODO: replace with migration-less DB management
-    run_makemigrations("collaborative")
+    run_makemigrations("django_models_from_csv")
     run_migrate()

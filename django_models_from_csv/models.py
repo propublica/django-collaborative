@@ -38,7 +38,7 @@ FIELD_TYPES = {
 }
 
 
-def random_token(length):
+def random_token(length=16):
     return User.objects.make_random_password(length=length)
 
 
@@ -51,7 +51,8 @@ class DynamicModel(models.Model):
     columns = ColumnsField(null=True, blank=True)
     token = models.CharField(
         max_length=16,
-        default=lambda: random_token(16),
+        null=True, blank=True,
+        default=random_token,
     )
 
     def __unicode__(self):

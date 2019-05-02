@@ -42,7 +42,7 @@ const startWait = () => {
 const triggerMigrations = () => {
   const urlParams = new URLSearchParams(window.location.search);
   const token = urlParams.get('token');
-  httpPost("/setup-migrate/", token, startWait);
+  httpPost("{% url 'csv_models:migrate' %}", token, startWait);
 };
 setTimeout(triggerMigrations, 2000);
 </script>
