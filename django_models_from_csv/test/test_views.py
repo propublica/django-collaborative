@@ -323,7 +323,7 @@ class ImportViewTestCase(ViewsTestCaseBase):
         self.assertEqual(response.status_code, 302)
 
     @skip("Until we can get the dynamic models created in test")
-    @patch("django_models_from_csv.views.dynmodel.fetch_csv")
+    @patch("django_models_from_csv.views.configuration.fetch_csv")
     def test_can_load_import_records_page(self, fetch_csv):
         fetch_csv.return_value = self.csv
         to_url = reverse(
