@@ -7,7 +7,7 @@ System Setup | {{ block.super }}
 
 {% block content %}
 <h2>System Setup</h2>
-<form action="{% url 'setup-begin' %}" method="POST">
+<form action="{% url 'db-config:begin' %}" method="POST">
     <div class="base-config">
         {% trans 'Google Sheet URL' as sheets_label %}
         <label for="csv_url">{{ sheets_label }}</label>

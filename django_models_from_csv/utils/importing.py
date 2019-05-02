@@ -1,6 +1,9 @@
 from import_export.resources import modelresource_factory
 from tablib import Dataset
 
+from django_models_from_csv import models
+from django_models_from_csv.utils.csv import fetch_csv
+
 
 def import_records_list(csv, dynmodel):
     """

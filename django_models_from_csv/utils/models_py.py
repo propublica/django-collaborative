@@ -111,31 +111,3 @@ def extract_field_type(declaration_str):
     # TODO: default here? or use default dict in TYPE_TO_FIELDNAME
     type_name = TYPE_TO_FIELDNAME[field_class_str]
     return type_name
-
-
-# TODO: move this into DynamicModel.from_models_py(...)
-def build_sheet_object(models_py, model_name, csv_url):
-    """
-    Convert a generated models.py document to a DynamicModel with
-    the specified name and URL to a source CSV.
-    """
-    fields = extract_fields(models_py)
-    columns = []
-    for name, declaration in fields.items():
-        kwargs = extract_field_declaration_args(declaration)
-        field_type = extract_field_type(declaration)
-        original_name = kwargs.pop("db_column")
-        columns.append({
-            "name": name,
-            "original_name": original_name,
-            "type": field_type,
-            "attrs": kwargs,
-        })
-    sheet = DynamicModel(
-        name = model_name,
-        csv_url = csv_url,
-        columns = columns,
-        token = User.objects.make_random_password(length=16),
-    )
-    sheet.save()
-    return sheet

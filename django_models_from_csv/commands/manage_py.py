@@ -72,3 +72,13 @@ def run_migrate():
         'fake_initial': False,
     }
     migrate_cmd.handle(*args, **options)
+
+
+def make_and_apply_migrations():
+    """
+    Runs the equivalent of makemigrations on our collaborative
+    models.py and then applies he migrations via migrate.
+    """
+    # TODO: replace with migration-less DB management
+    run_makemigrations("collaborative")
+    run_migrate()

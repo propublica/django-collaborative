@@ -12,7 +12,7 @@ def redirect_wizard_or_admin(request):
     """
     sheet_count = DynamicModel.objects.count()
     if not sheet_count:
-        return redirect('setup-begin')
+        return redirect('db-config:begin')
     return redirect('admin')
 
 
