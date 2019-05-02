@@ -7,14 +7,14 @@ System Setup | {{ block.super }}
 
 {% block content %}
 <h2>System Setup</h2>
-<form action="{% url 'setup-begin' %}" method="POST">
+<form action="{% url 'db-config:begin' %}" method="POST">
     <div class="base-config">
         {% trans 'Google Sheet URL' as sheets_label %}
-        <label for="share_url">{{ sheets_label }}</label>
-        <input name="share_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
+        <label for="csv_url">{{ sheets_label }}</label>
+        <input name="csv_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
     </div>
     <div>
-        {% trans 'Label this spreadsheet' as name_label %}
+        {% trans 'Label this data source' as name_label %}
         <label for="name">{{ name_label }}</label>
         <input name="name" type="text" placeholder="Enter name..." required />
     </div>

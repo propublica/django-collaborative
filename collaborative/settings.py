@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.forms',
 
     'social_django',
+    'django_models_from_csv',
     'collaborative',
 ]
 
@@ -79,6 +80,8 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 
 WSGI_APPLICATION = 'collaborative.wsgi.application'
 
+CSV_MODELS_TEMP_DB = "schemabuilding"
+CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-auth/"
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
@@ -88,12 +91,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     },
-    'schemabuilding': {
+    CSV_MODELS_TEMP_DB: {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': ':memory:',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

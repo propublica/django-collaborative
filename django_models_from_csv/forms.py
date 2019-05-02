@@ -1,9 +1,9 @@
 from django import forms
 from jsonfield.forms import JSONFormField
 
-from collaborative.widgets import ColumnsWidget
-from collaborative.fields import ColumnsField
-from collaborative.validators import validate_columns, COLUMN_TYPES
+from django_models_from_csv.widgets import ColumnsWidget
+from django_models_from_csv.fields import ColumnsField
+from django_models_from_csv.validators import validate_columns, COLUMN_TYPES
 
 
 class ColumnsFormField(JSONFormField):
@@ -22,4 +22,4 @@ class ColumnsFormField(JSONFormField):
 
 
 class SchemaRefineForm(forms.Form):
-    columns = ColumnsFormField(label="Spreadsheet columns")
+    columns = ColumnsFormField(label="DynamicModel columns")

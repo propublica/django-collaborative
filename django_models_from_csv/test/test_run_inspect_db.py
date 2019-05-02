@@ -2,13 +2,19 @@ import re
 
 from django.test import TestCase
 
-from collaborative.views.setup import (
-    extract_key_from_share_url,
-    execute_sql, models_py_from_database, fix_models_py
-)
+from django_models_from_csv.utils.models_py import fix_models_py
+from django_models_from_csv.utils.dynmodel import execute_sql
+from django_models_from_csv.commands.manage_py import run_inspectdb
 
 
-class SchemaBuildingTestCase(TestCase):
+class RunInspectDBTestCase(TestCase):
+    """
+    Test the inspectdb command, which turns a SQL CREATE TABLE instruction
+    into a models.py Python script. We also test the fix_models_py command
+    which cleans up the very messy models.py script that gets outputted. We're
+    testing these two together so we don't have to do all the DB bootstrapping
+    elsewhere, also.
+    """
     databases = ["schemabuilding"]
 
     def setUp(self):
@@ -30,11 +36,6 @@ CREATE TABLE %s (
         "What time?" VARCHAR NOT NULL
 );
 """ % self.table_name
-        self.share_url = "https://docs.google.com/spreadsheets/d/18I8_so8_lCWEQLZ8LsBfOgz_SRRSIokZ06duc/edit?usp=sharing"
-
-    def test_can_extract_key_from_share_url(self):
-        key = extract_key_from_share_url(self.share_url)
-        self.assertEqual(key, "18I8_so8_lCWEQLZ8LsBfOgz_SRRSIokZ06duc")
 
     def test_can_execute_sql_against_secondary_db(self):
         table_name = execute_sql(self.create_table)
@@ -42,7 +43,7 @@ CREATE TABLE %s (
 
     def test_can_run_inspectdb_against_secondary_db(self):
         execute_sql(self.create_table)
-        models_py = models_py_from_database(table_name=self.table_name)
+        models_py = run_inspectdb(table_name=self.table_name)
         print("Generated models.py", models_py)
         self.assertIsNot(models_py, None)
         self.assertGreater(len(models_py), 0)
@@ -52,7 +53,7 @@ CREATE TABLE %s (
 
     def test_fix_models_py(self):
         execute_sql(self.create_table)
-        models_py = models_py_from_database(table_name=self.table_name)
+        models_py = run_inspectdb(table_name=self.table_name)
 
         fixed_models_py = fix_models_py(models_py)
         print("fixed_models_py", fixed_models_py)

@@ -4,6 +4,7 @@ from django.conf.urls import include, url
 from django.urls import path
 
 
+from collaborative.views import redirect_wizard_or_admin, root
 from collaborative import views
 
 
@@ -14,24 +15,14 @@ urlpatterns = [
     # Authentication & Redirection to Wizard URLs
     path('admin/', admin.site.urls),
     path('request-access/', views.request_access, name='request-access'),
-    path('setup-check/', views.setup_check, name='setup-check'),
+    path('setup-check/', views.redirect_wizard_or_admin, name='setup-check'),
 
-    # Create a new sheet table (enters wizard)
-    path('setup-begin/', views.setup_begin, name='setup-begin'),
-    # Build the database table from the sheet
-    path('setup-refine-schema/<int:id>/', views.setup_refine_schema,
-         name='setup-refine-schema'),
-    # Import data from sheet into table
-    path('setup-import/<int:id>/', views.setup_import,
-         name='setup-import'),
+    # DB Schema & CSV Importing Endpoints (can be used to edit, too)
+    path('db-config/',
+         include('django_models_from_csv.urls', namespace="db-config")),
 
     # Setup password and OAuth
     path('setup-auth/', views.setup_auth, name='setup-auth'),
     # Success page
     path('setup-complete/', views.setup_complete, name='setup-complete'),
-
-    # Waits for migration to run, redirects to next page
-    path('setup-wait/', views.setup_wait, name='setup-wait'),
-    # API call to create and run migrations
-    path('setup-migrate/', views.setup_migrate, name='setup-migrate'),
 ]
