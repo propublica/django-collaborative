@@ -96,7 +96,7 @@ DATABASES = {
 }
 
 CSV_MODELS_TEMP_DB = "schemabuilding"
-
+CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-auth/"
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators

@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from django_models_from_csv import models
 from django_models_from_csv.forms import SchemaRefineForm
+from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.importing import import_records
 from django_models_from_csv.utils.dynmodel import from_csv_url
@@ -86,7 +87,7 @@ def import_data(request, id):
             "sheet": dynmodel
         })
     elif request.method == "POST":
-        next = request.GET.get('next')
+        next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
         csv_url = dynmodel.csv_url
         Model = getattr(models, dynmodel.name)
         csv = fetch_csv(csv_url)

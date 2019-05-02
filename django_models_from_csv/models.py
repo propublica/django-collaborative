@@ -73,7 +73,7 @@ def create_model_attrs(dynmodel):
     """
     model_name = dynmodel.name
     attrs = {
-        "__module__": 'collaborative.models.%s' % model_name,
+        "__module__": 'django_models_from_csv.models.%s' % model_name,
     }
 
     if type(dynmodel.columns) != list:
