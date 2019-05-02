@@ -10,8 +10,8 @@ System Setup | {{ block.super }}
 <form action="{% url 'setup-begin' %}" method="POST">
     <div class="base-config">
         {% trans 'Google Sheet URL' as sheets_label %}
-        <label for="share_url">{{ sheets_label }}</label>
-        <input name="share_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
+        <label for="csv_url">{{ sheets_label }}</label>
+        <input name="csv_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
     </div>
     <div>
         {% trans 'Label this spreadsheet' as name_label %}

@@ -12,7 +12,7 @@ try:
 except ImportError:
     import six
 
-from collaborative.fields import ColumnsField
+from django_models_from_csv.fields import ColumnsField
 
 
 logger = logging.getLogger(__name__)
@@ -36,17 +36,17 @@ FIELD_TYPES = {
     "number": models.IntegerField,
 }
 
-class Spreadsheet(models.Model):
+class DynamicModel(models.Model):
     """
-    The model representation of a source data spreadsheet.
+    The managed database model representing the data in a CSV file.
     """
     name = models.TextField(max_length=255)
-    share_url = models.URLField(null=True, blank=True)
+    csv_url = models.URLField(null=True, blank=True)
     columns = ColumnsField(null=True, blank=True)
     token = models.CharField(max_length=16, null=True, blank=True)
 
     def __unicode__(self):
-        return "Spreadsheet: %s" % self.name
+        return "Dynamic Model: %s" % self.name
 
     def csv_header_to_model_header(self, header):
         for column in self.columns:
@@ -54,21 +54,21 @@ class Spreadsheet(models.Model):
                 return column["name"]
 
 
-def create_model_attrs(spreadsheet):
+def create_model_attrs(dynmodel):
     """
     Build an individual model's attributes, specified by the
-    Spreadsheet object (and JSON columns).
+    DynamicModel object (and JSON columns).
     """
-    model_name = spreadsheet.name
+    model_name = dynmodel.name
     attrs = {
         "__module__": 'collaborative.models.%s' % model_name,
     }
 
-    if type(spreadsheet.columns) != list:
+    if type(dynmodel.columns) != list:
         return None
 
     original_to_model_headers = {}
-    for column in spreadsheet.columns:
+    for column in dynmodel.columns:
         column_name = column.get("name")
         og_column_name = column.get("original_name")
         column_type = column.get("type")
@@ -88,22 +88,22 @@ def create_model_attrs(spreadsheet):
 
 def create_models():
     """
-    Build & register models from the spreadsheet model descriptions found
+    Build & register models from the DynamicModel descriptions found
     in our database.
     """
-    for sheet in Spreadsheet.objects.all():
-        attrs = create_model_attrs(sheet)
-        model_name = sheet.name
+    for dynmodel in DynamicModel.objects.all():
+        attrs = create_model_attrs(dynmodel)
+        model_name = dynmodel.name
 
         if not attrs:
             logger.warn(
-                "WARNING: skipping model: %s. bad columns record" % sheet.name)
+                "WARNING: skipping model: %s. bad columns record" % dynmodel.name)
             continue
 
         # we have no fields defined
         if len(attrs.keys()) <= 2:
             logger.warn(
-                "WARNING: skipping model: %s. not enough columns" % sheet.name)
+                "WARNING: skipping model: %s. not enough columns" % dynmodel.name)
             continue
 
         # set DynRow w/o specifying it here

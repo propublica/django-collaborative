@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.forms',
 
     'social_django',
+    'django_models_from_csv',
     'collaborative',
 ]
 
@@ -93,6 +94,8 @@ DATABASES = {
         'NAME': ':memory:',
     }
 }
+
+CSV_MODELS_TEMP_DB = "schemabuilding"
 
 
 # Password validation

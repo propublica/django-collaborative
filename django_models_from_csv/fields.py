@@ -4,8 +4,8 @@ from jsonfield.widgets import JSONWidget
 from jsonfield.forms import JSONFormField
 from jsonfield.fields import JSONField
 
-from collaborative.widgets import ColumnsWidget
-from collaborative.validators import validate_columns, COLUMN_TYPES
+from django_models_from_csv.widgets import ColumnsWidget
+from django_models_from_csv.validators import validate_columns, COLUMN_TYPES
 
 
 class ColumnsField(JSONField):
