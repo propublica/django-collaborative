@@ -32,7 +32,7 @@ def migrate(request):
     if not token:
         return HttpResponseBadRequest("Bad token provided")
     # security check
-    sheet = get_object_or_404(models.DynamicModel, token=token)
+    sheet = get_object_or_404(DynamicModel, token=token)
     sheet.token = None
     sheet.save()
     create_models()
@@ -50,7 +50,7 @@ def wait(request):
     """
     next = request.GET["next"] # required
     token = request.GET["token"] # required
-    sheet = get_object_or_404(models.DynamicModel, token=token)
+    sheet = get_object_or_404(DynamicModel, token=token)
     return render(request, 'setup-wait.html', {
         "next": next,
         "token": token,

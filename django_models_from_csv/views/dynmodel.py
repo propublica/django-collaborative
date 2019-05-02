@@ -1,46 +1,35 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 
-from django_models_from_csv.forms import SchemaRefineForm
-from django_models_from_csv.utils.importing import import_records
 from django_models_from_csv import models
+from django_models_from_csv.forms import SchemaRefineForm
+from django_models_from_csv.utils.csv import fetch_csv
+from django_models_from_csv.utils.importing import import_records
+from django_models_from_csv.utils.dynmodel import from_csv_url
 
 
 @login_required
-def import_data(request, id):
+def begin(request):
     """
-    Loads the rows found in the dynmodel into the database. This is
-    done once the user has had a chance to change the column names
-    and types. On success, this redirects to the URL specified by
-    the `next` query parameter.
-
-    NOTE: We do the import as a POST as a security precaution. The
-    GET phase isn't really necessary, so the page just POSTs the
-    form automatically via JS on load.
+    Entry point for setting up the rest of the system. At this point
+    the user has logged in using the default login and are now getting
+    ready to configure the database, schema (via Google sheets URL) and
+    any authentication backends (Google Oauth2, Slack, etc).
     """
-    dynmodel = get_object_or_404(models.DynamicModel, id=id)
     if request.method == "GET":
-        return render(request, 'setup-import.html', {
-            "sheet": dynmodel
-        })
-    elif request.method == "POST":
-        next = request.GET.get('next')
-        csv_url = dynmodel.csv_url
-        Model = getattr(models, dynmodel.name)
-        csv = fetch_csv(csv_url)
-        errors = import_records(csv, Model, dynmodel)
-        if errors:
-            return render(request, 'setup-import.html', {
-                "errors": errors,
-                "sheet": sheet,
-            })
-        if next:
-            return redirect(next)
-        # TODO: implment this
-        return render(request, "import-complete.html", {
-            "dynmodel": dynmodel,
-            "n_records": Model.objects.count(),
-        })
+        # Don't go back into this flow if we've already done it
+        sheet_count = models.DynamicModel.objects.count()
+        if sheet_count and sheet_count > 0:
+            return redirect('/admin/')
+        return render(request, 'setup-begin.html', {})
+    elif  request.method == "POST":
+        # get params from request
+        name = request.POST.get("name")
+        csv_url = request.POST.get("csv_url")
+        sheet = from_csv_url(name, csv_url)
+        print("Sheet", sheet)
+        return redirect('csv_models:refine-schema', sheet.id)
 
 
 @login_required
@@ -69,29 +58,49 @@ def refine_schema(request, id):
         columns = refine_form.cleaned_data["columns"]
         dynmodel.columns = columns
         dynmodel.save()
-        url = reverse("setup-wait")
-        next = reverse("import-data", args=[dynmodel.id])
+        url = reverse("csv_models:wait")
+        next = reverse("csv_models:import-data", args=[dynmodel.id])
+        # Security: make sure this is never None
+        if not dynmodel.token:
+            dynmodel.token = dynmodel.make_token()
+            dynmodel.save()
         to = "%s?next=%s&token=%s" % (url, next, dynmodel.token)
+        print("Redirecting to", to)
         return redirect(to)
 
-
 @login_required
-def begin(request):
+def import_data(request, id):
     """
-    Entry point for setting up the rest of the system. At this point
-    the user has logged in using the default login and are now getting
-    ready to configure the database, schema (via Google sheets URL) and
-    any authentication backends (Google Oauth2, Slack, etc).
+    Loads the rows found in the dynmodel into the database. This is
+    done once the user has had a chance to change the column names
+    and types. On success, this redirects to the URL specified by
+    the `next` query parameter.
+
+    NOTE: We do the import as a POST as a security precaution. The
+    GET phase isn't really necessary, so the page just POSTs the
+    form automatically via JS on load.
     """
+    dynmodel = get_object_or_404(models.DynamicModel, id=id)
     if request.method == "GET":
-        # Don't go back into this flow if we've already done it
-        sheet_count = models.DynamicModel.objects.count()
-        if sheet_count and sheet_count > 0:
-            return redirect('/admin/')
-        return render(request, 'setup-begin.html', {})
-    elif  request.method == "POST":
-        # get params from request
-        name = request.POST.get("name")
-        csv_url = request.POST.get("csv_url")
-        sheet = from_csv_url(name, csv_url)
-        return redirect('refine-schema', sheet.id)
+        return render(request, 'setup-import.html', {
+            "sheet": dynmodel
+        })
+    elif request.method == "POST":
+        next = request.GET.get('next')
+        csv_url = dynmodel.csv_url
+        Model = getattr(models, dynmodel.name)
+        csv = fetch_csv(csv_url)
+        errors = import_records(csv, Model, dynmodel)
+        if errors:
+            return render(request, 'setup-import.html', {
+                "errors": errors,
+                "sheet": dynmodel,
+            })
+        if next:
+            return redirect(next)
+        # TODO: implment this
+        return render(request, "import-complete.html", {
+            "dynmodel": dynmodel,
+            "n_records": Model.objects.count(),
+        })
+

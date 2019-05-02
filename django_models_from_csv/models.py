@@ -3,6 +3,7 @@ import logging
 import sys
 
 from django import forms
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django import forms
@@ -36,6 +37,11 @@ FIELD_TYPES = {
     "number": models.IntegerField,
 }
 
+
+def random_token(length):
+    return User.objects.make_random_password(length=length)
+
+
 class DynamicModel(models.Model):
     """
     The managed database model representing the data in a CSV file.
@@ -43,7 +49,10 @@ class DynamicModel(models.Model):
     name = models.TextField(max_length=255)
     csv_url = models.URLField(null=True, blank=True)
     columns = ColumnsField(null=True, blank=True)
-    token = models.CharField(max_length=16, null=True, blank=True)
+    token = models.CharField(
+        max_length=16,
+        default=lambda: random_token(16),
+    )
 
     def __unicode__(self):
         return "Dynamic Model: %s" % self.name
@@ -53,6 +62,8 @@ class DynamicModel(models.Model):
             if column["original_name"] == header:
                 return column["name"]
 
+    def make_token(self):
+        return random_token(16)
 
 def create_model_attrs(dynmodel):
     """

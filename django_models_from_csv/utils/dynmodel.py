@@ -7,6 +7,7 @@ from django_models_from_csv.commands.csvsql import run_csvsql
 from django_models_from_csv.commands.manage_py import run_inspectdb
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting
+from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.models_py import (
     fix_models_py, extract_field_declaration_args,
     extract_field_type, extract_fields
@@ -47,24 +48,22 @@ def from_models_py(name, csv_url, models_py):
             "type": field_type,
             "attrs": kwargs,
         })
-    sheet = DynamicModel.objects.create(
+    dynmodel = DynamicModel.objects.create(
         name = name,
         csv_url = csv_url,
         columns = columns,
-        token = User.objects.make_random_password(length=16),
     )
-    return sheet
+    dynmodel.save()
+    return dynmodel
 
 
 def from_csv_url(name, csv_url):
-    # fetch sheet CSV
-    sheet = fetch_sheet(csv_url)
-    # build sql from sheet CSV
-    sql = run_csvsql(sheet)
-    # create these tables in our DB (or new DB?)
+    csv = fetch_csv(csv_url)
+    # build SQL from CSV
+    sql = run_csvsql(csv)
+    # create these tables in our DB
     table_name = execute_sql(sql)
     # build models.py from this DB
     models_py = run_inspectdb(table_name=table_name)
     fixed_models_py = fix_models_py(models_py)
-    sheet = from_models_py(fixed_models_py, name, csv_url)
-    return sheet
+    return from_models_py(name, csv_url, fixed_models_py)

@@ -3,6 +3,9 @@ import re
 import requests
 
 
+SHEETS_BASE = "https://docs.google.com/spreadsheet"
+
+
 def extract_key_from_csv_url(url):
     """
     Extract the Google spreadsheet key from a Google Sheets share URL so
@@ -27,15 +30,16 @@ def fetch_csv(csv_url):
 
     ... and return the corresponding CSV.
     """
-    if "docs.google.com/spreadsheets" in csv_url:
+    url = csv_url
+    if csv_url.startswith(SHEETS_BASE):
         key = extract_key_from_csv_url(csv_url)
-        url = 'https://docs.google.com/spreadsheet/ccc?key=%s&output=csv' % (
-            key
+        url = '{0}/ccc?key={1}&output=csv'.format(
+            SHEETS_BASE, key
         )
-    else:
-        url = csv_url
     r = requests.get(url)
+    print("Response", r)
     data = r.text
+    print("Response data", data)
     return data
 
 

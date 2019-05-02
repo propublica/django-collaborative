@@ -7,7 +7,7 @@ Database Columns | {{ block.super }}
 
 {% block content %}
 <h2>Refine Database</h2>
-<form action="{% url 'setup-refine-schema' sheet.id %}" method="POST">
+<form action="{% url 'csv_models:refine-schema' sheet.id %}" method="POST">
     {% if not errors %}
     <p>
     {% blocktrans trimmed %}

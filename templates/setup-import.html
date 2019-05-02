@@ -16,7 +16,7 @@ setTimeout(done, 2500);
 
 {% block content %}
 <h2>Import Data</h2>
-<form action="{% url 'setup-import' sheet.id %}" method="POST">
+<form action="{% url 'csv_models:import-data' sheet.id %}" method="POST">
     {% if not errors %}
     <p>
     {% blocktrans trimmed %}
