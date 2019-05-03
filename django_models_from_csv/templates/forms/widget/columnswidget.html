@@ -1,0 +1,98 @@
+{% load staticfiles %}
+
+{% block extrahead %}
+  {{ widget.media }}
+  <script type="text/javascript">
+    (function($) {
+      'use strict';
+
+      function updateJSON(widget, event) {
+        let columnsJSON = JSON.parse($("textarea", widget).val());
+        let i = 0;
+        $(".column-selector", widget).each((_, tr) => {
+          const columnDef = {};
+          $(".option", tr).each((_, td) => {
+            const input = $("input", td);
+            if (input) {
+              const name = input.attr("name");
+              const val = input.val();
+              columnsJSON[i][name] = val;
+            }
+            const select = $("select", td);
+            if (select) {
+              const name = select.attr("name");
+              const val = select.val();
+              columnsJSON[i][name] = val;
+            }
+          })
+          i++;
+        })
+        const jsonStr = JSON.stringify(columnsJSON, null, 2);
+        $("textarea", widget).val(jsonStr);
+      }
+
+      function watchChange(widget) {
+        const inputs = $("input", widget);
+        inputs.each((_, input) => {
+          $(input).on("keyup change", updateJSON.bind(this, widget));
+        });
+        const selects = $("select", widget);
+        selects.each((_, sel) => {
+          $(sel).on("keyup change", updateJSON.bind(this, widget));
+        });
+      }
+
+      function main() {
+        const widgets = $(".columns-widget");
+        widgets.each((_, widget) => {
+          watchChange(widget);
+        });
+      }
+
+      $(document).ready(main);
+    })(django.jQuery);
+  </script>
+{% endblock %}
+
+<div class="columns-widget">
+  {% comment %}
+  we need the json.dumps version here, by default, in case the
+  user saves this before editing. the JS of this widget will
+  overwrite this with proper JSON as users modify it
+  {% endcomment %}
+  <textarea style="display:none;"
+     name="{{ widget.name }}"
+     {% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.value %}{{ widget.value }}{% endif %}
+  </textarea>
+
+  {% if widget.value_obj %}
+  <table class="columns-selector-wrapper">
+    {% for column in widget.value_obj %}
+    <tr class="column-selector">
+      {% for key, value in column.items %}
+      <td class="option">
+        {% if key == "name" %}
+        <label for="{{ key }}">Name</label>
+        <input type="text"
+               id="{{ key }}"
+               name="{{ key }}"
+               value="{{ value }}" />
+        {% elif key == "type" %}
+        <label for="{{ key }}">{{ key|capfirst }}</label>
+        <select id="{{ key }}" name="{{ key }}">
+          {% for column_value, column_name in widget.column_types %}
+          <option value="{{ column_value }}"
+                  {% if column_value == value %}selected{% endif %}>
+          {{ column_name }}
+          </option>
+          {% endfor %}
+        </select>
+        {% endif %}
+      </td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+  {% endif %}
+</div>

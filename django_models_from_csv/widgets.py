@@ -19,8 +19,7 @@ class ColumnsWidget(JSONWidget):
             'admin/js/vendor/jquery/jquery%s.js' % extra,
             'admin/js/jquery.init.js',
             'admin/js/core.js',
-            # TODO: move this into django_models_from_csv
-            'collaborative/forms/widgets/columnswidget.js',
+            # 'django_models_from_csv/forms/widgets/columnswidget.js',
         )
 
     def __init__(self, column_types, *args, **kwargs):
