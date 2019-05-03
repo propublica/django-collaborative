@@ -8,12 +8,13 @@ COLUMN_TYPES = (
     ("time",     "Time field"),
     ("datetime", "Date and time field"),
     ("number",   "Number field"),
+    ("foreignkey",   "Associated Table"),
 )
 REQUIRED_FIELDS = (
-    "name", "type", "original_name", "type"
+    "name", "type", "type"
 )
 ALL_FIELDS = REQUIRED_FIELDS + (
-    "attrs",
+    "attrs", "original_name", "args",
 )
 
 

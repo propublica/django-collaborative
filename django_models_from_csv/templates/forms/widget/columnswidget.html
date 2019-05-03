@@ -28,7 +28,8 @@
           i++;
         })
         const jsonStr = JSON.stringify(columnsJSON, null, 2);
-        $("textarea", widget).val(jsonStr);
+        const textArea = $("textarea", widget);
+        textArea.val(jsonStr);
       }
 
       function watchChange(widget) {
@@ -69,18 +70,17 @@
   {% if widget.value_obj %}
   <table class="columns-selector-wrapper">
     {% for column in widget.value_obj %}
+    {% if column.original_name %}
     <tr class="column-selector">
-      {% for key, value in column.items %}
       <td class="option">
-        {% if key == "name" %}
-        <label for="{{ key }}">Name</label>
+        <label for="name">Name</label>
         <input type="text"
-               id="{{ key }}"
-               name="{{ key }}"
-               value="{{ value }}" />
-        {% elif key == "type" %}
-        <label for="{{ key }}">{{ key|capfirst }}</label>
-        <select id="{{ key }}" name="{{ key }}">
+               id="name"
+               name="name"
+               value="{{ column.name }}" />
+
+        <label for="type">{{ key|capfirst }}</label>
+        <select id="type" name="type">
           {% for column_value, column_name in widget.column_types %}
           <option value="{{ column_value }}"
                   {% if column_value == value %}selected{% endif %}>
@@ -88,10 +88,9 @@
           </option>
           {% endfor %}
         </select>
-        {% endif %}
       </td>
-      {% endfor %}
     </tr>
+    {% endif %}
     {% endfor %}
   </table>
   {% endif %}

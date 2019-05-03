@@ -32,7 +32,7 @@ class ModelsPyConversionTestCase(TestCase):
         fields = extract_fields(self.models_py)
         self.assertTrue(fields)
         field_names = list(fields.keys())
-        self.assertEqual(len(field_names), 13)
+        self.assertGreaterEqual(len(field_names), 13)
         self.assertEqual(field_names[0], "timestamp")
         self.assertEqual(field_names[-1], "what_time_field")
 
@@ -61,12 +61,12 @@ class ModelsPyConversionTestCase(TestCase):
         self.assertEqual(sheet.name, model_name)
         self.assertEqual(sheet.csv_url, csv_url)
         self.assertTrue(type(sheet.columns), list)
-        self.assertEqual(len(sheet.columns), 13)
+        self.assertGreaterEqual(len(sheet.columns), 13)
         self.assertEqual(sheet.columns[0]["name"], "timestamp")
         self.assertEqual(sheet.columns[0]["original_name"], "Timestamp")
         self.assertEqual(sheet.columns[0]["type"], "text")
         # we removed db_column, that's the CSV header name,
         # so we have two remaining field kwargs
         self.assertEqual(len(sheet.columns[0]["attrs"].keys()), 2)
-        self.assertEqual(sheet.columns[-2]["name"], "what_date_field")
-        self.assertEqual(sheet.columns[-2]["type"], "date")
+        self.assertEqual(sheet.columns[-3]["name"], "what_date_field")
+        self.assertEqual(sheet.columns[-3]["type"], "date")

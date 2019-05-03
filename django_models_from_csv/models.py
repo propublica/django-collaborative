@@ -27,14 +27,20 @@ TYPE_TO_FIELDNAME = {
     "models.DateTimeField": "datetime",
     "models.IntegerField": "number",
     "models.CharField": "text",
+    "models.ForeignKey": "foreignkey",
 }
-# configurable field types for dynamic models
+# configurable field types for dynamic models.
+# any that aren't above, but are below will be
+# possible to create in the code/by modifying
+# the columns JSON directly, but will not be
+# shown to users as a dropdown field type.
 FIELD_TYPES = {
     "text": models.TextField,
     "date": models.DateField,
     "time": models.TimeField,
     "datetime": models.DateTimeField,
     "number": models.IntegerField,
+    "foreignkey": models.ForeignKey,
 }
 
 
@@ -60,11 +66,12 @@ class DynamicModel(models.Model):
 
     def csv_header_to_model_header(self, header):
         for column in self.columns:
-            if column["original_name"] == header:
+            if column.get("original_name") == header:
                 return column["name"]
 
     def make_token(self):
         return random_token(16)
+
 
 def create_model_attrs(dynmodel):
     """
@@ -84,6 +91,7 @@ def create_model_attrs(dynmodel):
         column_name = column.get("name")
         og_column_name = column.get("original_name")
         column_type = column.get("type")
+        column_args = column.get("args", [])
         column_attrs = column.get("attrs", {})
 
         if not column_name or not column_type:
@@ -92,7 +100,7 @@ def create_model_attrs(dynmodel):
         original_to_model_headers[og_column_name] = column_name
 
         Field = FIELD_TYPES[column_type]
-        attrs[column_name] = Field(**column_attrs)
+        attrs[column_name] = Field(*column_args, **column_attrs)
 
     attrs["HEADERS_LOOKUP"] = original_to_model_headers
     return attrs

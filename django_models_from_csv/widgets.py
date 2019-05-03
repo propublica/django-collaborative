@@ -4,6 +4,7 @@ from django import forms
 from django.conf import settings
 from jsonfield.widgets import JSONWidget
 
+
 try:
     from django.utils import six
 except ImportError:

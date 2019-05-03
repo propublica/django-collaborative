@@ -153,7 +153,7 @@ class BeginViewTestCase(ViewsTestCaseBase):
             'csv_models:refine-schema', args=[new_dynmodel.id]
         )
         self.assertTrue(new_dynmodel.columns)
-        self.assertEqual(len(new_dynmodel.columns), 13)
+        self.assertGreaterEqual(len(new_dynmodel.columns), 13)
         self.assertRedirects(response, to_url)
         new_dynmodel.delete()
 

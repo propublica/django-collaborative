@@ -31,7 +31,7 @@ class ModelDynamicCreationTestCase(TestCase):
         attrs = create_model_attrs(self.dynmodel)
         self.assertTrue(attrs.get("__module__"))
         self.assertTrue(attrs.get("HEADERS_LOOKUP"))
-        self.assertEqual(len(attrs.keys()), 4)
+        self.assertGreaterEqual(len(attrs.keys()), 4)
 
     def test_can_build_model_from_dynmodel_object(self):
         create_models()
