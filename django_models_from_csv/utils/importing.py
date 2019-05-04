@@ -18,10 +18,6 @@ def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None)
 
     Meta = type(str('Meta'), (object,), attrs)
 
-    print("^"*100)
-    print(dir(Meta))
-    print("^"*100)
-
     class_name = model.__name__ + str('Resource')
 
     class_attrs = {

@@ -37,9 +37,7 @@ def fetch_csv(csv_url):
             SHEETS_BASE, key
         )
     r = requests.get(url)
-    print("Response", r)
     data = r.text
-    print("Response data", data)
     return data
 
 

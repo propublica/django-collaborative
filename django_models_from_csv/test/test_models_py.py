@@ -68,5 +68,5 @@ class ModelsPyConversionTestCase(TestCase):
         # we removed db_column, that's the CSV header name,
         # so we have two remaining field kwargs
         self.assertEqual(len(sheet.columns[0]["attrs"].keys()), 2)
-        self.assertEqual(sheet.columns[-3]["name"], "what_date_field")
-        self.assertEqual(sheet.columns[-3]["type"], "date")
+        self.assertEqual(sheet.columns[-2]["name"], "what_date_field")
+        self.assertEqual(sheet.columns[-2]["type"], "date")

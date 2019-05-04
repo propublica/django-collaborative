@@ -3,12 +3,13 @@ from django.utils.translation import gettext_lazy as _
 
 
 COLUMN_TYPES = (
-    ("text",     "Text field"),
-    ("date",     "Date field"),
-    ("time",     "Time field"),
+    ("text", "Textbox field"),
+    ("short-text", "Text field"),
+    ("date", "Date field"),
+    ("time", "Time field"),
     ("datetime", "Date and time field"),
-    ("number",   "Number field"),
-    ("foreignkey",   "Associated Table"),
+    ("number", "Number field"),
+    ("foreignkey", "Associated Table"),
 )
 REQUIRED_FIELDS = (
     "name", "type", "type"

@@ -53,7 +53,7 @@ def from_models_py(name, csv_url, models_py):
         csv_url = csv_url,
         columns = columns,
     )
-    dynmodel.save()
+    # dynmodel.save()
     return dynmodel
 
 
