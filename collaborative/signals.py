@@ -76,26 +76,28 @@ def build_and_link_metadata_fk(sender, **kwargs):
         dyn_metamodel.save()
 
 
-def attach_blank_meta_to_record(sender, **kwargs):
+def attach_blank_meta_to_record(sender, instance, **kwargs):
     """
     These signals manage inserting blank metadata foreignkeys to
-    new records upon their creation.
+    new records upon their creation. This signal handler assumes
+    its only provided Models that are backed by a CSV (not manually
+    managed).
     """
-    record = kwargs.get("instance")
-    if not record:
+    if not instance:
         return
 
-    if not hasattr(record, "metadata_id"):
+    meta_model_name = "%sMetadata" % instance._meta.object_name
+    MetaModel = getattr(models, meta_model_name)
+    meta_direct_count = MetaModel.objects.filter(
+        metadata__id=instance.id
+    ).count()
+    if meta_direct_count:
         return
 
-    # get the record's model declaration
-    # check if it's a CSV model
-    # if not, return
-    # get metadata model
-    # lookup metadata record for this record
-    # if found, return
     # create a blank metadata record
-    # create a FK on the metadata -> this record
+    metadata = MetaModel.objects.create(
+        metadata=instance
+    )
 
 
 def setup_dynmodel_signals():
@@ -106,7 +108,7 @@ def setup_dynmodel_signals():
         if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
             continue
         Model = getattr(models, dynmodel.name)
-        pre_save.connect(attach_blank_meta_to_record, sender=Model)
+        post_save.connect(attach_blank_meta_to_record, sender=Model)
 
 
 try:
