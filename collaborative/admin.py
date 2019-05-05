@@ -4,7 +4,7 @@ from django.contrib.admin.models import LogEntry
 from django.apps import apps
 from import_export.resources import modelresource_factory
 
-from collaborative.models import Metadata, Contact
+from collaborative.models import Contact
 # from django_models_from_csv.models import FormResponse
 
 UserAdmin.list_display = ("username","email","first_name","last_name")

@@ -5,7 +5,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from collaborative.models import (
-    get_metamodel_name, Metadata, MODEL_TYPES, DEFAULT_META_COLUMNS
+    get_metamodel_name, MODEL_TYPES, DEFAULT_META_COLUMNS
 )
 from collaborative.user import set_staff_status
 from django_models_from_csv import models
