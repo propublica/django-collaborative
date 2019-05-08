@@ -55,4 +55,3 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
 AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
 admin.site.register(LogEntry)
-

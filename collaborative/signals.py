@@ -1,4 +1,5 @@
 from copy import copy
+import logging
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
@@ -9,6 +10,9 @@ from collaborative.models import (
 )
 from collaborative.user import set_staff_status
 from django_models_from_csv import models
+
+
+logger = logging.getLogger(__name__)
 
 
 @receiver(post_save, sender=User)
@@ -35,6 +39,17 @@ def tag_csv_dynmodel(dynmodel):
 
 @receiver(pre_save, sender=models.DynamicModel)
 def build_and_link_metadata_fk(sender, **kwargs):
+    """
+    This signal listens for the creation of a new dynamically-generated
+    CSV-backed model. When it finds one, it will automatically create a
+    corresponding Metadata model (if it doesn't already exist) with the
+    proper defaults and also add a foreign key relationship pointing
+    to the CSV-backed model.
+
+    This allows us to inline metadata models inside the CSV-backed model
+    admin detail page, without messing with the CSV-backed records at all.
+    (Since the FK is on the metadata side.)
+    """
     dynmodel = kwargs.get("instance")
     if not dynmodel:
         return
@@ -78,7 +93,10 @@ def build_and_link_metadata_fk(sender, **kwargs):
 
 def attach_blank_meta_to_record(sender, instance, **kwargs):
     """
-    These signals manage inserting blank metadata foreignkeys to
+    This signal gets ran when a new CSV-backed form response record
+    gets added to the system.
+
+    Here, we manage creating & linking blank metadata foreignkeys to
     new records upon their creation. This signal handler assumes
     its only provided Models that are backed by a CSV (not manually
     managed).
@@ -102,7 +120,9 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
 
 def setup_dynmodel_signals():
     """
-    Attach signals to our dynamically generated models.
+    Attach signals to our dynamically generated models. Here, we
+    only attach dynamically-generated signals to non-CSV backed
+    models.
     """
     for dynmodel in models.DynamicModel.objects.all():
         if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
@@ -114,4 +134,4 @@ def setup_dynmodel_signals():
 try:
     setup_dynmodel_signals()
 except Exception as e:
-    print("[!] Error loading signals: %s" % e)
+    logger.error("[!] Error loading signals: %s" % e)
