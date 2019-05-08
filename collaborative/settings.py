@@ -82,6 +82,7 @@ WSGI_APPLICATION = 'collaborative.wsgi.application'
 
 CSV_MODELS_TEMP_DB = "schemabuilding"
 CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-auth/"
+CSV_MODELS_AUTO_REGISTER_ADMIN = False
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases

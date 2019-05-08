@@ -4,6 +4,8 @@ from django.apps import apps
 from django.contrib import admin
 from import_export.resources import modelresource_factory
 
+from django_models_from_csv.utils.common import get_setting
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +19,14 @@ class AdminAutoRegistration:
     """
     def __init__(self, include="django_models_from_csv.models"):
         self.include = include
+        self.all_models = apps.get_models()
 
     def attempt_register(self, Model, ModelAdmin):
         try:
             admin.site.register(Model, ModelAdmin)
         except admin.sites.AlreadyRegistered:
             logger.warn("WARNING! Not registering model: %s. Already exists." % (
-                model_str
+                str(Model)
             ))
 
     def get_readonly_fields(self, Model):
@@ -42,17 +45,21 @@ class AdminAutoRegistration:
             # "readonly_fields": ro_fields,
         })
 
+    def should_register_admin(self, Model):
+        return self.include in str(Model)
+
     def register(self):
-        for Model in apps.get_models():
-            if self.include not in str(Model):
+        for Model in self.all_models:
+            if not self.should_register_admin(Model):
                 continue
 
             ModelAdmin = self.create_admin(Model)
             self.attempt_register(Model, ModelAdmin)
 
 
-# Auto-register Admins for all dymamic models. This avoids needing to
-# write code and inject it into an admin.py for our auto-generated
-# models
-auto_reg = AdminAutoRegistration(include="django_models_from_csv.models")
-auto_reg.register()
+if get_setting("CSV_MODELS_AUTO_REGISTER_ADMIN", True):
+    # Auto-register Admins for all dymamic models. This avoids needing to
+    # write code and inject it into an admin.py for our auto-generated
+    # models
+    auto_reg = AdminAutoRegistration(include="django_models_from_csv.models")
+    auto_reg.register()

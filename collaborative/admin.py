@@ -4,8 +4,8 @@ from django.contrib.admin.models import LogEntry
 from django.apps import apps
 from import_export.resources import modelresource_factory
 
-from collaborative.models import Contact
-# from django_models_from_csv.models import FormResponse
+from django_models_from_csv.admin import AdminAutoRegistration
+
 
 UserAdmin.list_display = ("username","email","first_name","last_name")
 # UserAdmin.list_editable = ("first_name", "last_name")
@@ -16,26 +16,43 @@ UserAdmin.add_fieldsets = ((None, {
 }),)
 
 
-# ## NOTE: This works for foreign key where
-# # Contact has a FK -> Metadata
-# # See here for M2M:
-# # https://docs.djangoproject.com/en/dev/ref/contrib/admin/#working-with-many-to-many-models
-# class ContactInline(admin.TabularInline):
-#     model = Contact
-#     extra = 0
-#
-#
-# class FormResponseInline(admin.StackedInline):
-#     model = FormResponse
-#     extra = 0
-#
-#
-# class MetadataAdmin(admin.ModelAdmin):
-#     inlines = [
-#         ContactInline,
-#         FormResponseInline,
-#     ]
+class AdminMetaAutoRegistration(AdminAutoRegistration):
+    def should_register_admin(self, Model):
+        name = Model._meta.object_name
+        if name.endswith("Metadata"):
+            return False
+        return super(
+            AdminMetaAutoRegistration, self
+        ).should_register_admin(Model)
 
-# admin.site.register(Metadata, MetadataAdmin)
+    def create_admin(self, Model):
+        name = Model._meta.object_name
+        meta = []
+        # find the Metadata model corresponding to the
+        # csv-backed model we're creating admin for.
+        # this will end up as an inline admin
+        for MetaModel in self.all_models:
+            meta_name = MetaModel._meta.object_name
+            if meta_name != "%sMetadata" % name:
+                continue
+            MetaModelInline = type(
+                "%sInlineAdmin" % meta_name,
+                (admin.StackedInline,), {
+                    "model": MetaModel,
+                    "extra": 0,
+                })
+
+            meta.append(MetaModelInline)
+            break
+
+        # Build our CSV-backed admin, attaching inline meta model
+        ro_fields = self.get_readonly_fields(Model)
+        fields = self.get_fields(Model)
+        return type("%sAdmin" % name, (admin.ModelAdmin,), {
+            "inlines": meta,
+        })
+
+
+AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
 admin.site.register(LogEntry)
 
