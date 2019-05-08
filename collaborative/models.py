@@ -1,3 +1,5 @@
+from copy import copy
+
 from django.db import models
 from django.utils.timezone import now
 
@@ -48,25 +50,48 @@ DEFAULT_META_COLUMNS = [{
     },
 }]
 
+DEFAULT_CONTACT_METHODS = (
+    (0, "Email"),
+    (1, "Phone call"),
+    (2, "In person"),
+)
 
-# class Contact(models.Model):
-#     """
-#     Information about when a source was contacted, when and by whom.
-#     """
-#     METHODS = (
-#         (0, "Email"),
-#         (1, "Phone call"),
-#         (2, "In person"),
-#     )
-#
-#     reporter = models.CharField(max_length=120)
-#     method = models.IntegerField(
-#         choices=METHODS,
-#     )
-#     contact_date = models.DateTimeField(
-#         default=now,
-#     )
-#     metadata = models.ForeignKey(
-#         Metadata, models.SET_NULL,
-#         blank=True, null=True
-#     )
+DEFAULT_CONTACT_COLUMNS = [{
+    "name": "reporter",
+    "type": "short-text",
+    "attrs": {
+        "max_length": 120
+    }
+},{
+    "name": "method",
+    "type": "number",
+    "attrs": {
+        "choices": DEFAULT_CONTACT_METHODS,
+        "default": DEFAULT_CONTACT_METHODS[0][0],
+    },
+}]
+
+def default_contact_model_columns(parent_dynmodel):
+    """
+    Create "contact" model description for holding information
+    about when a source was contacted, when and by whom.
+    """
+    columns = copy(DEFAULT_CONTACT_COLUMNS)
+    columns.append({
+        "name": "contact_date",
+        "type": "datetime",
+        "attrs": {
+            "blank": True,
+            "null": True,
+        },
+    })
+    columns.append({
+        "name": "metadata",
+        "type": "foreignkey",
+        "args": [parent_dynmodel.fullname, "SET_NULL"],
+        "attrs": {
+            "blank": True,
+            "null": True,
+        },
+    })
+    return columns

@@ -33,7 +33,10 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         # this will end up as an inline admin
         for MetaModel in self.all_models:
             meta_name = MetaModel._meta.object_name
-            if meta_name != "%sMetadata" % name:
+            # all our additonal related models are in this pattern:
+            # [ModelName][Contact|*]Metadata
+            if not meta_name.startswith(name) or \
+               not meta_name.endswith("Metadata"):
                 continue
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
@@ -41,9 +44,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
                     "model": MetaModel,
                     "extra": 0,
                 })
-
             meta.append(MetaModelInline)
-            break
 
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)

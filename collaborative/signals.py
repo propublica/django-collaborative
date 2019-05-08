@@ -6,7 +6,8 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from collaborative.models import (
-    get_metamodel_name, MODEL_TYPES, DEFAULT_META_COLUMNS
+    get_metamodel_name, MODEL_TYPES, DEFAULT_META_COLUMNS,
+    default_contact_model_columns
 )
 from collaborative.user import set_staff_status
 from django_models_from_csv import models
@@ -60,7 +61,8 @@ def build_and_link_metadata_fk(sender, **kwargs):
     if mtype == MODEL_TYPES.CSV:
         # 1. look for dynmodel's corresponding meta model
         Model = dynmodel.get_model()
-        metamodel_name = get_metamodel_name(dynmodel.name)
+        metamodel_name = "%sMetadata" % dynmodel.name
+
         dyn_metamodel_count = models.DynamicModel.objects.filter(
             name=metamodel_name
         ).count()
@@ -89,6 +91,22 @@ def build_and_link_metadata_fk(sender, **kwargs):
             columns = columns,
         )
         dyn_metamodel.save()
+
+        # 2. c) Create contact meta model for this dynmodel
+        # NOTE: since we always create metadata model along
+        # with contact model, we know that contact model
+        # hasn't been created if metadata doesn't already
+        # exist (so no additional check)
+        contact_model_name = "%sContactMetadata" % dynmodel.name
+        contact_columns = default_contact_model_columns(dynmodel)
+        dyn_contactmodel = models.DynamicModel.objects.create(
+            name = contact_model_name,
+            attrs = {
+                "type": MODEL_TYPES.META,
+            },
+            columns = contact_columns,
+        )
+        dyn_contactmodel.save()
 
 
 def attach_blank_meta_to_record(sender, instance, **kwargs):
