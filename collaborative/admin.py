@@ -47,10 +47,10 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             meta.append(MetaModelInline)
 
         # Build our CSV-backed admin, attaching inline meta model
-        ro_fields = self.get_readonly_fields(Model)
         fields = self.get_fields(Model)
         return type("%sAdmin" % name, (admin.ModelAdmin,), {
             "inlines": meta,
+            "readonly_fields": fields,
         })
 
 
