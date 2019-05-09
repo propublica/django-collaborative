@@ -30,18 +30,19 @@ class AdminAutoRegistration:
             ))
 
     def get_readonly_fields(self, Model):
+        # return [ f.name for f in Model._meta.get_fields()]
         return []
 
     def get_fields(self, Model):
-        return [ f.name for f in Model._meta.get_fields() if not f.is_relation]
+        return [ f.name for f in Model._meta.get_fields()]
 
     def create_admin(self, Model):
         name = Model._meta.object_name
-        fields = self.get_fields(Model)
         ro_fields = self.get_readonly_fields(Model)
+        fields = self.get_fields(Model)
         return type("%sAdmin" % name, (admin.ModelAdmin,), {
-            "fields": fields,
-            "readonly_fields": ro_fields,
+            # "fields": fields,
+            # "readonly_fields": ro_fields,
         })
 
     def should_register_admin(self, Model):
