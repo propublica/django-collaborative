@@ -56,3 +56,8 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
 AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
 admin.site.register(LogEntry)
+
+admin.site.site_header = "ProPublica's Instant Database"
+admin.site.index_title = "Welcome"
+admin.site.site_title = "ProPublica's Instant Database"
+

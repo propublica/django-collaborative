@@ -19,10 +19,10 @@ def begin(request):
     any authentication backends (Google Oauth2, Slack, etc).
     """
     if request.method == "GET":
-        # Don't go back into this flow if we've already done it
-        models_count = models.DynamicModel.objects.count()
-        if models_count:
-            return redirect('/admin/')
+        # # Don't go back into this flow if we've already done it
+        # models_count = models.DynamicModel.objects.count()
+        # if models_count:
+        #     return redirect('/admin/')
         return render(request, 'begin.html', {})
     elif  request.method == "POST":
         # get params from request

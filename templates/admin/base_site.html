@@ -1,0 +1,45 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block extrahead %}
+<style>
+#header {
+    background-color: #304154;
+    color: white;
+}
+#header #branding h1 a,
+#header #branding h1,
+#header h1 a {
+    color: white;
+    font-weight: bold;
+}
+#container .breadcrumbs,
+#content-main caption {
+  background-color: #405670;
+}
+#content-main .module tr a:visited,
+#content-main .module tr a {
+  color: #333;
+  font-weight: normal;
+}
+#content-main .module tr a:hover {
+  color: #000;
+}
+#content-main button {
+  color: #405670;
+}
+#content-main button:hover {
+  color: #557395;
+}
+// #304154 #mainhead
+// #405670 #subhead
+// #557395 #highlight/hover lighter blue
+</style>
+{% endblock %}
+
+
+{% block userlinks %}
+/ <a href="/db-config/begin/">Add new data source</a> /
+{{ block.super }}
+{% endblock %}
