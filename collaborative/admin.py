@@ -17,12 +17,16 @@ UserAdmin.add_fieldsets = ((None, {
 
 
 class AdminMetaAutoRegistration(AdminAutoRegistration):
+    def should_register_admin(self, Model):
+        name = Model._meta.object_name
+        if name.endswith("Metadata"):
+            return False
+        return super(
+            AdminMetaAutoRegistration, self
+        ).should_register_admin(Model)
+
     def create_admin(self, Model):
         name = Model._meta.object_name
-        # do old method for non meta models
-        if not name.endswith("Metadata"):
-            return super().create_admin(Model)
-
         meta = []
         # find the Metadata model corresponding to the
         # csv-backed model we're creating admin for.
