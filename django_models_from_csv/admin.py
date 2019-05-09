@@ -36,7 +36,7 @@ class AdminAutoRegistration:
         fields = []
         for f in Model._meta.get_fields():
             if f.is_relation: continue
-            if f.autocreated: continue
+            if not hasattr(f, "autocreated") or f.autocreated: continue
             fields.append(f.name)
         return fields
 
