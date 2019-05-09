@@ -33,7 +33,12 @@ class AdminAutoRegistration:
         return []
 
     def get_fields(self, Model):
-        return [ f.name for f in Model._meta.get_fields() if not f.is_relation]
+        fields = []
+        for f in Model._meta.get_fields():
+            if f.is_relation: continue
+            if f.autocreated: continue
+            fields.append(f.name)
+        return fields
 
     def create_admin(self, Model):
         name = Model._meta.object_name
