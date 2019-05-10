@@ -30,15 +30,17 @@ def fetch_csv(csv_url):
 
     ... and return the corresponding CSV.
     """
-    url = csv_url
-    if csv_url.startswith(SHEETS_BASE):
-        key = extract_key_from_csv_url(csv_url)
-        url = '{0}/ccc?key={1}&output=csv'.format(
-            SHEETS_BASE, key
-        )
-    r = requests.get(url)
-    data = r.text
-    return data
+    # url = csv_url
+    # if csv_url.startswith(SHEETS_BASE):
+    #     key = extract_key_from_csv_url(csv_url)
+    #     url = '{0}/ccc?key={1}&output=csv'.format(
+    #         SHEETS_BASE, key
+    #     )
+    # r = requests.get(url)
+    # data = r.text
+    with open("/tmp/spreadsheet.csv", "r") as f:
+        return f.read()
+    # return data
 
 
 

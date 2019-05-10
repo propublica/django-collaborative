@@ -8,24 +8,22 @@ Success! | {{ block.super }}
 {% block content %}
 <div id="csv-models-config">
   <h2>Success!</h2>
-  <div>
-      <p>
-      {% blocktrans trimmed %}
-      Congratulations, you've successfully configured your collaborative
-      tip-gathering system. Clicking below will complete the process,
-      bringing you the login screen, where you'll log in using:
-      </p>
-      <p>
-      Username: admin<br/>
-      Password: ••••••••<br/>
-      </p>
-      <p>
-      From there, you can add users and start building stories. Good luck!
-      </p>
-      {% endblocktrans %}
-      <p>
-      <a href="{% url 'admin:index' %}">Click here to log in.</a>
-      </p>
-  </div>
+  <p>
+  {% blocktrans trimmed %}
+  Congratulations, you've successfully configured your collaborative
+  tip-gathering system. Clicking below will complete the process,
+  bringing you the login screen, where you'll log in using:
+  </p>
+  <p>
+  Username: admin<br/>
+  Password: ••••••••<br/>
+  </p>
+  <p>
+  From there, you can manage your imported data and add users. Good luck!
+  </p>
+  {% endblocktrans %}
+  <p class="click-to-login">
+    <a href="{% url 'admin:index' %}">Click here to log in.</a>
+  </p>
 </div>
 {% endblock %}

@@ -4,6 +4,11 @@
 {% block extrahead %}
 {{ block.super }}
 <style>
+/**
+ * #304154 // "PropPublica blue" -- main headers
+ * #405670 // Lighter version of Propublica bluw -- subheaders
+ * #557395 // Accent blue, for hover, etc, brief/small things
+ */
 div#csv-models-config {
     max-width: 900px;
     font-size: 18px;
@@ -11,17 +16,31 @@ div#csv-models-config {
 }
 #csv-models-config h2 {
     font-size: 25px;
+    padding: 15px 0;
 }
 #csv-models-config h3 {
     font-size: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid #aaa;
+}
+#csv-models-config a {
+    color: #304154;
+    text-decoration: underline;
+}
+#csv-models-config a:hover {
+    color: #557395;
 }
 #csv-models-config form label {
     font-size: 18px;
     font-weight: bold;
 }
+#csv-models-config table {
+    padding: 15px;
+    display: block;
+}
 #csv-models-config ol {
   padding-top: 25px;
-  padding-bottom: 25px;
+  padding-bottom: 10px;
 }
 #csv-models-config li,
 #csv-models-config dt,
@@ -39,12 +58,19 @@ div#csv-models-config {
 #csv-models-config .google-oauth input {
   min-width: 300px;
 }
-// #304154 #mainhead
-// #405670 #subhead
-// #557395 #highlight/hover lighter blue
+#csv-models-config input[type=submit] {
+  font-size: 18px;
+  font-weight: bold;
+}
+#csv-models-config .click-to-login {
+  text-align: center;
+  font-weight: bold;
+}
+#csv-models-config .continue {
+  padding: 25px;
+}
 </style>
 {% endblock %}
-
 
 {% block title %}
 ProPublica's Instant Database

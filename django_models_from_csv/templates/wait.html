@@ -6,6 +6,7 @@ Redirecting | {{ block.super }}
 {% endblock %}
 
 {% block extrahead %}
+{{ block.super }}
 <script type="text/javascript">
 let interval = null;
 const httpGet = (url, cb) => {
