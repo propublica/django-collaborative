@@ -2,6 +2,17 @@
 
 {% block extrahead %}
   {{ widget.media }}
+  <style>
+#content div.columns-widget {
+    padding: 15px;
+}
+.columns-selector-wrapper {
+}
+.columns-selector-wrapper input[type=text] {
+    min-width: 300px;
+    margin-right: 20px;
+}
+  </style>
   <script type="text/javascript">
     (function($) {
       'use strict';
@@ -79,7 +90,7 @@
                name="name"
                value="{{ column.name }}" />
 
-        <label for="type">{{ key|capfirst }}</label>
+        <!--<label for="type">{{ key|capfirst }}</label>-->
         <select id="type" name="type">
           {% for column_value, column_name in widget.column_types %}
           <option value="{{ column_value }}"

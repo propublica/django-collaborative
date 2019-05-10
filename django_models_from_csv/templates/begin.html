@@ -1,32 +1,44 @@
-{% extends "setup-base.html" %}
+{% extends "django_models_from_csv/base.html" %}
 {% load i18n static %}
 
 {% block title %}
-System Setup | {{ block.super }}
+Add a Data Source | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-<h2>System Setup</h2>
-<form action="{% url 'db-config:begin' %}" method="POST">
-    <p>
-ProPublica's Instant Database description here description her description her description her description her description her description her description her description her description hereeeeeeeee.
-    </p>
-    <p>
-ProPublica's Instant Database description here description her description her description her description her description her description her description her description her description hereeeeeeeee.
-    <p>
-    <div class="base-config">
-        {% trans 'Google Sheet URL' as sheets_label %}
-        <label for="csv_url">{{ sheets_label }}</label>
-        <input name="csv_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1w2Bt..." required />
-    </div>
-    <div>
-        {% trans 'Label this data source' as name_label %}
-        <label for="name">{{ name_label }}</label>
-        <input name="name" type="text" placeholder="Enter name..." required />
-    </div>
-    <div class="continue">
-        <input type="submit" value="{% trans 'Continue' %}" />
-    </div>
-    {% csrf_token %}
-</form>
+<div id="csv-models-config">
+  <h2>Add a Data Source</h2>
+  <form action="{% url 'db-config:begin' %}" method="POST">
+      <p>
+      Add a Google Sheets share link below to import it into the system. Make sure the link is an "Anyone with link can view" link, found in the Share menu.
+      </p>
+      <p>
+      This step will not import any data, but will read the spreadsheet and then give you a chance to double check and modify the column types. Importing will happen on the next screen.
+      </p>
+      <table>
+        <tr>
+          <td>
+            {% trans 'Google Sheet URL' as sheets_label %}
+            <label for="csv_url">{{ sheets_label }}</label>
+          </td>
+          <td>
+            <input style="min-width:600px;" name="csv_url" type="text" placeholder="e.g., https://docs.google.com/spreadsheets/d/1SiI_sOj_LcW1qXzDSoBaOgZ_SR8SioKZ05auN1o90hc/edit?usp=sharing" required />
+          </td>
+        </tr>
+        <tr>
+          <td>
+            {% trans 'Data Source Label' as name_label %}
+            <label for="name">{{ name_label }}</label>
+          </td>
+          <td>
+            <input style="min-width:600px;" name="name" type="text" placeholder="Enter name, e.g., QuestionnaireResponse" required />
+          </td>
+        </tr>
+      </table>
+      <div class="continue">
+          <input type="submit" value="{% trans 'Continue' %}" />
+      </div>
+      {% csrf_token %}
+  </form>
+</div>
 {% endblock %}

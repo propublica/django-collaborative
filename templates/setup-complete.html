@@ -1,29 +1,31 @@
-{% extends "setup-base.html" %}
+{% extends "django_models_from_csv/base.html" %}
 {% load i18n static %}
 
 {% block title %}
-Setup Complete | {{ block.super }}
+Success! | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-<h2>Almost Done</h2>
-<div>
-    <p>
-    {% blocktrans trimmed %}
-    Congratulations, you've successfully configured your collaborative
-    tip-gathering system. Clicking below will complete the process,
-    bringing you the login screen, where you'll log in using:
-    </p>
-    <p>
-    Username: admin<br/>
-    Password: ••••••••<br/>
-    </p>
-    <p>
-    From there, you can add users and start building stories. Good luck!
-    </p>
-    {% endblocktrans %}
-    <p>
-    <a href="{% url 'admin:index' %}">Click here to log in.</a>
-    </p>
+<div id="csv-models-config">
+  <h2>Success!</h2>
+  <div>
+      <p>
+      {% blocktrans trimmed %}
+      Congratulations, you've successfully configured your collaborative
+      tip-gathering system. Clicking below will complete the process,
+      bringing you the login screen, where you'll log in using:
+      </p>
+      <p>
+      Username: admin<br/>
+      Password: ••••••••<br/>
+      </p>
+      <p>
+      From there, you can add users and start building stories. Good luck!
+      </p>
+      {% endblocktrans %}
+      <p>
+      <a href="{% url 'admin:index' %}">Click here to log in.</a>
+      </p>
+  </div>
 </div>
 {% endblock %}

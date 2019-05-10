@@ -1,4 +1,4 @@
-{% extends "setup-base.html" %}
+{% extends "django_models_from_csv/base.html" %}
 {% load i18n static %}
 
 {% block title %}
@@ -49,11 +49,13 @@ setTimeout(triggerMigrations, 5000);
 {% endblock %}
 
 {% block content %}
-<h2>{% trans "System is loading, please wait..." %}</h2>
-<p>
-{% blocktrans trimmed %}
-You will be redirected once this is complete.
-If you are not redirected shortly, please <a id="nextPage" href="{{ next }}">click here</a>.
-{% endblocktrans %}
-</p>
+<div id="csv-models-config">
+  <h2>{% trans "System is loading, please wait..." %}</h2>
+  <p>
+  {% blocktrans trimmed %}
+  You will be redirected once this is complete.
+  If you are not redirected shortly, please <a id="nextPage" href="{{ next }}">click here</a>.
+  {% endblocktrans %}
+  </p>
+</div>
 {% endblock %}

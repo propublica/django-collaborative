@@ -1,4 +1,4 @@
-{% extends "setup-base.html" %}
+{% extends "django_models_from_csv/base.html" %}
 {% load i18n static %}
 
 {% block title %}
@@ -6,31 +6,33 @@ Database Columns | {{ block.super }}
 {% endblock %}
 
 {% block content %}
-<h2>Refine Database</h2>
-<form action="{% url 'csv_models:refine-schema' dynmodel.id %}" method="POST">
-    {% if not errors %}
-    <p>
-    {% blocktrans trimmed %}
-        These are the column names and types we found in
-        your sheet. Feel free to double check and correct
-        any mistakes before continuing.
-    {% endblocktrans %}
-    {{ form }}
-    </p>
-    {% else %}
-    <h3>Import Errors</h3>
-    {% for pk, errs in errors %}
-        <p>
-            <b>Row {{ pk }}:</b><br/>
-            {% for e in errs %}
-                {{ e.error.args  }}<br/>
-            {% endfor %}
-        </p>
-    {% endfor %}
-    {% endif %}
-    <div class="continue">
-        <input type="submit" value="{% trans "Continue" %}" />
-    </div>
-    {% csrf_token %}
-</form>
+<div id="csv-models-config">
+  <h2>Refine Database</h2>
+  <form action="{% url 'csv_models:refine-schema' dynmodel.id %}" method="POST">
+      {% if not errors %}
+      <p>
+      {% blocktrans trimmed %}
+          These are the column names and types we found in
+          your sheet. Feel free to double check and correct
+          any mistakes before continuing.
+      {% endblocktrans %}
+      </p>
+      {{ form.columns }}
+      {% else %}
+      <h3>Import Errors</h3>
+      {% for pk, errs in errors %}
+          <p>
+              <b>Row {{ pk }}:</b><br/>
+              {% for e in errs %}
+                  {{ e.error.args  }}<br/>
+              {% endfor %}
+          </p>
+      {% endfor %}
+      {% endif %}
+      <div class="continue">
+          <input type="submit" value="{% trans "Continue" %}" />
+      </div>
+      {% csrf_token %}
+  </form>
+</div>
 {% endblock %}

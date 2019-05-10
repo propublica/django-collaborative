@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+div#csv-models-config {
+    max-width: 900px;
+    font-size: 18px;
+    margin: 0 auto;
+}
+#csv-models-config h2 {
+    font-size: 25px;
+}
+#csv-models-config h3 {
+    font-size: 20px;
+}
+#csv-models-config form label {
+    font-size: 18px;
+    font-weight: bold;
+}
+#csv-models-config ol {
+  padding-top: 25px;
+  padding-bottom: 25px;
+}
+#csv-models-config li,
+#csv-models-config dt,
+#csv-models-config dd {
+    font-size: 18px;
+    margin-top: 5px;
+}
+#csv-models-config code {
+    font-size: 18px;
+}
+#csv-models-config table {
+  padding-left: 10px;
+}
+#csv-models-config .set-password input,
+#csv-models-config .google-oauth input {
+  min-width: 300px;
+}
+// #304154 #mainhead
+// #405670 #subhead
+// #557395 #highlight/hover lighter blue
+</style>
+{% endblock %}
+
+
+{% block title %}
+ProPublica's Instant Database
+{% endblock %}
+
+{% block branding %}
+<h1>ProPublica's Instant Database</h1>
+{% endblock %}
