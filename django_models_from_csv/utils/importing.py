@@ -64,9 +64,7 @@ def import_records(csv, Model, dynmodel):
         # "fields": ("id", "timestamp",)
     }
     resource = modelresource_factory(model=Model, extra_attrs=attrs)()
-    # import IPython; IPython.embed(); import time; time.sleep(2)
     dataset = import_records_list(csv, dynmodel)
-    print("Importing dataset", dataset)
     result = resource.import_data(dataset, dry_run=True)
     print("DRY RUN: Result has errors?", result.has_errors())
     # TODO: transform errors to something readable

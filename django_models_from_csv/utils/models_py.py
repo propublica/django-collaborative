@@ -49,6 +49,17 @@ def fix_models_py(models_py):
     return "\n".join(fixed_lines)
 
 
+def normalize_fields(fields):
+    """
+    """
+    # shorten long column headers, append _1, _2 if duplicate
+    postfix = {}
+    fieldnames = fields.keys()
+    for h in headers:
+        new_headers.append(h)
+    return fieldnames
+
+
 def extract_fields(models_py):
     """
     Take a models.py string and extract the lines that
@@ -57,7 +68,9 @@ def extract_fields(models_py):
 
         { "FIELD_NAME": "models.FieldType(arguments...)" }
     """
+    MAX_HSIZE = get_setting("CSV_MODELS_MAX_HEADER_LENGTH", 40)
     fields = {}
+    dedupe_fields = {}
     for line in models_py.split("\n"):
         # skip imports
         if re.match(".*from.*import.*", line):
@@ -70,6 +83,27 @@ def extract_fields(models_py):
         if not field_matches or not field_matches.groups():
             continue
         field, declaration = field_matches.groups()
+
+        # shorten field names
+        if len(field) > MAX_HSIZE:
+            field = field[:MAX_HSIZE]
+
+        # fields cannot end w/ underscore
+        while field[-1] == "_":
+            field = field[:-1]
+
+        # Dedupe the field names. second dupe gets _2 added, etc
+        postfix_str = ""
+        if field in dedupe_fields:
+            dedupe_fields[field] += 1
+            postfix_str = "_%s" % dedupe_fields[field]
+        else:
+            dedupe_fields[field] = 1
+
+        # append dedupe tring if necessary
+        if postfix_str:
+            field += postfix_str
+
         fields[field] = declaration
     return fields
 
@@ -85,7 +119,10 @@ def extract_field_declaration_args(declaration_str):
     indiv_args = re.split(",\s*", args_str)
     kw_arguments = {}
     for arg in indiv_args:
-        key, value = arg.split("=", 1)
+        try:
+            key, value = arg.split("=", 1)
+        except ValueError as e:
+            continue
         kw_arguments[key] = eval(value)
     return kw_arguments
 
@@ -109,5 +146,8 @@ def extract_field_type(declaration_str):
     matches = re.match(".*(models\.[A-Za-z0-9_]+)\(", declaration_str)
     field_class_str = matches.groups()[0]
     # TODO: default here? or use default dict in TYPE_TO_FIELDNAME
-    type_name = TYPE_TO_FIELDNAME[field_class_str]
+    try:
+        type_name = TYPE_TO_FIELDNAME[field_class_str]
+    except KeyError as e:
+        type_name = TYPE_TO_FIELDNAME["models.TextField"]
     return type_name

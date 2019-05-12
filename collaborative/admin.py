@@ -16,6 +16,65 @@ UserAdmin.add_fieldsets = ((None, {
 }),)
 
 
+def make_getter(rel_name, attr_name, getter_name):
+    """
+    Build a reverse lookup getter, to be attached to the custom
+    dynamic lookup admin class.
+    """
+    def getter(self):
+        if hasattr(self, rel_name):
+            rel = getattr(self, rel_name).first()
+            # try to lookup choices for field
+            choices = getattr(
+                rel, "%s_CHOICES" % attr_name.upper(), []
+            )
+            value = getattr(rel, attr_name)
+            for pk, txt in choices:
+                if pk == value:
+                    return txt
+            # no choice found, return field value
+            return value
+    # the header in django admin is named after the function name. if
+    # this line is removed, the header will be "GETTER" for all derived
+    # reverse lookup columns
+    getter.__name__ = getter_name
+    return getter
+
+
+class ReverseFKAdmin(admin.ModelAdmin):
+    def __init__(self, *args, **kwargs):
+        """
+        Build relations lookup methods, like metadata__status, but
+        for the reverse foreignkey direction.
+        """
+        super().__init__(*args, **kwargs)
+        Model, site = args
+        if "DynamicModel" == Model._meta.object_name:
+            return
+
+        # setup reverse related attr getters so we can do things like
+        # metadata__status in the reverse direction
+        for rel in Model._meta.related_objects:
+            rel_name = rel.get_accessor_name() # "metadata", etc, related_name
+
+            rel_model = rel.related_model
+            if not rel_model:
+                continue
+
+            for rel_field in rel_model._meta.get_fields():
+                # remove auto fields and other fields of that nature. we
+                # only want the directly acessible fields of this method
+                if rel_field.is_relation: continue
+                if not hasattr(rel_field, "auto_created"): continue
+                if rel_field.auto_created: continue
+
+                # build a getter for this relation attribute
+                attr_name = rel_field.name
+                getter_name = "%s_%s" % (rel_name, attr_name)
+                getter = make_getter(rel_name, attr_name, getter_name)
+                setattr(Model, getter_name, getter)
+
+
 class AdminMetaAutoRegistration(AdminAutoRegistration):
     def should_register_admin(self, Model):
         name = Model._meta.object_name
@@ -27,6 +86,9 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
     def create_admin(self, Model):
         name = Model._meta.object_name
+        if "Metadata" in name:
+            return super().create_admin(Model)
+
         meta = []
         # find the Metadata model corresponding to the
         # csv-backed model we're creating admin for.
@@ -49,15 +111,22 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)
         fields = self.get_fields(Model)
-        return type("%sAdmin" % name, (admin.ModelAdmin,), {
+        associated_fields = []
+        if name != "DynamicModel":
+            associated_fields.append("metadata_status")
+            associated_fields.append("metadata_partner")
+        list_display = associated_fields + fields[:5]
+        return type("%sAdmin" % name, (ReverseFKAdmin,), {
             "inlines": meta,
+            "readonly_fields": fields,
+            "list_display": list_display,
         })
 
 
 AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
 admin.site.register(LogEntry)
 
-admin.site.site_header = "ProPublica's Instant Database"
+admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
-admin.site.site_title = "ProPublica's Instant Database"
+admin.site.site_title = "Collaborate"
 

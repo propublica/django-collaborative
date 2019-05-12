@@ -1,6 +1,8 @@
 import re
 
+from django.utils.text import slugify
 import requests
+from tablib import Dataset
 
 
 SHEETS_BASE = "https://docs.google.com/spreadsheet"
@@ -20,6 +22,21 @@ def extract_key_from_csv_url(url):
     return matches[0]
 
 
+def clean_csv_headers(csv):
+    """
+    Remove commas, line breaks, etc, anything that will screw
+    up the translation from CSV -> database table. CSVKit, in particular,
+    doesn't like header columns with these chars in it.
+    """
+    data = Dataset().load(csv)
+    headers = [re.sub("[,\"'\n]", "", h) for h in data.headers]
+
+    new_data = Dataset(headers=headers)
+    for row in data:
+        new_data.append(row)
+    return new_data.export("csv")
+
+
 def fetch_csv(csv_url):
     """
     Take a wither a Google Sheet share link like this ...
@@ -30,17 +47,12 @@ def fetch_csv(csv_url):
 
     ... and return the corresponding CSV.
     """
-    # url = csv_url
-    # if csv_url.startswith(SHEETS_BASE):
-    #     key = extract_key_from_csv_url(csv_url)
-    #     url = '{0}/ccc?key={1}&output=csv'.format(
-    #         SHEETS_BASE, key
-    #     )
-    # r = requests.get(url)
-    # data = r.text
-    with open("/tmp/spreadsheet.csv", "r") as f:
-        return f.read()
-    # return data
-
-
-
+    url = csv_url
+    if csv_url.startswith(SHEETS_BASE):
+        key = extract_key_from_csv_url(csv_url)
+        url = '{0}/ccc?key={1}&output=csv'.format(
+            SHEETS_BASE, key
+        )
+    r = requests.get(url)
+    data = r.text
+    return clean_csv_headers(data)

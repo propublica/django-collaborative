@@ -80,17 +80,26 @@
 
   {% if widget.value_obj %}
   <table class="columns-selector-wrapper">
+    <tr class="column-selector">
+        <th class="option">
+            Column name
+        <th class="option">
+            Data type
+        </th>
+        <th class="option">
+            Original header
+        </th>
+    </tr>
     {% for column in widget.value_obj %}
     {% if column.original_name %}
     <tr class="column-selector">
       <td class="option">
-        <!--<label for="name">Name</label>-->
         <input type="text"
                id="name"
                name="name"
                value="{{ column.name }}" />
-
-        <!--<label for="type">{{ key|capfirst }}</label>-->
+      </td>
+      <td class="option">
         <select id="type" name="type">
           {% for column_value, column_name in widget.column_types %}
           <option value="{{ column_value }}"
@@ -99,6 +108,9 @@
           </option>
           {% endfor %}
         </select>
+      </td>
+      <td style="max-width: 200px">
+          {{ column.original_name }}
       </td>
     </tr>
     {% endif %}

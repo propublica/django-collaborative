@@ -80,6 +80,7 @@ def build_and_link_metadata_fk(sender, **kwargs):
             "attrs": {
                 "blank": True,
                 "null": True,
+                "related_name": "metadata"
             },
         })
 
@@ -103,6 +104,7 @@ def build_and_link_metadata_fk(sender, **kwargs):
             name = contact_model_name,
             attrs = {
                 "type": MODEL_TYPES.META,
+                "related_name": "contactmetadata"
             },
             columns = contact_columns,
         )

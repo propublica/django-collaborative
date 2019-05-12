@@ -141,7 +141,7 @@ def create_model_attrs(dynmodel):
     """
     model_name = dynmodel.name
     attrs = {
-        "__module__": 'django_models_from_csv.models.%s' % model_name,
+        "__module__": "django_models_from_csv.models.%s" % model_name,
     }
 
     if type(dynmodel.columns) != list:
@@ -162,6 +162,12 @@ def create_model_attrs(dynmodel):
 
         Field = FIELD_TYPES[column_type]
         attrs[column_name] = Field(*column_args, **column_attrs)
+
+        # include any column choice structs as [COL_NAME]_CHOICES
+        choices = column_attrs.get("choices")
+        if choices:
+            choices_attr = "%s_CHOICES" % column_name.upper()
+            attrs[choices_attr] = choices
 
     attrs["HEADERS_LOOKUP"] = original_to_model_headers
     return attrs

@@ -1,4 +1,5 @@
 import re
+import string
 
 from django.contrib.auth.models import User
 from django.db import connections, transaction
@@ -7,7 +8,7 @@ from django_models_from_csv.commands.csvsql import run_csvsql
 from django_models_from_csv.commands.manage_py import run_inspectdb
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting
-from django_models_from_csv.utils.csv import fetch_csv
+from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
 from django_models_from_csv.utils.models_py import (
     fix_models_py, extract_field_declaration_args,
     extract_field_type, extract_fields
@@ -40,8 +41,13 @@ def from_models_py(name, csv_url, models_py):
     columns = []
     for field_name, declaration in fields.items():
         kwargs = extract_field_declaration_args(declaration)
+        if not kwargs:
+            kwargs = {}
         field_type = extract_field_type(declaration)
-        original_name = kwargs.pop("db_column")
+        try:
+            original_name = kwargs.pop("db_column")
+        except KeyError as e:
+            original_name = field_name
         columns.append({
             "name": field_name,
             "original_name": original_name,
