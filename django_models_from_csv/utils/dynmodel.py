@@ -53,13 +53,14 @@ def from_models_py(name, csv_url, models_py):
             "original_name": original_name,
             "type": field_type,
             "attrs": kwargs,
+            "searchable": True,
+            "filterable": False,
         })
     dynmodel = DynamicModel.objects.create(
         name = name,
         csv_url = csv_url,
         columns = columns,
     )
-    # dynmodel.save()
     return dynmodel
 
 

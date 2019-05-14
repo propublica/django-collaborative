@@ -20,21 +20,32 @@
       function updateJSON(widget, event) {
         let columnsJSON = JSON.parse($("textarea", widget).val());
         let i = 0;
+        // for each column config row in the DOM ...
         $(".column-selector", widget).each((_, tr) => {
           const columnDef = {};
+          // ... build each column attribute from the inputs.
+          // note that if a DOM entry is missing for something
+          // that actually appeared in the JSON, it will not survive
+          // a re-save. so it's important that this gets updated
+          // along with the column JSON structure (validators.py)
           $(".option", tr).each((_, td) => {
-            const input = $("input", td);
-            if (input) {
-              const name = input.attr("name");
-              const val = input.val();
-              columnsJSON[i][name] = val;
-            }
             const select = $("select", td);
-            if (select) {
+            if (select && select.length) {
               const name = select.attr("name");
-              const val = select.val();
-              columnsJSON[i][name] = val;
+              if (name) {
+                const val = select.val();
+                columnsJSON[i][name] = val;
+              }
             }
+            $("input", td).each((_, el) => {
+              const input = $(el);
+              const name = input.attr("name");
+              if (input.attr("type") === "text") {
+                columnsJSON[i][name] = input.val();
+              } else if (input.attr("type") === "checkbox") {
+                columnsJSON[i][name] = input.prop("checked");
+              }
+            });
           })
           i++;
         })
@@ -80,27 +91,33 @@
 
   {% if widget.value_obj %}
   <table class="columns-selector-wrapper">
-    <tr class="column-selector">
-        <th class="option">
-            Column name
-        <th class="option">
-            Data type
-        </th>
-        <th class="option">
-            Original header
-        </th>
+    <tr>
+      <th>
+          Column name
+      <th>
+          Data type
+      </th>
+      <th>
+          Original header
+      </th>
+      <th>
+          Searchable
+      </th>
+      <th>
+          Filterable
+      </th>
     </tr>
     {% for column in widget.value_obj %}
+    {# this check ensures only CSV-backed fields appear #}
     {% if column.original_name %}
     <tr class="column-selector">
       <td class="option">
         <input type="text"
-               id="name"
                name="name"
                value="{{ column.name }}" />
       </td>
       <td class="option">
-        <select id="type" name="type">
+        <select name="type">
           {% for column_value, column_name in widget.column_types %}
           <option value="{{ column_value }}"
                   {% if column_value == value %}selected{% endif %}>
@@ -111,6 +128,16 @@
       </td>
       <td style="max-width: 200px">
           {{ column.original_name }}
+      </td>
+      <td class="option">
+        <input type="checkbox"
+               name="searchable"
+               {% if column.searchable %}checked{% endif %} />
+      </td>
+      <td class="option">
+        <input type="checkbox"
+               name="filterable"
+               {% if column.filterable %}checked{% endif %} />
       </td>
     </tr>
     {% endif %}

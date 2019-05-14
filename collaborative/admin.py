@@ -5,6 +5,7 @@ from django.apps import apps
 from import_export.resources import modelresource_factory
 
 from django_models_from_csv.admin import AdminAutoRegistration
+from django_models_from_csv.models import DynamicModel
 
 
 UserAdmin.list_display = ("username","email","first_name","last_name")
@@ -86,7 +87,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
     def create_admin(self, Model):
         name = Model._meta.object_name
-        if "Metadata" in name:
+        if "Metadata" in name or name == "DynamicModel":
             return super().create_admin(Model)
 
         meta = []
@@ -108,6 +109,11 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
                 })
             meta.append(MetaModelInline)
 
+        # get searchable and filterable (from column attributes)
+        model_desc = DynamicModel.objects.get(name=name)
+        searchable = [c["name"] for c in model_desc.columns if c.get("searchable")]
+        filterable = [c["name"] for c in model_desc.columns if c.get("filterable")]
+
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)
         fields = self.get_fields(Model)
@@ -120,6 +126,8 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             "inlines": meta,
             "readonly_fields": fields,
             "list_display": list_display,
+            "search_fields": searchable,
+            "list_filter": filterable,
         })
 
 

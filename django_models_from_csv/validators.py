@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
 
+# NOTE: when these change, ensure the columnswidget.html
+# JavasCript changes to include any new fields
 COLUMN_TYPES = (
     ("text", "Textbox field"),
     ("short-text", "Text field"),
@@ -12,10 +14,11 @@ COLUMN_TYPES = (
     # ("foreignkey", "Associated Table"),
 )
 REQUIRED_FIELDS = (
-    "name", "type", "type"
+    "name", "type",
 )
 ALL_FIELDS = REQUIRED_FIELDS + (
     "attrs", "original_name", "args",
+    "searchable", "filterable",
 )
 
 
