@@ -11,7 +11,7 @@ The project is broken up into several components:
 - Customizable fields for tagging, querying, annotating and tracking tips.
 - A "one-click", turnkey deployment option for Google Application Engine.
 
-This is very much a work in progress and the code is quickly evolving.
+_This is very much a work-in-progress and the code is quickly evolving._ Pretty much everything in the codebase should be considered volatile right now and subject to bold changes.
 
 ## Getting Started (Local Testing/Development)
 
@@ -37,3 +37,5 @@ You can then access the application `http://localhost:8000` and log
 in with the credentials you selected in the `createsuperuser` step
 (above). Logging in will bring you to a configuration wizard where
 you will import your first Google Sheet and import its contents.
+
+There is one caveat right now. Your `django_models_from_csv/migrations` folder needs to be writable by the Django process. Running locally, this shouldn't be an obstacle, but for now deployment is awkward. We're in the process of improving the auto-created models, removing the need for migration files and will remove this warning once it's complete!
