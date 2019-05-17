@@ -43,14 +43,17 @@ def import_records_list(csv, dynmodel):
         if model_header and header != model_header:
             data.headers[i] = model_header
 
-    datetime_headers = [c["name"] for c in dynmodel.columns if "date" in c["type"]]
     datetime_ixs = []
-    for h in datetime_headers:
-        try:
-            datetime_ixs.append(data.headers.index(h))
-        except ValueError:
-            # Possibly a new column not in dynamic model description, ignore
-            pass
+    for c in dynmodel.columns:
+        c_type = c.get("type")
+        if c_type and "date" in c_type:
+            name = c["name"]
+            try:
+                ix = data.headers.index(name)
+            except ValueError:
+                # Possibly a new column not in dynamic model description, ignore
+                continue
+            datetime_ixs.append(ix)
 
     newdata = Dataset(headers=data.headers)
     for row in data:
