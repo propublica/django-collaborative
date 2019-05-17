@@ -14,6 +14,7 @@ class ImportRecordsTestCase(TestCase):
 """
         self.date_csv = """when,where
 2019-04-23 15:06:51 UTC,seattle
+4/23/2019 3:06pm PST,olympia
 """
         self.sheet = DynamicModel.objects.create(
             name = "ImportRecordsSheet",
@@ -31,6 +32,8 @@ class ImportRecordsTestCase(TestCase):
                 "type": "short-text",
             }]
         )
+        # index of date col for tests
+        self.date_col = 1
 
     def tearDown(self):
         self.sheet.delete()
@@ -44,6 +47,7 @@ class ImportRecordsTestCase(TestCase):
         self.assertEqual(row[0], 1)
 
     def test_records_date_fields_standardized(self):
-        row = import_records_list(self.date_csv, self.sheet_w_date)[0]
-        parsed_date = row[1]
-        self.assertTrue("UTC" not in parsed_date)
+        rows = import_records_list(self.date_csv, self.sheet_w_date)
+        self.assertTrue("UTC" not in rows[0][self.date_col])
+        self.assertTrue("2019-04-23 15:06" in rows[0][self.date_col])
+        self.assertTrue("2019-04-23 15:06" in rows[1][self.date_col])

@@ -68,6 +68,7 @@ def import_records_list(csv, dynmodel):
                     pass
             newrow.append(val)
         newdata.append(newrow)
+
     return newdata
 
 
