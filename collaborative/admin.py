@@ -110,9 +110,11 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             meta.append(MetaModelInline)
 
         # get searchable and filterable (from column attributes)
+        # TODO: order by something? number of results?
         model_desc = DynamicModel.objects.get(name=name)
-        searchable = [c["name"] for c in model_desc.columns if c.get("searchable")]
-        filterable = [c["name"] for c in model_desc.columns if c.get("filterable")]
+        cols = list(reversed(model_desc.columns))
+        searchable = [c.get("name") for c in cols if c.get("searchable")]
+        filterable = [c.get("name") for c in cols if c.get("filterable")]
 
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)

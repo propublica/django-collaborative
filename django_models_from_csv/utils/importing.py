@@ -1,3 +1,4 @@
+from dateutil import parser as dt_parser
 from import_export.resources import (
     # modelresource_factory,
     ModelResource, ModelDeclarativeMetaclass,
@@ -41,7 +42,30 @@ def import_records_list(csv, dynmodel):
         model_header = dynmodel.csv_header_to_model_header(header)
         if model_header and header != model_header:
             data.headers[i] = model_header
-    return data
+
+    datetime_headers = [c["name"] for c in dynmodel.columns if "date" in c["type"]]
+    datetime_ixs = []
+    for h in datetime_headers:
+        try:
+            datetime_ixs.append(data.headers.index(h))
+        except ValueError:
+            # Possibly a new column not in dynamic model description, ignore
+            pass
+
+    newdata = Dataset(headers=data.headers)
+    for row in data:
+        newrow = []
+        for i in range(len(row)):
+            val = row[i]
+            if i in datetime_ixs:
+                try:
+                    val = dt_parser.parse(val).strftime("%Y-%m-%d %H:%M:%S")
+                except Exception as e:
+                    # Try something after this?
+                    pass
+            newrow.append(val)
+        newdata.append(newrow)
+    return newdata
 
 
 def import_records(csv, Model, dynmodel):
@@ -60,10 +84,7 @@ def import_records(csv, Model, dynmodel):
     fix the ones listed before continuing. We don't want
     to overwhelm the user with error messages.
     """
-    attrs = {
-        # "fields": ("id", "timestamp",)
-    }
-    resource = modelresource_factory(model=Model, extra_attrs=attrs)()
+    resource = modelresource_factory(model=Model)()
     dataset = import_records_list(csv, dynmodel)
     result = resource.import_data(dataset, dry_run=True)
     print("DRY RUN: Result has errors?", result.has_errors())
