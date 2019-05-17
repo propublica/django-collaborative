@@ -11,20 +11,19 @@ The project is broken up into several components:
 - Customizable fields for tagging, querying, annotating and tracking tips.
 - A "one-click", turnkey deployment option for Google Application Engine.
 
-_This is very much a work-in-progress and the code is quickly evolving._ Pretty much everything in the codebase should be considered volatile right now and subject to bold changes.
+_This is very much a work-in-progress and the code is quickly evolving._ Pretty much everything in the codebase should be considered volatile right now and subject to bold changes. No deployment options are available, yet (you're stuck with `./manage.py runserver`).
 
 ## Getting Started (Local Testing/Development)
 
 Getting the system set up and running locally begins with cloning this
-repository and installing the Python dependencies. Python
-3.7 and Django 2.2 are assumed here.
+repository and installing the Python dependencies. Python 3.6 or 3.7 and Django 2.2 are assumed here.
 
     # virtual environment is recommended
     mkvirtualenv -p /path/to/python3.7 collaborative
     # install python dependencies
     pip install -r requirements.txt
 
-Assuming everything worked, lets bootstrap and then start the local server:
+Assuming everything worked, let's bootstrap and then start the local server:
 
     # get the database ready
     ./manage.py migrate
@@ -38,4 +37,6 @@ in with the credentials you selected in the `createsuperuser` step
 (above). Logging in will bring you to a configuration wizard where
 you will import your first Google Sheet and import its contents.
 
-There is one caveat right now. Your `django_models_from_csv/migrations` folder needs to be writable by the Django process. Running locally, this shouldn't be an obstacle, but for now deployment is awkward. We're in the process of improving the auto-created models, removing the need for migration files and will remove this warning once it's complete!
+## Deployment (not feasible, yet)
+
+This application relies on creating and manipulating internal Django models and database table schemas _at runtime_. Currently, we use the Django migrations system, requiring writing migration files followed by Python process restarts (which `runserver` handles for us). We're in the process of transitioning to a migrationless/rebootless method which will open a path to deployment. We'll remove this warning and replace it with deployment instructions once that is ready.
