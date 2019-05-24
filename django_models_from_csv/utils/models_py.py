@@ -4,7 +4,6 @@ import requests
 from django.contrib.auth.models import User
 
 from django_models_from_csv.utils.common import get_setting
-from django_models_from_csv.commands.manage_py import run_inspectdb
 from django_models_from_csv.models import DynamicModel, TYPE_TO_FIELDNAME
 
 

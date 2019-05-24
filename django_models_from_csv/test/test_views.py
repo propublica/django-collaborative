@@ -3,7 +3,6 @@ from unittest import skip
 from unittest.mock import patch
 
 from django.contrib.auth.models import User
-from django.db import DEFAULT_DB_ALIAS
 from django.test import TestCase, Client, SimpleTestCase
 from django.urls import reverse
 
@@ -13,7 +12,7 @@ from django_models_from_csv.commands.manage_py import (
 )
 from django_models_from_csv.models import DynamicModel, create_models
 
-from django.db import DEFAULT_DB_ALIAS, connections, transaction
+# from django.db import DEFAULT_DB_ALIAS, connections, transaction
 
 
 CSV = """Timestamp,Question with short answer?,Question with long answer?,Checkbox?,Option with dropdown?,Multiple choice?, Numeric linear scale?,Multiple choice grid? [row1],Multiple choice grid? [row2],Checkbox grid? [row1],Checkbox grid? [row2],What date?,What time?
@@ -121,7 +120,7 @@ class ViewsTestCaseBase(TestCase):
 
 
 class BeginViewTestCase(ViewsTestCaseBase):
-    databases = [DEFAULT_DB_ALIAS, "schemabuilding"]
+    databases = "__all__"
 
     def setUp(self):
         super(BeginViewTestCase, self).setUp()
@@ -156,6 +155,25 @@ class BeginViewTestCase(ViewsTestCaseBase):
         self.assertGreaterEqual(len(new_dynmodel.columns), 13)
         self.assertRedirects(response, to_url)
         new_dynmodel.delete()
+
+    # @patch("django_models_from_csv.utils.dynmodel.ScreendoorImporter")
+    # def test_can_build_model_from_screendoor(self, fetch_csv):
+    #     fetch_csv.return_value = self.csv
+    #     ids = DynamicModel.objects.all().values("id")
+    #     response = self.client.post(reverse('csv_models:begin'), {
+    #         "name": "TestScreendoor",
+    #         "sd_api_key": "KEY",
+    #         "sd_project_id": "PROJECT_ID",
+    #         "sd_form_id": "FORM_ID",
+    #     })
+    #     new_dynmodel = DynamicModel.objects.last()
+    #     to_url = reverse(
+    #         'csv_models:refine-schema', args=[new_dynmodel.id]
+    #     )
+    #     self.assertTrue(new_dynmodel.columns)
+    #     self.assertGreaterEqual(len(new_dynmodel.columns), 13)
+    #     self.assertRedirects(response, to_url)
+    #     new_dynmodel.delete()
 
 
 class RefineViewTestCase(ViewsTestCaseBase):

@@ -7,7 +7,8 @@ from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.importing import import_records
-from django_models_from_csv.utils.dynmodel import from_csv_url
+from django_models_from_csv.utils.dynmodel import from_csv_url, from_screendoor
+from django_models_from_csv.utils.screendoor import ScreendoorImporter
 
 
 @login_required
@@ -28,7 +29,18 @@ def begin(request):
         # get params from request
         name = request.POST.get("name")
         csv_url = request.POST.get("csv_url")
-        dynmodel = from_csv_url(name, csv_url)
+        sd_api_key = request.POST.get("sd_api_key")
+        sd_project_id = request.POST.get("sd_project_id")
+        sd_form_id = request.POST.get("sd_form_id")
+        if csv_url:
+            dynmodel = from_csv_url(name, csv_url)
+        elif sd_api_key:
+            dynmodel = from_screendoor(
+                name,
+                sd_api_key,
+                int(sd_project_id),
+                form_id=int(sd_form_id) if sd_form_id else None
+            )
         return redirect('csv_models:refine-schema', dynmodel.id)
 
 
@@ -65,7 +77,6 @@ def refine_schema(request, id):
             dynmodel.token = dynmodel.make_token()
             dynmodel.save()
         to = "%s?next=%s&token=%s" % (url, next, dynmodel.token)
-        print("Redirecting to", to)
         return redirect(to)
 
 
@@ -88,9 +99,16 @@ def import_data(request, id):
         })
     elif request.method == "POST":
         next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
-        csv_url = dynmodel.csv_url
         Model = getattr(models, dynmodel.name)
-        csv = fetch_csv(csv_url)
+        if dynmodel.csv_url:
+            csv = fetch_csv(dynmodel.csv_url)
+        elif dynmodel.sd_api_key:
+            importer = ScreendoorImporter(api_key=dynmodel.sd_api_key)
+            csv = importer.build_csv(
+                dynmodel.sd_project_id, form_id=dynmodel.sd_form_id
+            )
+        else:
+            raise NotImplementedError("Invalid data source for %s" % dynmodel)
         errors = import_records(csv, Model, dynmodel)
         if errors:
             return render(request, 'import-data.html', {

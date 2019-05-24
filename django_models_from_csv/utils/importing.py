@@ -19,7 +19,7 @@ def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None)
 
     Meta = type(str('Meta'), (object,), attrs)
 
-    class_name = model.__name__ + str('Resource')
+    class_name = model.__name__ + 'Resource'
 
     class_attrs = {
         'Meta': Meta,

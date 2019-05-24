@@ -56,7 +56,9 @@ class ModelsPyConversionTestCase(TestCase):
     def test_can_build_dynmodel_from_models_py(self):
         model_name = "TestData"
         csv_url = "https://fake.url"
-        sheet = from_models_py(model_name, csv_url, self.models_py)
+        sheet = from_models_py(model_name, self.models_py,
+            csv_url=csv_url
+        )
         self.assertTrue(sheet)
         self.assertEqual(sheet.name, model_name)
         self.assertEqual(sheet.csv_url, csv_url)

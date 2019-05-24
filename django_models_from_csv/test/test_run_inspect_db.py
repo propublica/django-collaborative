@@ -15,7 +15,7 @@ class RunInspectDBTestCase(TestCase):
     testing these two together so we don't have to do all the DB bootstrapping
     elsewhere, also.
     """
-    databases = ["schemabuilding"]
+    databases = "__all__"
 
     def setUp(self):
         self.table_name = "tmp4wlpvd0c"
@@ -54,7 +54,6 @@ CREATE TABLE %s (
     def test_fix_models_py(self):
         execute_sql(self.create_table)
         models_py = run_inspectdb(table_name=self.table_name)
-
         fixed_models_py = fix_models_py(models_py)
         print("fixed_models_py", fixed_models_py)
         models_py_flat = " ".join(fixed_models_py.split("\n"))

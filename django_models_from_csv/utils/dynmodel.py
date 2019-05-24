@@ -13,6 +13,7 @@ from django_models_from_csv.utils.models_py import (
     fix_models_py, extract_field_declaration_args,
     extract_field_type, extract_fields
 )
+from django_models_from_csv.utils.screendoor import ScreendoorImporter
 
 
 CSV_MODELS_TEMP_DB = get_setting(
@@ -32,7 +33,7 @@ def execute_sql(sql):
     return table_name
 
 
-def from_models_py(name, csv_url, models_py):
+def from_models_py(name, models_py, **model_attrs):
     """
     Convert a generated models.py document to a DynamicModel with
     the specified name and URL to a source CSV.
@@ -58,19 +59,51 @@ def from_models_py(name, csv_url, models_py):
         })
     dynmodel = DynamicModel.objects.create(
         name = name,
-        csv_url = csv_url,
         columns = columns,
+        **model_attrs
     )
     return dynmodel
 
 
-def from_csv_url(name, csv_url):
-    csv = fetch_csv(csv_url)
+def from_csv(name, csv_data, **kwargs):
+    """
+    Create a dynamic model from some CSV data (a string of a CSV).
+    The model is given a specified name and is populated with the
+    attributes found in kwargs.
+    """
     # build SQL from CSV
-    sql = run_csvsql(csv)
+    sql = run_csvsql(csv_data)
     # create these tables in our DB
     table_name = execute_sql(sql)
     # build models.py from this DB
     models_py = run_inspectdb(table_name=table_name)
     fixed_models_py = fix_models_py(models_py)
-    return from_models_py(name, csv_url, fixed_models_py)
+    return from_models_py(name, fixed_models_py, **kwargs)
+
+
+def from_csv_url(name, csv_url):
+    """
+    Build a dynamic model from a CSV URL. This supports Google
+    Sheets share URLs and normal remote CSVs.
+    """
+    csv = fetch_csv(csv_url)
+    return from_csv(name, csv, **dict(
+        csv_url=csv_url
+    ))
+
+
+def from_screendoor(name, api_key, project_id, form_id=None):
+    """
+    Build a dynamic model from a screendoor project/form, given
+    a supplied API KEY. This will fetch all the data from the
+    API and build a CSV, which will be used to build the rest
+    of the table.
+    """
+    importer = ScreendoorImporter(api_key=api_key)
+    csv = importer.build_csv(project_id, form_id=form_id)
+    return from_csv(name, csv, **dict(
+        sd_api_key=api_key,
+        sd_project_id=project_id,
+        sd_form_id=form_id,
+    ))
+

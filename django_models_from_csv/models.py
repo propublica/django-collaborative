@@ -64,6 +64,11 @@ class DynamicModel(models.Model):
     # after it's been instantiated
     columns = ColumnsField(null=True, blank=True)
 
+    # Screendoor-specific columns
+    sd_api_key = models.CharField(max_length=100, null=True, blank=True)
+    sd_project_id = models.IntegerField(null=True, blank=True)
+    sd_form_id = models.IntegerField(null=True, blank=True)
+
     # some attributes (as dict) to distinguish dynamic models from
     # eachother, to drive some business logic, etc. not used internally.
     attrs = JSONField(max_length=255, editable=True)
