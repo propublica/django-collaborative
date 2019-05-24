@@ -21,8 +21,12 @@ def begin(request):
     """
     if request.method == "GET":
         # Don't go back into this flow if we've already done it
+        addnew = request.GET.get("addnew")
+        print("addnew", addnew)
         models_count = models.DynamicModel.objects.count()
-        if models_count:
+        if addnew:
+            return render(request, 'begin.html', {})
+        elif models_count:
             return redirect('/admin/')
         return render(request, 'begin.html', {})
     elif  request.method == "POST":

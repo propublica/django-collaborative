@@ -5,16 +5,62 @@
 Add a Data Source | {{ block.super }}
 {% endblock %}
 
+{% block extrahead %}
+{{ block.super }}
+<script type="text/javascript">
+/**
+ * Toggle displaying the dropdowns. Keyed based on
+ * the class name, triggered by H3 click.
+ */
+function showHide(cls) {
+  var hide = "display: none;";
+  if (!cls) return;
+
+  var block = document.querySelector(`div${cls}`);
+  if (block.getAttribute("style") === hide) {
+      block.setAttribute("style", "display: block;");
+      document.querySelector(`h3${cls} .icon`).innerText = "➖";
+      document.querySelectorAll(`${cls} input`).forEach((i) => {
+          i.value = "";
+      });
+  } else {
+      block.setAttribute("style", hide);
+      document.querySelector(`h3${cls} .icon`).innerText = "➕";
+      document.querySelectorAll(`${cls} input`).forEach((i) => {
+          i.value = "";
+      });
+  }
+}
+
+/**
+ * Initially hide the dropdowns. If this fails, then they'll
+ * just be shown. So this gracefully fails.
+ */
+function init() {
+  document.querySelectorAll("div.show-hide").forEach((d) => {
+      d.setAttribute("style", "display: none;");
+  });
+}
+// No IE8
+document.addEventListener("DOMContentLoaded", function(event) {
+  init();
+});
+</script>
+{% endblock %}
+
 {% block content %}
 <div id="csv-models-config">
   <h2>Add a Data Source</h2>
+  <p>
+  This step will not import any data, but will read the source data and give you a chance to double check and modify the column types. Importing will happen on the next screen. Select a data source to get started.
+  </p>
   <form action="{% url 'db-config:begin' %}" method="POST">
+      <h3 class="from-csv" onclick="showHide('.from-csv')">
+          <span class="icon">➕</span> Import From Google Sheets
+      </h3>
       <div class="show-hide from-csv">
           <p>
           Add a Google Sheets share link below to import it into the system. Make sure the link is an "Anyone with link can view" link, found in the Share menu.
-          </p>
-          <p>
-          This step will not import any data, but will read the spreadsheet and then give you a chance to double check and modify the column types. Importing will happen on the next screen.
           </p>
           <p class="note">
           NOTE: Your spreadsheet must have a header row!
@@ -46,6 +92,9 @@ Add a Data Source | {{ block.super }}
               </tr>
           </table>
       </div>
+      <h3 class="from-screendoor" onclick="showHide('.from-screendoor')">
+          <span class="icon">➕</span> Import From Screendoor
+      </h3>
       <div class="show-hide from-screendoor">
           <p>
           To import responses to a Screendoor form, enter an API key, project

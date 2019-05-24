@@ -58,6 +58,9 @@
   background-color: #405670;
 }
 
+#csv-models-config h3 {
+    cursor: pointer;
+}
 /*
  * #304154 // "PropPublica blue" -- main headers
  * #405670 // Lighter version of Propublica bluw -- subheaders
@@ -68,6 +71,6 @@
 
 
 {% block userlinks %}
-/ <a href="/db-config/begin/">Add new data source</a> /
+/ <a href="/db-config/begin?addnew=true">Add new data source</a> /
 {{ block.super }}
 {% endblock %}
