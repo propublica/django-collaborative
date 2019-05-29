@@ -2,6 +2,7 @@ import logging
 
 from django.apps import apps
 from django.contrib import admin
+from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
 from django_models_from_csv.utils.common import get_setting
@@ -45,7 +46,9 @@ class AdminAutoRegistration:
         name = Model._meta.object_name
         ro_fields = self.get_readonly_fields(Model)
         fields = self.get_fields(Model)
-        return type("%sAdmin" % name, (admin.ModelAdmin,), {
+        resource = modelresource_factory(model=Model)()
+        return type("%sAdmin" % name, (ExportMixin, admin.ModelAdmin,), {
+            "resource_class": resource,
             # "fields": fields,
             # "readonly_fields": ro_fields,
         })

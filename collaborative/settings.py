@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.forms',
 
     'social_django',
+    'import_export',
     'django_models_from_csv',
     'collaborative',
 ]

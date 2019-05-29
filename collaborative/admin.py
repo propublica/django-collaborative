@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
 from django.apps import apps
+from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
 from django_models_from_csv.admin import AdminAutoRegistration
@@ -124,12 +125,14 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             associated_fields.append("metadata_status")
             associated_fields.append("metadata_partner")
         list_display = associated_fields + fields[:5]
-        return type("%sAdmin" % name, (ReverseFKAdmin,), {
+        # Note that ExportMixin needs to be declared first here
+        return type("%sAdmin" % name, (ExportMixin, ReverseFKAdmin), {
             "inlines": meta,
             "readonly_fields": fields,
             "list_display": list_display,
             "search_fields": searchable,
             "list_filter": filterable,
+            "resource_class": modelresource_factory(model=Model)(),
         })
 
 

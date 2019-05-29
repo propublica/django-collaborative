@@ -5,6 +5,7 @@ import sys
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
@@ -56,13 +57,14 @@ class DynamicModel(models.Model):
     """
     # name of this model. should be singular and contain no spaces
     # or special characters. e.g., FormResponse, SurveyResult
-    name = models.CharField(max_length=255)
-    # a URL to a Google Sheet or any source CSV for building model
-    csv_url = models.URLField(null=True, blank=True)
+    name = models.CharField(max_length=255, validators=[MinLengthValidator(1)])
     # columns derived from the above CSV. this field is managed
     # by the library, but it can be changed and managed manually
     # after it's been instantiated
     columns = ColumnsField(null=True, blank=True)
+
+    # URL to a Google Sheet or any source CSV for building model
+    csv_url = models.URLField(null=True, blank=True)
 
     # Screendoor-specific columns
     sd_api_key = models.CharField(max_length=100, null=True, blank=True)
