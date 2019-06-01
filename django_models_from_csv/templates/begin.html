@@ -69,11 +69,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
               <tr>
                   <td>
                       {% trans 'Data Source Label' as name_label %}
-                      <label for="name">{{ name_label }}</label>
+                      <label for="csv_name">{{ name_label }}</label>
                   </td>
                   <td>
                       <input style="min-width:600px;"
-                             name="name"
+                             name="csv_name"
                              type="text"
                              placeholder="Enter name, e.g., QuestionnaireResponse" />
                   </td>
@@ -104,11 +104,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
           <table>
               <tr>
                   <td>
-                      <label for="name">{{ name_label }}</label>
+                      <label for="sd_name">{{ name_label }}</label>
                   </td>
                   <td>
                       <input style="min-width:600px;"
-                             name="name"
+                             name="sd_name"
                              type="text"
                              placeholder="Enter name, e.g., ScreendoorResponse" />
                   </td>

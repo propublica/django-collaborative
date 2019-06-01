@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.db import connection
+from django.test import SimpleTestCase
 
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.importing import (
@@ -6,8 +7,15 @@ from django_models_from_csv.utils.importing import (
 )
 
 
-class ImportRecordsTestCase(TestCase):
+class ImportRecordsTestCase(SimpleTestCase):
+    databases = '__all__'
+
     def setUp(self):
+        if connection.vendor == 'sqlite':
+            print("SQLite detected. Removing FK checks")
+            cursor = connection.cursor()
+            cursor.execute('PRAGMA foreign_keys = OFF;')
+
         self.csv = """timestamp,question one,checkbox
 11903923302,response 1,1
 29803243893,another response,0
@@ -19,7 +27,10 @@ class ImportRecordsTestCase(TestCase):
         self.sheet = DynamicModel.objects.create(
             name = "ImportRecordsSheet",
             csv_url = "fake.url/to/sheet",
-            columns = []
+            columns = [{
+                "name": "when",
+                "type": "datetime",
+            }]
         )
         self.sheet_w_date = DynamicModel.objects.create(
             name = "ImportRecordsDateSheet",

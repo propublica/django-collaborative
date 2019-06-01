@@ -38,8 +38,10 @@ def tag_csv_dynmodel(dynmodel):
             return
 
 
-@receiver(pre_save, sender=models.DynamicModel)
-def build_and_link_metadata_fk(sender, **kwargs):
+# TODO: do this on Model.__new__
+# @receiver(pre_save, sender=models.DynamicModel)
+# def build_and_link_metadata_fk(sender, **kwargs):
+def build_and_link_metadata_fk(dynmodel):
     """
     This signal listens for the creation of a new dynamically-generated
     CSV-backed model. When it finds one, it will automatically create a
@@ -51,8 +53,11 @@ def build_and_link_metadata_fk(sender, **kwargs):
     admin detail page, without messing with the CSV-backed records at all.
     (Since the FK is on the metadata side.)
     """
-    dynmodel = kwargs.get("instance")
+    # dynmodel = kwargs.get("instance")
     if not dynmodel:
+        return
+
+    if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
         return
 
     tag_csv_dynmodel(dynmodel)
@@ -138,17 +143,19 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
     )
 
 
+# TODO: do this on Model.__new__ ?
 def setup_dynmodel_signals():
     """
     Attach signals to our dynamically generated models. Here, we
     only attach dynamically-generated signals to non-CSV backed
     models.
     """
-    for dynmodel in models.DynamicModel.objects.all():
-        if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
-            continue
-        Model = getattr(models, dynmodel.name)
-        post_save.connect(attach_blank_meta_to_record, sender=Model)
+    DynamicModel._POST_SAVE_SIGNALS.append(attach_blank_meta_to_record)
+    # for dynmodel in models.DynamicModel.objects.all():
+    #     if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
+    #         continue
+    #     Model = getattr(models, dynmodel.name)
+    #     # post_save.connect(attach_blank_meta_to_record, sender=Model)
 
 
 try:

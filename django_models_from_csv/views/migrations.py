@@ -37,7 +37,7 @@ def migrate(request):
     sheet.save()
     create_models()
 
-    make_and_apply_migrations()
+    # make_and_apply_migrations()
     return HttpResponse(200, "OK")
 
 

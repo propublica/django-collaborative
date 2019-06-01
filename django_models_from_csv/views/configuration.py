@@ -31,14 +31,15 @@ def begin(request):
         return render(request, 'begin.html', {})
     elif  request.method == "POST":
         # get params from request
-        name = request.POST.get("name")
         csv_url = request.POST.get("csv_url")
         sd_api_key = request.POST.get("sd_api_key")
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
         if csv_url:
+            name = request.POST.get("csv_name")
             dynmodel = from_csv_url(name, csv_url)
         elif sd_api_key:
+            name = request.POST.get("sd_name")
             dynmodel = from_screendoor(
                 name,
                 sd_api_key,

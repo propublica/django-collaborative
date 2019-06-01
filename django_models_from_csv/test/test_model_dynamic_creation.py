@@ -1,11 +1,13 @@
-from django.test import TestCase
+from django.test import SimpleTestCase
 
 from django_models_from_csv.models import (
     DynamicModel, create_model_attrs, create_models
 )
 
 
-class ModelDynamicCreationTestCase(TestCase):
+class ModelDynamicCreationTestCase(SimpleTestCase):
+    databases = "__all__"
+
     def setUp(self):
         self.dynmodel = DynamicModel.objects.create(
             name="SomeGoogleSheet",

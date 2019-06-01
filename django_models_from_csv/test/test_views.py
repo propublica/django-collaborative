@@ -102,7 +102,7 @@ COLUMNS = [
 ]
 
 
-class ViewsTestCaseBase(TestCase):
+class ViewsTestCaseBase(SimpleTestCase):
     def login(self):
         self.client.login(username="admin", password=self.password)
 

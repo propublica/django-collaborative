@@ -3,8 +3,11 @@ import logging
 import sys
 
 from django import forms
+from django.apps import apps
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
+from django.utils.functional import cached_property
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -16,6 +19,7 @@ except ImportError:
     import six
 
 from django_models_from_csv.fields import ColumnsField
+from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 
 
 logger = logging.getLogger(__name__)
@@ -82,9 +86,25 @@ class DynamicModel(models.Model):
         default=random_token,
     )
 
+    _POST_SAVE_SIGNALS = []
+
     class Meta:
         verbose_name = _("Successful Import")
         verbose_name_plural = _("Successful Imports")
+
+    def __init__(self, *args, **kwargs):
+        """
+        Initialize the schema editor with the currently registered model and the
+        initial name.
+        """
+        super().__init__(*args, **kwargs)
+        self._initial_name = self.name
+        initial_model = self.get_model(name=self._initial_name)
+        self.schema_editor = ModelSchemaEditor(initial_model)
+
+    def __str__(self):
+        return "Model Description: %s (%i columns)" % (
+            self.name, len(self.columns))
 
     @property
     def fullname(self):
@@ -94,9 +114,11 @@ class DynamicModel(models.Model):
         """
         return "django_models_from_csv.%s" % self.name
 
-    def __str__(self):
-        return "Model Description: %s (%i columns)" % (
-            self.name, len(self.columns))
+    def csv_header_to_model_header(self, header):
+        column = self.get_column(header, key="original_name")
+        if not column:
+            return None
+        return column.get("name")
 
     def get_attr(self, value):
         """
@@ -135,14 +157,54 @@ class DynamicModel(models.Model):
             return None
         return getattr(these_models, model_name)
 
-    def csv_header_to_model_header(self, header):
-        column = self.get_column(header, key="original_name")
-        if not column:
-            return None
-        return column.get("name")
-
     def make_token(self):
         return random_token(16)
+
+    def find_old_field(self, OldModel, field):
+        """
+        Find matching field from old instance of the model using
+        the database column name. This works for now, until we
+        change the update strategy to hash based on the column
+        description JSON.
+        """
+        if not OldModel:
+            return
+        for old_field in OldModel._meta.fields:
+            if field.column == old_field.column:
+                return old_field
+
+    def do_migrations(self):
+        """
+        Do a custom migration without leaving any migration files
+        around.
+        """
+        old_desc = DynamicModel.objects.filter(name=self.name).first()
+        try:
+            OldModel = apps.get_model("django_models_from_csv", self.name)
+        except LookupError:
+            OldModel = None
+        NewModel = construct_model(self)
+        new_desc = self
+        # TODO: if new or name changed, run this (or just run it)
+        ModelSchemaEditor(OldModel).update_table(NewModel)
+
+        # TODO: figure out a way to reconcile the old columns/table
+        # with the new. we need a way to figure out what's been removed
+        # and added vs what's been changed.
+        # TODO: handle delete by checking for old fields not existing in new
+        for new_field in NewModel._meta.fields:
+            if new_field.name == "id":
+                continue
+            # TODO: ONLY call this when it's changed!
+            old_field = self.find_old_field(OldModel, new_field)
+            FieldSchemaEditor(old_field).update_column(NewModel, new_field)
+
+    def save(self, **kwargs):
+        super().save(**kwargs)
+        self.do_migrations()
+        create_models()
+        for fn in _POST_SAVE_SIGNALS:
+            fn(self)
 
 
 def create_model_attrs(dynmodel):
@@ -182,6 +244,27 @@ def create_model_attrs(dynmodel):
 
     attrs["HEADERS_LOOKUP"] = original_to_model_headers
     return attrs
+
+
+def construct_model(dynmodel):
+    """
+    This creates the model instance from a dynamic model description record.
+    """
+    attrs = create_model_attrs(dynmodel)
+    model_name = dynmodel.name
+
+    if not attrs:
+        logger.warn(
+            "WARNING: skipping model: %s. bad columns record" % dynmodel.name)
+        return
+
+    # we have no fields defined
+    if len(attrs.keys()) <= 2:
+        logger.warn(
+            "WARNING: skipping model: %s. not enough columns" % dynmodel.name)
+        return
+
+    return type(model_name, (models.Model,), attrs)
 
 
 def create_models():

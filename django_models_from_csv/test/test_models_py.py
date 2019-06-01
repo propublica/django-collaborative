@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import SimpleTestCase
 
 from django_models_from_csv.utils.models_py import (
     extract_fields, extract_field_declaration_args,
@@ -7,7 +7,7 @@ from django_models_from_csv.utils.models_py import (
 from django_models_from_csv.utils.dynmodel import from_models_py
 
 
-class ModelsPyConversionTestCase(TestCase):
+class ModelsPyConversionTestCase(SimpleTestCase):
     def setUp(self):
         self.models_py = """
         from django.db import models

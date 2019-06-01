@@ -14,42 +14,38 @@ class ModelSchemaEditor:
         self.editor = connection.schema_editor
 
     def update_table(self, new_model):
-        print("Update table", new_model)
         if self.initial_model and self.has_changed(new_model):
-            print("Has changed. Altering table...")
             self.alter_table(new_model)
         elif not self.initial_model:
-            print("New table detected. Creating...")
             self.create_table(new_model)
-        print("Done")
         self.initial_model = new_model
 
-    def has_changed(self, model):
-        return self.initial_model != model
+    def has_changed(self, new_model):
+        old_name = self.initial_model._meta.db_table
+        new_name = new_model._meta.db_table
+        if old_name == new_name:
+            return False
+        return self.initial_model != new_model
 
     def create_table(self, new_model):
-        """Create a database table for this model."""
-        print("create_table", new_model)
+        """
+        Create a database table for this model.
+        """
         with self.editor() as editor:
-            print("editor", editor)
             editor.create_model(new_model)
 
     def alter_table(self, new_model):
-        """Change the model's db_table to the currently set name."""
-        print("alter_table", new_model)
-        old_name = self.initial_model._meta.db_table
-        print("old_name", old_name)
-        new_name = new_model._meta.db_table
-        print("new_name", new_name)
+        """
+        Change the model's db_table to the currently set name.
+        """
         with self.editor() as editor:
-            print("editor", editor)
             editor.alter_db_table(new_model, old_name, new_name)
 
     def drop_table(self, model):
-        """Delete a database table for the model."""
-        print("drop_table", model)
+        """
+        Delete a database table for the model.
+        """
         with self.editor() as editor:
-            print('editor', editor)
             editor.delete_model(model)
 
 
@@ -59,24 +55,23 @@ class FieldSchemaEditor:
         self.editor = connection.schema_editor
 
     def update_column(self, model, new_field):
-        print("updating_column", new_field)
         if self.initial_field and self.has_changed(new_field):
-            print("Changed field detected changing to", new_field)
             self.alter_column(model, new_field)
         elif not self.initial_field:
-            print("New field detected", new_field)
             self.add_column(model, new_field)
         self.initial_field = new_field
 
     def has_changed(self, field):
-        """Check if the field schema has changed."""
+        """
+        Check if the field schema has changed.
+        """
         return self.initial_field != field
 
     def add_column(self, model, field):
-        """Add a field to this model's database table."""
-        print("add_column", model, field)
+        """
+        Add a field to this model's database table.
+        """
         with self.editor() as editor:
-            print("editor", editor)
             editor.add_field(model, field)
 
     def alter_column(self, model, new_field):
