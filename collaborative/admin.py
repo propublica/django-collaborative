@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
@@ -16,6 +18,9 @@ UserAdmin.add_fieldsets = ((None, {
     'fields': ('username', 'email', 'password1', 'password2'),
     'classes': ('wide',)
 }),)
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_getter(rel_name, attr_name, getter_name):
@@ -112,7 +117,12 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
         # get searchable and filterable (from column attributes)
         # TODO: order by something? number of results?
-        model_desc = DynamicModel.objects.get(name=name)
+        try:
+            model_desc = DynamicModel.objects.get(name=name)
+        except DynamicModel.DoesNotExist:
+            logger.warn("Model with name: %s doesn't exist. Skipping" % name)
+            return
+
         cols = list(reversed(model_desc.columns))
         searchable = [c.get("name") for c in cols if c.get("searchable")]
         filterable = [c.get("name") for c in cols if c.get("filterable")]
