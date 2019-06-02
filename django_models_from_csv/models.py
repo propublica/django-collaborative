@@ -6,7 +6,7 @@ from django import forms
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, AppRegistryNotReady
 from django.utils.functional import cached_property
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -86,6 +86,12 @@ class DynamicModel(models.Model):
         default=random_token,
     )
 
+    # This is a bit of a hack, but since Django calls post_save
+    # migrations inside of save(), and we have to do our manual
+    # migrations *after* save, there is a .middle state when using
+    # actual migrations (model exists, but not in table). This
+    # is a hacky workaround to get post_save signals to run after
+    # save() and DB migrations have been ran.
     _POST_SAVE_SIGNALS = []
 
     class Meta:
@@ -151,11 +157,16 @@ class DynamicModel(models.Model):
 
         Returns None is model doesn't exist.
         """
-        these_models = sys.modules[__name__]
         model_name = name or self.name
-        if not hasattr(these_models, model_name):
+        try:
+            return apps.get_model('django_models_from_csv', model_name)
+        except LookupError as e:
             return None
-        return getattr(these_models, model_name)
+        # these_models = sys.modules[__name__]
+        # model_name = name or self.name
+        # if not hasattr(these_models, model_name):
+        #     return None
+        # return getattr(these_models, model_name)
 
     def make_token(self):
         return random_token(16)
@@ -203,7 +214,7 @@ class DynamicModel(models.Model):
         super().save(**kwargs)
         self.do_migrations()
         create_models()
-        for fn in _POST_SAVE_SIGNALS:
+        for fn in self._POST_SAVE_SIGNALS:
             fn(self)
 
 
@@ -250,8 +261,16 @@ def construct_model(dynmodel):
     """
     This creates the model instance from a dynamic model description record.
     """
-    attrs = create_model_attrs(dynmodel)
     model_name = dynmodel.name
+    _model = dynmodel.get_model()
+
+    if not hasattr(sys.modules[__name__], model_name):
+        setattr(sys.modules[__name__], model_name, _model)
+
+    if _model:
+        return _model
+
+    attrs = create_model_attrs(dynmodel)
 
     if not attrs:
         logger.warn(
@@ -260,11 +279,14 @@ def construct_model(dynmodel):
 
     # we have no fields defined
     if len(attrs.keys()) <= 2:
-        logger.warn(
+        logger.warning(
             "WARNING: skipping model: %s. not enough columns" % dynmodel.name)
         return
 
-    return type(model_name, (models.Model,), attrs)
+    logger.info("Creating Model class")
+    _model = type(model_name, (models.Model,), attrs)
+    logger.info("Done!")
+    return _model
 
 
 def create_models():
@@ -273,23 +295,21 @@ def create_models():
     in our database.
     """
     for dynmodel in DynamicModel.objects.all():
-        attrs = create_model_attrs(dynmodel)
         model_name = dynmodel.name
-
-        if not attrs:
-            logger.warn(
-                "WARNING: skipping model: %s. bad columns record" % dynmodel.name)
-            continue
-
-        # we have no fields defined
-        if len(attrs.keys()) <= 2:
-            logger.warn(
-                "WARNING: skipping model: %s. not enough columns" % dynmodel.name)
+        _model = construct_model(dynmodel)
+        if not _model:
+            logger.error("No model was created for: %s" % model_name)
             continue
 
         # set DynRow w/o specifying it here
-        _model = type(model_name, (models.Model,), attrs)
-        setattr(sys.modules[__name__], model_name, _model)
+        logger.info("Registering model", model_name)
+        # setattr(sys.modules[__name__], model_name, _model)
+        try:
+            apps.get_model(_model._meta.app_label, model_name)
+            logger.info("Model alread %s registered! Skipping." % model_name)
+            continue
+        except LookupError as e:
+            pass
 
 
 try:

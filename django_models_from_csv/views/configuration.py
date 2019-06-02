@@ -22,7 +22,6 @@ def begin(request):
     if request.method == "GET":
         # Don't go back into this flow if we've already done it
         addnew = request.GET.get("addnew")
-        print("addnew", addnew)
         models_count = models.DynamicModel.objects.count()
         if addnew:
             return render(request, 'begin.html', {})
@@ -104,7 +103,7 @@ def import_data(request, id):
         })
     elif request.method == "POST":
         next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
-        Model = getattr(models, dynmodel.name)
+        Model = dynmodel.get_model()
         if dynmodel.csv_url:
             csv = fetch_csv(dynmodel.csv_url)
         elif dynmodel.sd_api_key:

@@ -53,11 +53,7 @@ def build_and_link_metadata_fk(dynmodel):
     admin detail page, without messing with the CSV-backed records at all.
     (Since the FK is on the metadata side.)
     """
-    # dynmodel = kwargs.get("instance")
     if not dynmodel:
-        return
-
-    if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
         return
 
     tag_csv_dynmodel(dynmodel)
@@ -115,6 +111,10 @@ def build_and_link_metadata_fk(dynmodel):
         )
         dyn_contactmodel.save()
 
+        # connect a signal to attach blank FK relationships upon
+        # record create for this new table
+        post_save.connect(attach_blank_meta_to_record, sender=Model)
+
 
 def attach_blank_meta_to_record(sender, instance, **kwargs):
     """
@@ -130,7 +130,8 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
         return
 
     meta_model_name = "%sMetadata" % instance._meta.object_name
-    MetaModel = getattr(models, meta_model_name)
+    meta_model_desc = models.DynamicModel.objects.get(name=meta_model_name)
+    MetaModel = meta_model_desc.get_model()
     meta_direct_count = MetaModel.objects.filter(
         metadata__id=instance.id
     ).count()
@@ -150,12 +151,12 @@ def setup_dynmodel_signals():
     only attach dynamically-generated signals to non-CSV backed
     models.
     """
-    DynamicModel._POST_SAVE_SIGNALS.append(attach_blank_meta_to_record)
-    # for dynmodel in models.DynamicModel.objects.all():
-    #     if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
-    #         continue
-    #     Model = getattr(models, dynmodel.name)
-    #     # post_save.connect(attach_blank_meta_to_record, sender=Model)
+    models.DynamicModel._POST_SAVE_SIGNALS.append(build_and_link_metadata_fk)
+    for dynmodel in models.DynamicModel.objects.all():
+        if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
+            continue
+        Model = getattr(models, dynmodel.name)
+        post_save.connect(attach_blank_meta_to_record, sender=Model)
 
 
 try:

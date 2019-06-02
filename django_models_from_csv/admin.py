@@ -1,10 +1,16 @@
+import importlib
 import logging
+import sys
 
 from django.apps import apps
+from django.conf import settings
 from django.contrib import admin
+from django.urls.base import clear_url_caches
+from django.utils.module_loading import import_module
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
+from django_models_from_csv.models import create_models
 from django_models_from_csv.utils.common import get_setting
 
 
@@ -23,12 +29,22 @@ class AdminAutoRegistration:
         self.all_models = apps.get_models()
 
     def attempt_register(self, Model, ModelAdmin):
+        setattr(sys.modules[__name__], ModelAdmin.__name__, ModelAdmin)
+        try:
+            admin.site.unregister(Model)
+        except admin.sites.NotRegistered:
+            pass
         try:
             admin.site.register(Model, ModelAdmin)
         except admin.sites.AlreadyRegistered:
-            logger.warn("WARNING! Not registering model: %s. Already exists." % (
+            logger.warning("WARNING! %s admin already exists." % (
                 str(Model)
             ))
+
+        # If we don't do this, our module will show up in admin but
+        # it will show up as an unclickable thing with on add/change
+        importlib.reload(import_module(settings.ROOT_URLCONF))
+        clear_url_caches()
 
     def get_readonly_fields(self, Model):
         return []
@@ -57,7 +73,11 @@ class AdminAutoRegistration:
         return self.include in str(Model)
 
     def register(self):
-        for Model in self.all_models:
+        try:
+            create_models()
+        except Exception:
+            pass
+        for Model in apps.get_models():
             if not self.should_register_admin(Model):
                 continue
 

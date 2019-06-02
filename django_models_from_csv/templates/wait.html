@@ -45,7 +45,7 @@ const triggerMigrations = () => {
   const token = urlParams.get('token');
   httpPost("{% url 'csv_models:migrate' %}", token, startWait);
 };
-setTimeout(triggerMigrations, 5000);
+setTimeout(triggerMigrations, 500);
 </script>
 {% endblock %}
 

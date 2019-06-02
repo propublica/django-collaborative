@@ -96,6 +96,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         if "Metadata" in name or name == "DynamicModel":
             return super().create_admin(Model)
 
+
         meta = []
         # find the Metadata model corresponding to the
         # csv-backed model we're creating admin for.
@@ -120,7 +121,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         try:
             model_desc = DynamicModel.objects.get(name=name)
         except DynamicModel.DoesNotExist:
-            logger.warn("Model with name: %s doesn't exist. Skipping" % name)
+            logger.warning("Model with name: %s doesn't exist. Skipping" % name)
             return
 
         cols = list(reversed(model_desc.columns))
@@ -137,8 +138,9 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             if hasattr(Model, "metadata_partner"):
                 associated_fields.append("metadata_partner")
         list_display = associated_fields + fields[:5]
+
         # Note that ExportMixin needs to be declared first here
-        return type("%sAdmin" % name, (ExportMixin, ReverseFKAdmin), {
+        return type("%sAdmin" % name, (ExportMixin, ReverseFKAdmin,), {
             "inlines": meta,
             "readonly_fields": fields,
             "list_display": list_display,
@@ -148,10 +150,19 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         })
 
 
-AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
 admin.site.register(LogEntry)
 
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"
 
+def register_dynamic_admins(*args, **kwargs):
+    AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
+
+# Register the ones that exist ...
+register_dynamic_admins()
+
+# ... and register new ones that get created. Otherwise, we'd
+# have to actually restart the Django process post-model create
+if register_dynamic_admins not in DynamicModel._POST_SAVE_SIGNALS:
+    DynamicModel._POST_SAVE_SIGNALS.append(register_dynamic_admins)
