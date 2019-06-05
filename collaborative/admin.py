@@ -96,7 +96,6 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         if "Metadata" in name or name == "DynamicModel":
             return super().create_admin(Model)
 
-
         meta = []
         # find the Metadata model corresponding to the
         # csv-backed model we're creating admin for.
@@ -122,7 +121,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             model_desc = DynamicModel.objects.get(name=name)
         except DynamicModel.DoesNotExist:
             logger.warning("Model with name: %s doesn't exist. Skipping" % name)
-            return
+            return super().create_admin(Model)
 
         cols = list(reversed(model_desc.columns))
         searchable = [c.get("name") for c in cols if c.get("searchable")]

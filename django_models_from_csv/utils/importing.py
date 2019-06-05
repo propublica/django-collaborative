@@ -35,7 +35,13 @@ def import_records_list(csv, dynmodel):
     a row ID column and all headers translated to model field names.
     """
     data = Dataset().load(csv)
-    data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
+    # add an ID column matching the row number
+    if dynmodel.csv_url:
+        data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
+    # # screendoor: use the builtin ID field
+    # elif dynmodel.csv_url:
+    #     # data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
+
     # Turn our CSV columns into model columns
     for i in range(len(data.headers)):
         header = data.headers[i]
@@ -102,3 +108,24 @@ def import_records(csv, Model, dynmodel):
     if result.has_errors():
         errors = result.row_errors()
         return errors
+
+
+def update_records(csv, Model, dynmodel):
+    """
+    Take a CSV and update an existing model. Here, we want
+    to reconcile old records with the new ones. We do this in
+    the following ways:
+
+    Screendoor:
+
+        1. Use their ID. Done!
+
+    Google sheets:
+
+        1. Make sure we have a timestamp field.
+        2. Go through the rows, looking up each corresponding ID.
+        3. Check the timestamp to ensure we've got the same record.
+        4. a. If it's different, scan the list to see if we have
+              a following matching record.
+    """
+    pass

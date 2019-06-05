@@ -11,11 +11,6 @@ class ImportRecordsTestCase(SimpleTestCase):
     databases = '__all__'
 
     def setUp(self):
-        if connection.vendor == 'sqlite':
-            print("SQLite detected. Removing FK checks")
-            cursor = connection.cursor()
-            cursor.execute('PRAGMA foreign_keys = OFF;')
-
         self.csv = """timestamp,question one,checkbox
 11903923302,response 1,1
 29803243893,another response,0
@@ -41,6 +36,9 @@ class ImportRecordsTestCase(SimpleTestCase):
             },{
                 "name": "where",
                 "type": "short-text",
+                "attrs": {
+                    "max_length": 50
+                }
             }]
         )
         # index of date col for tests
@@ -48,6 +46,7 @@ class ImportRecordsTestCase(SimpleTestCase):
 
     def tearDown(self):
         self.sheet.delete()
+        self.sheet_w_date.delete()
 
     def test_can_transform_to_objects(self):
         data = import_records_list(self.csv, self.sheet)

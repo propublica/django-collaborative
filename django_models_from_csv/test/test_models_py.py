@@ -8,6 +8,8 @@ from django_models_from_csv.utils.dynmodel import from_models_py
 
 
 class ModelsPyConversionTestCase(SimpleTestCase):
+    databases = '__all__'
+
     def setUp(self):
         self.models_py = """
         from django.db import models

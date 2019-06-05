@@ -162,11 +162,6 @@ class DynamicModel(models.Model):
             return apps.get_model('django_models_from_csv', model_name)
         except LookupError as e:
             return None
-        # these_models = sys.modules[__name__]
-        # model_name = name or self.name
-        # if not hasattr(these_models, model_name):
-        #     return None
-        # return getattr(these_models, model_name)
 
     def make_token(self):
         return random_token(16)

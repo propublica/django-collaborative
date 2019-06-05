@@ -2220,3 +2220,16 @@ class ScreendoorTestCase(TestCase):
         self.assertTrue(csv)
         lines = csv.split("\n")
         self.assertTrue("What's your email address?" in lines[0])
+
+    # @patch.object(requests, "get")
+    # def test_can_use_buildin_id_during_import(self, mockget):
+    #     mockresponse = Mock()
+    #     mockget.return_value = mockresponse
+    #     mockresponse.json.side_effect = [
+    #         LIST_FORMS, LIST_RESPONSES
+    #     ]
+    #     importer = ScreendoorImporter(api_key="KEY", base_url="https://fake.tld")
+    #     csv = importer.build_csv(6076)
+    #     print("Screendoor CSV", csv)
+    #     self.assertTrue(len(csv))
+    #     self.assertTrue(False)

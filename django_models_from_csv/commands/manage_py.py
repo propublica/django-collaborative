@@ -57,15 +57,6 @@ def run_makemigrations(module):
     mkmigrate_cmd.handle(*args, **options)
 
 
-def turn_fk_checks(on=True):
-    conn = connections[DEFAULT_DB_ALIAS]
-    cursor = conn.cursor()
-    sql = "PRAGMA foreign_keys = %s;" % (
-        "ON" if on else "OFF"
-    )
-    cursor.execute(sql)
-
-
 def run_migrate():
     """
     Run the equivalent of ./manage.py migrate

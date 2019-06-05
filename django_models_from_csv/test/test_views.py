@@ -103,6 +103,8 @@ COLUMNS = [
 
 
 class ViewsTestCaseBase(SimpleTestCase):
+    databases = "__all__"
+
     def login(self):
         self.client.login(username="admin", password=self.password)
 
@@ -120,7 +122,6 @@ class ViewsTestCaseBase(SimpleTestCase):
 
 
 class BeginViewTestCase(ViewsTestCaseBase):
-    databases = "__all__"
 
     def setUp(self):
         super(BeginViewTestCase, self).setUp()
@@ -131,7 +132,10 @@ class BeginViewTestCase(ViewsTestCaseBase):
         DynamicModel.objects.all().delete()
 
     def test_can_access_begin_csv_model_page_authed(self):
-        response = self.client.get(reverse('csv_models:begin'))
+        self.login()
+        url = reverse('csv_models:begin')
+        url += "?addnew=true"
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_cannot_access_begin_csv_model_page_unauthed(self):
@@ -144,10 +148,10 @@ class BeginViewTestCase(ViewsTestCaseBase):
         fetch_csv.return_value = self.csv
         ids = DynamicModel.objects.all().values("id")
         response = self.client.post(reverse('csv_models:begin'), {
-            "name": "TestSheet",
+            "csv_name": "TestSheet",
             "csv_url": "https://fake.url",
         })
-        new_dynmodel = DynamicModel.objects.last()
+        new_dynmodel = DynamicModel.objects.first()
         to_url = reverse(
             'csv_models:refine-schema', args=[new_dynmodel.id]
         )
@@ -177,6 +181,8 @@ class BeginViewTestCase(ViewsTestCaseBase):
 
 
 class RefineViewTestCase(ViewsTestCaseBase):
+    databases = "__all__"
+
     def setUp(self):
         super(RefineViewTestCase, self).setUp()
         self.columns = [

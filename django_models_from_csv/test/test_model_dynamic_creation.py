@@ -22,6 +22,9 @@ class ModelDynamicCreationTestCase(SimpleTestCase):
             }]
         )
 
+    def tearDown(self):
+        self.dynmodel.delete()
+
     def test_columns_is_object(self):
         self.assertTrue(isinstance(self.dynmodel.columns, list))
 
@@ -36,9 +39,7 @@ class ModelDynamicCreationTestCase(SimpleTestCase):
         self.assertGreaterEqual(len(attrs.keys()), 4)
 
     def test_can_build_model_from_dynmodel_object(self):
-        create_models()
-        from django_models_from_csv import models
-        SomeGoogleSheet = getattr(models, "SomeGoogleSheet")
+        SomeGoogleSheet = self.dynmodel.get_model()
         self.assertTrue(SomeGoogleSheet is not None)
         self.assertTrue(SomeGoogleSheet.name is not None)
         self.assertTrue(SomeGoogleSheet.when is not None)
