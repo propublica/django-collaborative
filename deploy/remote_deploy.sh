@@ -63,9 +63,11 @@ sudo /opt/collaborative/app/venv/bin/pip install \
 
 # Run migrations
 sudo /opt/collaborative/app/venv/bin/python \
-    /opt/collaborative/app/manage.py migrate
+    /opt/collaborative/app/manage.py migrate \
+    || die "Failure to migrate"
 sudo /opt/collaborative/app/venv/bin/python \
-    /opt/collaborative/app/manage.py collectstatic --noinput
+    /opt/collaborative/app/manage.py collectstatic --noinput \
+    || die "Failure to gather static files"
 
 # Set Apache perms on everything
 sudo chown -R www-data:www-data /opt/collaborative \

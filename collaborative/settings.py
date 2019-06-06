@@ -29,7 +29,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -227,6 +226,6 @@ except:
 # This is a stopgap until we find a better credential
 # storage solution
 try:
-   from collaborative.settings_config import *
+   from collaborative.settings_prod import *
 except:
     pass

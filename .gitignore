@@ -113,4 +113,5 @@ tags
 code/collaborative
 www/
 collaborative/settings_dev.py
+collaborative/settings_prod.py
 Makefile
