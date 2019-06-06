@@ -11,7 +11,7 @@ The project is broken up into several components:
 - Customizable fields for tagging, querying, annotating and tracking tips.
 - A "one-click", turnkey deployment option for Google Application Engine.
 
-_This is very much a work-in-progress and the code is quickly evolving._ Pretty much everything in the codebase should be considered volatile right now and subject to bold changes. No deployment options are available, yet (you're stuck with `./manage.py runserver`).
+_This is very much a work-in-progress and the code is quickly evolving._ Pretty much everything in the codebase should be considered volatile right now and subject to bold changes.
 
 ## Getting Started (Local Testing/Development)
 
@@ -36,7 +36,3 @@ You can then access the application `http://localhost:8000` and log
 in with the credentials you selected in the `createsuperuser` step
 (above). Logging in will bring you to a configuration wizard where
 you will import your first Google Sheet and import its contents.
-
-## Deployment (not feasible, yet)
-
-This application relies on creating and manipulating internal Django models and database table schemas _at runtime_. Currently, we use the Django migrations system, requiring writing migration files followed by Python process restarts (which `runserver` handles for us). We're in the process of transitioning to a migrationless/rebootless method which will open a path to deployment. We'll remove this warning and replace it with deployment instructions once that is ready.

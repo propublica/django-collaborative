@@ -1,0 +1,3 @@
+39 11   * * *   root    /usr/bin/certbot renew --quiet --no-self-upgrade --post-hook /usr/bin/certbot-posthook
+39 23   * * *   root    /usr/bin/certbot renew --quiet --no-self-upgrade --post-hook /usr/bin/certbot-posthook
+
