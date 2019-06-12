@@ -4,9 +4,6 @@ die () {
     exit 1
 }
 
-# Stop running process
-sudo systemctl stop apache2
-
 # System dependencies
 sudo apt update
 sudo apt -y install apache2 libapache2-mod-wsgi-py3 libapache2-mod-nss \
@@ -52,6 +49,7 @@ if ! [ -L /etc/apache2/sites-enabled/collaborative.conf ]; then
 fi
 
 # Python dependencies/environment
+sudo rm -rf /opt/collaborative/app/venv
 sudo virtualenv -p $(which python3) /opt/collaborative/app/venv \
     || die "Failure setting up Python virtualenv"
 sudo /opt/collaborative/app/venv/bin/pip install \
@@ -79,5 +77,19 @@ sudo a2enmod wsgi \
     && sudo a2enmod headers \
     || die "Failure installing apache mods"
 
-# Good to go!
+# Set UTF-8 Apache encoding, else all Django requests will explode
+sudo mv -f /opt/collaborative/app/deploy/apache/envvars \
+    /etc/apache2/envvars
+
+# Letsencrypt updater (using system cron)
+if ! sudo grep -q certbot /etc/crontab; then
+    sudo sh -c \
+        "echo '# Auto-added by collaborative deploy script' >> /etc/crontab" \
+        || die "Failure instantiating certbot cron entry"
+    sudo sh -c \
+        "cat /opt/collaborative/app/deploy/letsencrypt/crontab >> /etc/crontab" \
+        || die "Failure adding certbot cron entry"
+fi
+
+# Apply everything
 sudo systemctl restart apache2

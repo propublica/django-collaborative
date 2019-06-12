@@ -84,19 +84,21 @@ def run_csvsql(csv):
     Returns a string representing the output of csvsql, which
     is a SQL CREATE TABLE command.
     """
-    f_in = tempfile.NamedTemporaryFile(mode='w', delete=False)
-    f_in.write(csv)
-    f_in.flush()
-    try:
-        # We have to close this in Windows
-        f_in.close()
-    except Exception as e:
-        pass # this means we're on a unix env
-    f_out = io.StringIO()
-    csvsql = CSVSQLWrap()
-    csvsql.args.dialect = "sqlite"
-    csvsql.args.skipinitialspace = True
-    csvsql.args.input_paths = [f_in.name]
-    csvsql.output_file = f_out
-    csvsql.main()
-    return f_out.getvalue()
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as f_in:
+        f_in.write(csv)
+        f_in.flush()
+        try:
+            # We have to close this in Windows
+            f_in.close()
+        except Exception as e:
+            pass # this means we're on a unix env
+
+        with io.StringIO() as f_out:
+            csvsql = CSVSQLWrap()
+            csvsql.args.dialect = "sqlite"
+            csvsql.args.skipinitialspace = True
+            csvsql.args.input_paths = [f_in.name]
+            csvsql.output_file = f_out
+            csvsql.main()
+            return f_out.getvalue()
+
