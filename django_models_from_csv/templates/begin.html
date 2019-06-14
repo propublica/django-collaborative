@@ -16,17 +16,21 @@ function showHide(cls) {
   var hide = "display: none;";
   if (!cls) return;
 
-  var block = document.querySelector(`div${cls}`);
+  var block = document.querySelector(`${cls}-body`);
   if (block.getAttribute("style") === hide) {
-      block.setAttribute("style", "display: block;");
-      document.querySelector(`h3${cls} .icon`).innerText = "➖";
-      document.querySelectorAll(`${cls} input`).forEach((i) => {
+      document.querySelectorAll(`${cls}-body`).forEach((i) => {
+          i.setAttribute("style", "");
+      });
+      document.querySelector(`${cls} .icon`).innerText = "➖";
+      document.querySelectorAll(`${cls}-body input`).forEach((i) => {
           i.value = "";
       });
   } else {
-      block.setAttribute("style", hide);
-      document.querySelector(`h3${cls} .icon`).innerText = "➕";
-      document.querySelectorAll(`${cls} input`).forEach((i) => {
+      document.querySelectorAll(`${cls}-body`).forEach((i) => {
+          i.setAttribute("style", hide);
+      });
+      document.querySelector(`${cls} .icon`).innerText = "➕";
+      document.querySelectorAll(`${cls}-body input`).forEach((i) => {
           i.value = "";
       });
   }
@@ -37,7 +41,7 @@ function showHide(cls) {
  * just be shown. So this gracefully fails.
  */
 function init() {
-  document.querySelectorAll("div.show-hide").forEach((d) => {
+  document.querySelectorAll(".show-hide").forEach((d) => {
       d.setAttribute("style", "display: none;");
   });
 }
@@ -58,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       <h3 class="from-csv" onclick="showHide('.from-csv')">
           <span class="icon">➕</span> Import From Google Sheets
       </h3>
-      <div class="show-hide from-csv">
+      <div class="show-hide from-csv-body">
           <p>
           Add a Google Sheets share link below to import it into the system. Make sure the link is an "Anyone with link can view" link, found in the Share menu.
           </p>
@@ -88,6 +92,39 @@ document.addEventListener("DOMContentLoaded", function(event) {
                              name="csv_url"
                              type="text"
                              placeholder="e.g., https://docs.google.com/spreadsheets/d/1SiI_sOj_LcW1qXzDSoBaOgZ_SR8SioKZ05auN1o90hc/edit?usp=sharing" />
+                      <br/>
+                      <h4 class="needs-auth" onclick="showHide('.needs-auth')">
+                          <span class="icon">➕</span> This is a private Sheet (needs Google Sign In)
+                      </h4>
+                  </td>
+              </tr>
+              <tr class="show-hide needs-auth-body google-sheets-authentication">
+                  <td>
+                      &nbsp;
+                  </td>
+                  <td>
+                      <h5>Google Authentication Instructions</h5>
+                      <video width="640" controls>
+                          <source src="{% static 'collaborative/google-sheets-instructions.mp4' %}" type="video/mp4" />
+                              Your browser does not support video.
+                      </video>
+                      <p>
+                          <a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly" target="_blank">
+                              <img src="{% static 'collaborative/btn_google_signin_light_normal_web.png' %}" /><br/>
+                              Click to get started with Google Authentication
+                          </a>
+                      </p>
+                  </td>
+              </tr>
+              <tr class="show-hide needs-auth-body">
+                  <td>
+                      <label for="csv_google_sheets_auth_code">{% trans 'Google Auth Code' %}</label>
+                  </td>
+                  <td>
+                      <input style="min-width:600px;"
+                             name="csv_google_sheets_auth_code"
+                             type="text"
+                             placeholder="{% trans 'Paste Google code here' %}" />
                   </td>
               </tr>
           </table>
@@ -95,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       <h3 class="from-screendoor" onclick="showHide('.from-screendoor')">
           <span class="icon">➕</span> Import From Screendoor
       </h3>
-      <div class="show-hide from-screendoor">
+      <div class="show-hide from-screendoor-body">
           <p>
           To import responses to a Screendoor form, enter an API key, project
           ID and (optionally) a form ID. (If you omit a form ID, we will

@@ -31,9 +31,15 @@ def begin(request):
     elif  request.method == "POST":
         # get params from request
         csv_url = request.POST.get("csv_url")
+        csv_google_sheets_auth_code = request.POST.get(
+            "csv_google_sheets_auth_code"
+        )
         sd_api_key = request.POST.get("sd_api_key")
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
+        if csv_url and csv_google_sheets_auth_code:
+            # TODO: perform authenticated google sheets fetch
+            raise NotImplementedError("No authed Google Sheets support, yet.")
         if csv_url:
             name = request.POST.get("csv_name")
             dynmodel = from_csv_url(name, csv_url)

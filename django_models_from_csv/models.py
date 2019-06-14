@@ -69,6 +69,11 @@ class DynamicModel(models.Model):
 
     # URL to a Google Sheet or any source CSV for building model
     csv_url = models.URLField(null=True, blank=True)
+    # For Google Sheets manual copy/paste auth. This is the only
+    # method that can work across local and deployed environments
+    csv_google_sheets_auth_code = models.CharField(
+        max_length=255, null=True, blank=True
+    )
 
     # Screendoor-specific columns
     sd_api_key = models.CharField(max_length=100, null=True, blank=True)
