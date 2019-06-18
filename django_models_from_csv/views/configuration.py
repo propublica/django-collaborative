@@ -7,8 +7,13 @@ from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.importing import import_records
-from django_models_from_csv.utils.dynmodel import from_csv_url, from_screendoor
+from django_models_from_csv.utils.dynmodel import (
+    from_csv_url, from_screendoor, from_private_sheet
+)
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
+from django_models_from_csv.utils.google_sheets import (
+   GoogleOAuth, PrivateSheetImporter
+)
 
 
 @login_required
@@ -38,11 +43,16 @@ def begin(request):
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
         if csv_url and csv_google_sheets_auth_code:
-            # TODO: perform authenticated google sheets fetch
-            raise NotImplementedError("No authed Google Sheets support, yet.")
-        if csv_url:
             name = request.POST.get("csv_name")
-            dynmodel = from_csv_url(name, csv_url)
+            dynmodel = from_private_sheet(
+                name, csv_url, auth_code=csv_google_sheets_auth_code,
+            )
+        elif csv_url:
+            name = request.POST.get("csv_name")
+            dynmodel = from_csv_url(
+                name, csv_url,
+                csv_google_sheets_auth_code=csv_google_sheets_auth_code
+            )
         elif sd_api_key:
             name = request.POST.get("sd_name")
             dynmodel = from_screendoor(
@@ -110,7 +120,20 @@ def import_data(request, id):
     elif request.method == "POST":
         next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
         Model = dynmodel.get_model()
-        if dynmodel.csv_url:
+        # TODO: move all these into methods of dynmodel
+        if dynmodel.csv_url and dynmodel.csv_google_refresh_token:
+            oauther = GoogleOAuth(
+                get_setting("GOOGLE_CLIENT_ID"),
+                get_setting("GOOGLE_CLIENT_SECRET")
+            )
+            access_data = oauther.get_access_data(
+                refresh_token=dynmodel.csv_google_refresh_token
+            )
+            token = access_data["access_token"]
+            csv = PrivateSheetImporter(token).get_csv_from_url(
+                dynmodel.csv_url
+            )
+        elif dynmodel.csv_url:
             csv = fetch_csv(dynmodel.csv_url)
         elif dynmodel.sd_api_key:
             importer = ScreendoorImporter(api_key=dynmodel.sd_api_key)

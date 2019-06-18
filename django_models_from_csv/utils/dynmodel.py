@@ -14,6 +14,9 @@ from django_models_from_csv.utils.models_py import (
     extract_field_type, extract_fields
 )
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
+from django_models_from_csv.utils.google_sheets import (
+    GoogleOAuth, PrivateSheetImporter
+)
 
 
 CSV_MODELS_TEMP_DB = get_setting(
@@ -81,7 +84,7 @@ def from_csv(name, csv_data, **kwargs):
     return from_models_py(name, fixed_models_py, **kwargs)
 
 
-def from_csv_url(name, csv_url):
+def from_csv_url(name, csv_url, csv_google_sheets_auth_code=None):
     """
     Build a dynamic model from a CSV URL. This supports Google
     Sheets share URLs and normal remote CSVs.
@@ -107,3 +110,23 @@ def from_screendoor(name, api_key, project_id, form_id=None):
         sd_form_id=form_id,
     ))
 
+
+def from_private_sheet(name, sheet_url, auth_code=None, refresh_token=None):
+    """
+    Build a model from a private Google Sheet, given an OAuth auth code
+    or refresh token, private sheet URL and name. This, of course,
+    assumes the user has already gone through the Google Auth flow and
+    explicitly granted Sheets view access.
+    """
+    GOOGLE_CLIENT_ID = get_setting("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = get_setting("GOOGLE_CLIENT_SECRET")
+    oauther = GoogleOAuth(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
+    access_data = oauther.get_access_data(
+        code=auth_code, refresh_token=refresh_token
+    )
+    token = access_data["access_token"]
+    csv = PrivateSheetImporter(token).get_csv_from_url(sheet_url)
+    return from_csv(name, csv, **dict(
+        csv_url=sheet_url,
+        csv_google_refresh_token=refresh_token or access_data["refresh_token"],
+    ))

@@ -24,6 +24,13 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
 
+# Google OAuth for Private Sheets Access
+GOOGLE_CLIENT_ID = "507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com"
+# Not secret! We're using public client security model. This
+# puts the burden on the user to explicitly grant access (via
+# copy and paste into the application)
+GOOGLE_CLIENT_SECRET = "Uk1AHTyOgNNTXz9EUa4Ezph7"
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

@@ -71,7 +71,7 @@ class DynamicModel(models.Model):
     csv_url = models.URLField(null=True, blank=True)
     # For Google Sheets manual copy/paste auth. This is the only
     # method that can work across local and deployed environments
-    csv_google_sheets_auth_code = models.CharField(
+    csv_google_refresh_token = models.CharField(
         max_length=255, null=True, blank=True
     )
 
