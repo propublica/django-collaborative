@@ -20,6 +20,7 @@ from django_models_from_csv.forms import SchemaRefineForm
 import requests
 
 from collaborative.settings import BASE_DIR
+from django_models_from_csv import models
 
 
 def setup_complete(request):
@@ -37,6 +38,10 @@ def setup_auth(request):
     Force the user to change the password and let them setup
     OAuth social login.
     """
+    # Don't show the password change screen if we've already
+    # added models.
+    if models.DynamicModel.objects.count() > 1:
+        return redirect('/admin/')
     if request.method == "GET":
         return render(request, 'setup-auth.html', {})
     elif request.method == "POST":
@@ -51,6 +56,4 @@ def setup_auth(request):
         admin.save()
         # TODO: store (google_oauth_key, google_oauth_secret) somewhere
         return redirect("setup-complete")
-
-
 

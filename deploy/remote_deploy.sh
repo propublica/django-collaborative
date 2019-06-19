@@ -75,6 +75,7 @@ sudo chown -R www-data:www-data /opt/collaborative \
 sudo a2enmod wsgi \
     && sudo a2enmod ssl \
     && sudo a2enmod headers \
+    && sudo a2enmod rewrite \
     || die "Failure installing apache mods"
 
 # Set UTF-8 Apache encoding, else all Django requests will explode
