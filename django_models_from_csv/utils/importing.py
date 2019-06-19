@@ -50,16 +50,24 @@ def import_records_list(csv, dynmodel):
             data.headers[i] = model_header
 
     datetime_ixs = []
+    date_ixs = []
     for c in dynmodel.columns:
         c_type = c.get("type")
-        if c_type and "date" in c_type:
-            name = c["name"]
-            try:
-                ix = data.headers.index(name)
-            except ValueError:
-                # Possibly a new column not in dynamic model description, ignore
-                continue
-            datetime_ixs.append(ix)
+        type_ixs = None
+        if c_type and c_type == "datetime":
+            type_ixs = datetime_ixs
+        elif c_type and c_type == "date":
+            type_ixs = date_ixs
+        else:
+            continue
+
+        name = c["name"]
+        try:
+            ix = data.headers.index(name)
+        except ValueError:
+            # Possibly a new column not in dynamic model description, ignore
+            continue
+        type_ixs.append(ix)
 
     newdata = Dataset(headers=data.headers)
     for row in data:
@@ -70,11 +78,14 @@ def import_records_list(csv, dynmodel):
                 try:
                     val = dt_parser.parse(val).strftime("%Y-%m-%d %H:%M:%S")
                 except Exception as e:
-                    # Try something after this?
-                    pass
+                    print("Error parsing datetime", e)
+            elif i in date_ixs:
+                try:
+                    val = dt_parser.parse(val).strftime("%Y-%m-%d")
+                except Exception as e:
+                    print("Error parsing date", e)
             newrow.append(val)
         newdata.append(newrow)
-
     return newdata
 
 
@@ -103,8 +114,17 @@ def import_records(csv, Model, dynmodel):
         errors = result.row_errors()
         print("DRY RUN: Errors", errors)
         return errors
-    result = resource.import_data(dataset, dry_run=False)
-    print("Result has errors?", result.has_errors())
+    # TODO: Better error handling. There are some strange situations
+    # where the importer will silently fail, despite has_errors, above,
+    # returning False. This will prevent bad imports and actually show
+    # an error, no matter how ugly. One such situation is attempting to
+    # import a badly formatted date into a DateField.
+    try:
+        result = resource.import_data(
+            dataset, dry_run=False, raise_errors=True
+        )
+    except Exception as e:
+        return e
     if result.has_errors():
         errors = result.row_errors()
         return errors

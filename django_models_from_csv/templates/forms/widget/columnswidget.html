@@ -120,7 +120,7 @@
         <select name="type">
           {% for column_value, column_name in widget.column_types %}
           <option value="{{ column_value }}"
-                  {% if column_value == value %}selected{% endif %}>
+                  {% if column_value == column.type %}selected{% endif %}>
           {{ column_name }}
           </option>
           {% endfor %}

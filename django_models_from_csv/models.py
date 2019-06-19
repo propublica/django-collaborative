@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 # For lookup during conversion from generated models.py
 TYPE_TO_FIELDNAME = {
     "models.TextField": "text",
-    "models.CharField": "text",
+    "models.CharField": "short-text",
     "models.DateField": "date",
     "models.TimeField": "time",
     "models.DateTimeField": "datetime",

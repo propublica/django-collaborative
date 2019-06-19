@@ -194,7 +194,7 @@ class PrivateSheetImporter:
         values = self.get_sheet_values(sheet_id)
         headers = values.pop(0)
         # TODO: this should be shared across screendoor importer
-        data = Dataset(headers=[re.sub("[\,\n\r]+", "", h) for h in headers])
+        data = Dataset(headers=headers)
         for row in values:
             data.append(row)
         return data.export("csv")
