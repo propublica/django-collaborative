@@ -58,16 +58,25 @@ document.addEventListener("DOMContentLoaded", function(event) {
   <p>
   This step will not import any data, but will read the source data and give you a chance to double check and modify the column types. Importing will happen on the next screen. Select a data source to get started.
   </p>
+  <p class="note">
+  NOTE: Your data source must have uniquely named column headers.
+  </p>
+  {% if errors %}
+  <div class="error">
+    <h3>The following errors were encountered while importing</h3>
+    <p>
+      {{ errors }}
+    </p>
+  </div>
+  {% endif %}
+
   <form action="{% url 'db-config:begin' %}" method="POST">
       <h3 class="from-csv" onclick="showHide('.from-csv')">
-          <span class="icon">➕</span> Import From Google Sheets
+          <span class="icon">➕</span> Import From Google Sheets/CSV URL
       </h3>
       <div class="show-hide from-csv-body">
           <p>
           Add a Google Sheets share link below to import it into the system. Make sure the link is an "Anyone with link can view" link, found in the Share menu.
-          </p>
-          <p class="note">
-          NOTE: Your spreadsheet must have a header row!
           </p>
           <table>
               <tr>

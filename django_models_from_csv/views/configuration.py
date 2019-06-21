@@ -1,8 +1,11 @@
+import logging
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
 from django_models_from_csv import models
+from django_models_from_csv.exceptions import UniqueColumnError
 from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv
@@ -14,6 +17,9 @@ from django_models_from_csv.utils.screendoor import ScreendoorImporter
 from django_models_from_csv.utils.google_sheets import (
    GoogleOAuth, PrivateSheetImporter
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
@@ -42,25 +48,30 @@ def begin(request):
         sd_api_key = request.POST.get("sd_api_key")
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
-        if csv_url and csv_google_sheets_auth_code:
-            name = request.POST.get("csv_name")
-            dynmodel = from_private_sheet(
-                name, csv_url, auth_code=csv_google_sheets_auth_code,
-            )
-        elif csv_url:
-            name = request.POST.get("csv_name")
-            dynmodel = from_csv_url(
-                name, csv_url,
-                csv_google_sheets_auth_code=csv_google_sheets_auth_code
-            )
-        elif sd_api_key:
-            name = request.POST.get("sd_name")
-            dynmodel = from_screendoor(
-                name,
-                sd_api_key,
-                int(sd_project_id),
-                form_id=int(sd_form_id) if sd_form_id else None
-            )
+        try:
+            if csv_url and csv_google_sheets_auth_code:
+                name = request.POST.get("csv_name")
+                dynmodel = from_private_sheet(
+                    name, csv_url, auth_code=csv_google_sheets_auth_code,
+                )
+            elif csv_url:
+                name = request.POST.get("csv_name")
+                dynmodel = from_csv_url(
+                    name, csv_url,
+                    csv_google_sheets_auth_code=csv_google_sheets_auth_code
+                )
+            elif sd_api_key:
+                name = request.POST.get("sd_name")
+                dynmodel = from_screendoor(
+                    name,
+                    sd_api_key,
+                    int(sd_project_id),
+                    form_id=int(sd_form_id) if sd_form_id else None
+                )
+        except UniqueColumnError as e:
+            return render(request, 'begin.html', {
+                "errors": str(e)
+            })
         return redirect('csv_models:refine-schema', dynmodel.id)
 
 
@@ -69,8 +80,15 @@ def refine_schema(request, id):
     """
     Allow the user to modify the auto-generated column types and
     names. This is done before we import the dynmodel data.
+
+    If this succeeds, we do some preliminary checks against the
+    CSV file to make sure there aren't duplicate headers/etc.
+    Then we do the import. On success, this redirects to the URL
+    specified by the `next` query parameter.
     """
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
+    # TODO: This flow needs to also do the import, eliminating
+    # the following flow screens/endpoints.
     if request.method == "GET":
         refine_form = SchemaRefineForm({
             "columns": dynmodel.columns
@@ -89,38 +107,12 @@ def refine_schema(request, id):
 
         columns = refine_form.cleaned_data["columns"]
         dynmodel.columns = columns
+        # Alter the DB
         dynmodel.save()
-        url = reverse("csv_models:wait")
-        next = reverse("csv_models:import-data", args=[dynmodel.id])
-        # Security: make sure this is never None
-        if not dynmodel.token:
-            dynmodel.token = dynmodel.make_token()
-            dynmodel.save()
-        to = "%s?next=%s&token=%s" % (url, next, dynmodel.token)
-        return redirect(to)
 
+        # TODO: pre-check on CSV, look for dupes, header and other situations
 
-@login_required
-def import_data(request, id):
-    """
-    Loads the rows found in the dynmodel into the database. This is
-    done once the user has had a chance to change the column names
-    and types. On success, this redirects to the URL specified by
-    the `next` query parameter.
-
-    NOTE: We do the import as a POST as a security precaution. The
-    GET phase isn't really necessary, so the page just POSTs the
-    form automatically via JS on load.
-    """
-    dynmodel = get_object_or_404(models.DynamicModel, id=id)
-    if request.method == "GET":
-        return render(request, 'import-data.html', {
-            "dynmodel": dynmodel
-        })
-    elif request.method == "POST":
-        next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
-        Model = dynmodel.get_model()
-        # TODO: move all these into methods of dynmodel
+        # Now perform the import
         if dynmodel.csv_url and dynmodel.csv_google_refresh_token:
             oauther = GoogleOAuth(
                 get_setting("GOOGLE_CLIENT_ID"),
@@ -142,16 +134,39 @@ def import_data(request, id):
             )
         else:
             raise NotImplementedError("Invalid data source for %s" % dynmodel)
+
+        logger.error("Importing CSV:\n%s" % csv)
         errors = import_records(csv, Model, dynmodel)
         if errors:
-            return render(request, 'import-data.html', {
-                "errors": errors,
+            return render(request, 'refine-schema.html', {
+                "form": refine_form,
                 "dynmodel": dynmodel,
+                "errors": errors,
             })
+
+        next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
         if next:
             return redirect(next)
-        # TODO: implment this
+
         return render(request, "import-complete.html", {
             "dynmodel": dynmodel,
             "n_records": Model.objects.count(),
         })
+
+
+@login_required
+def import_data(request, id):
+    """
+
+    NOTE: We do the import as a POST as a security precaution. The
+    GET phase isn't really necessary, so the page just POSTs the
+    form automatically via JS on load.
+    """
+    dynmodel = get_object_or_404(models.DynamicModel, id=id)
+    if request.method == "GET":
+        return render(request, 'import-data.html', {
+            "dynmodel": dynmodel
+        })
+    elif request.method == "POST":
+        Model = dynmodel.get_model()
+

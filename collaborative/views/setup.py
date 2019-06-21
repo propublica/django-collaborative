@@ -40,7 +40,11 @@ def setup_auth(request):
     """
     # Don't show the password change screen if we've already
     # added models.
-    if models.DynamicModel.objects.count() > 1:
+    # TODO: use a more elegant and reliable way to determine
+    # if the configuration flow has been completed. We will need
+    # to allow users to re-enter the Google OAuth configuration
+    # step if they passed it initially (also store tokens!)
+    if models.DynamicModel.objects.count() > 3:
         return redirect('/admin/')
     if request.method == "GET":
         return render(request, 'setup-auth.html', {})

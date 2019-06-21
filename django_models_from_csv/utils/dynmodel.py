@@ -1,11 +1,14 @@
+import logging
 import re
 import string
 
 from django.contrib.auth.models import User
 from django.db import connections, transaction
+from tablib import Dataset
 
 from django_models_from_csv.commands.csvsql import run_csvsql
 from django_models_from_csv.commands.manage_py import run_inspectdb
+from django_models_from_csv.exceptions import UniqueColumnError
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
@@ -17,6 +20,9 @@ from django_models_from_csv.utils.screendoor import ScreendoorImporter
 from django_models_from_csv.utils.google_sheets import (
     GoogleOAuth, PrivateSheetImporter
 )
+
+
+logger = logging.getLogger(__name__)
 
 
 CSV_MODELS_TEMP_DB = get_setting(
@@ -36,18 +42,34 @@ def execute_sql(sql):
     return table_name
 
 
+def csv_precheck(csv_data):
+    """
+    Do some basic sanity checks on a CSV.
+    """
+    data = Dataset().load(csv_data)
+    unique_names = []
+    for header in data.headers:
+        if header in unique_names:
+            raise UniqueColumnError("Duplicate column found: %s." % header)
+        unique_names.append(header)
+
+
 def from_models_py(name, models_py, **model_attrs):
     """
     Convert a generated models.py document to a DynamicModel with
     the specified name and URL to a source CSV.
     """
+    logger.debug("New model: %s models.py:\n %s" % (name, models_py))
     fields = extract_fields(models_py)
     columns = []
     for field_name, declaration in fields.items():
+        logger.info("Column field_name", field_name, "declaration", declaration)
         kwargs = extract_field_declaration_args(declaration)
         if not kwargs:
             kwargs = {}
+        logger.info("Field kwargs", kwargs)
         field_type = extract_field_type(declaration)
+        logger.info("field_type", field_type)
         try:
             original_name = kwargs.pop("db_column")
         except KeyError as e:
@@ -60,6 +82,7 @@ def from_models_py(name, models_py, **model_attrs):
             "searchable": True,
             "filterable": False,
         })
+        logger.info("from_models_py Columns: %s" % columns)
     dynmodel = DynamicModel.objects.create(
         name = name,
         columns = columns,
@@ -74,13 +97,19 @@ def from_csv(name, csv_data, **kwargs):
     The model is given a specified name and is populated with the
     attributes found in kwargs.
     """
+    logger.debug("New model from CSV:\n %s" % csv_data)
+    csv_precheck(csv_data)
     # build SQL from CSV
     sql = run_csvsql(csv_data)
+    logger.debug("SQL: %s" % sql)
     # create these tables in our DB
     table_name = execute_sql(sql)
+    logger.debug("table_name: %s" % table_name)
     # build models.py from this DB
     models_py = run_inspectdb(table_name=table_name)
+    logger.debug("models_py: %s" % models_py)
     fixed_models_py = fix_models_py(models_py)
+    logger.debug("fixed_models_py: %s" % fixed_models_py)
     return from_models_py(name, fixed_models_py, **kwargs)
 
 

@@ -1,3 +1,5 @@
+import logging
+
 from dateutil import parser as dt_parser
 from import_export.resources import (
     # modelresource_factory,
@@ -7,6 +9,9 @@ from tablib import Dataset
 
 from django_models_from_csv import models
 from django_models_from_csv.utils.csv import fetch_csv
+
+
+logger = logging.getLogger(__name__)
 
 
 def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None):
@@ -75,15 +80,25 @@ def import_records_list(csv, dynmodel):
         for i in range(len(row)):
             val = row[i]
             if i in datetime_ixs:
+                if not val:
+                    newrow.append(None)
+                    continue
                 try:
                     val = dt_parser.parse(val).strftime("%Y-%m-%d %H:%M:%S")
                 except Exception as e:
-                    print("Error parsing datetime", e)
+                    logger.error("Error parsing datetime: %s" % e)
+                    newrow.append(None)
+                    continue
             elif i in date_ixs:
+                if not val:
+                    newrow.append(None)
+                    continue
                 try:
                     val = dt_parser.parse(val).strftime("%Y-%m-%d")
                 except Exception as e:
-                    print("Error parsing date", e)
+                    logger.error("Error parsing date: %s" % e)
+                    newrow.append(None)
+                    continue
             newrow.append(val)
         newdata.append(newrow)
     return newdata
@@ -107,12 +122,13 @@ def import_records(csv, Model, dynmodel):
     """
     resource = modelresource_factory(model=Model)()
     dataset = import_records_list(csv, dynmodel)
+    logger.debug("Importing CSV:\n%s" % dataset.export("csv"))
     result = resource.import_data(dataset, dry_run=True)
-    print("DRY RUN: Result has errors?", result.has_errors())
+    logger.debug("DRY RUN: Result has errors? %s" % result.has_errors())
     # TODO: transform errors to something readable
     if result.has_errors():
         errors = result.row_errors()
-        print("DRY RUN: Errors", errors)
+        logger.debug("DRY RUN: Errors: %s" % errors)
         return errors
     # TODO: Better error handling. There are some strange situations
     # where the importer will silently fail, despite has_errors, above,

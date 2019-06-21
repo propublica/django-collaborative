@@ -1,9 +1,13 @@
+import logging
 import re
 
 import requests
 from tablib import Dataset
 
 from django_models_from_csv.utils.csv import extract_key_from_csv_url
+
+
+logger = logging.getLogger(__name__)
 
 
 class GoogleOAuth:
@@ -192,9 +196,15 @@ class PrivateSheetImporter:
         """
         sheet_id = extract_key_from_csv_url(sheet_url)
         values = self.get_sheet_values(sheet_id)
-        headers = values.pop(0)
+        headers = [re.sub("[:,\"'\n]", "", h) for h in values.pop(0)]
+        logger.error("Sheet Headers: %s" % headers)
         # TODO: this should be shared across screendoor importer
         data = Dataset(headers=headers)
+        n_headers = len(headers)
         for row in values:
+            n_cols = len(row)
+            if n_cols < n_headers:
+                row += [""] * (n_headers - n_cols)
             data.append(row)
-        return data.export("csv")
+        csv_data = data.export("csv")
+        return csv_data
