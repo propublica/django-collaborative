@@ -8,7 +8,7 @@ Database Columns | {{ block.super }}
 {% block content %}
 <div id="csv-models-config">
   <h2>Refine Database</h2>
-  <form action="{% url 'csv_models:refine-schema' dynmodel.id %}" method="POST">
+  <form action="{% url 'csv_models:refine-and-import' dynmodel.id %}" method="POST">
       {% if not errors %}
       <p>
       {% blocktrans trimmed %}

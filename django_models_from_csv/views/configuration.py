@@ -72,11 +72,11 @@ def begin(request):
             return render(request, 'begin.html', {
                 "errors": str(e)
             })
-        return redirect('csv_models:refine-schema', dynmodel.id)
+        return redirect('csv_models:refine-and-import', dynmodel.id)
 
 
 @login_required
-def refine_schema(request, id):
+def refine_and_import(request, id):
     """
     Allow the user to modify the auto-generated column types and
     names. This is done before we import the dynmodel data.
@@ -84,23 +84,22 @@ def refine_schema(request, id):
     If this succeeds, we do some preliminary checks against the
     CSV file to make sure there aren't duplicate headers/etc.
     Then we do the import. On success, this redirects to the URL
-    specified by the `next` query parameter.
+    specified by the CSV_MODELS_WIZARD_REDIRECT_TO setting if
+    it exists.
     """
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
-    # TODO: This flow needs to also do the import, eliminating
-    # the following flow screens/endpoints.
     if request.method == "GET":
         refine_form = SchemaRefineForm({
             "columns": dynmodel.columns
         })
-        return render(request, 'refine-schema.html', {
+        return render(request, 'refine-and-import.html', {
             "form": refine_form,
             "dynmodel": dynmodel,
         })
     elif  request.method == "POST":
         refine_form = SchemaRefineForm(request.POST)
         if not refine_form.is_valid():
-            return render(request, 'refine-schema.html', {
+            return render(request, 'refine-and-import.html', {
                 "form": refine_form,
                 "dynmodel": dynmodel,
             })
@@ -109,8 +108,7 @@ def refine_schema(request, id):
         dynmodel.columns = columns
         # Alter the DB
         dynmodel.save()
-
-        # TODO: pre-check on CSV, look for dupes, header and other situations
+        dynmodel.refresh_from_db()
 
         # Now perform the import
         if dynmodel.csv_url and dynmodel.csv_google_refresh_token:
@@ -135,10 +133,11 @@ def refine_schema(request, id):
         else:
             raise NotImplementedError("Invalid data source for %s" % dynmodel)
 
-        logger.error("Importing CSV:\n%s" % csv)
+        # Handle import errors
+        Model = dynmodel.get_model()
         errors = import_records(csv, Model, dynmodel)
         if errors:
-            return render(request, 'refine-schema.html', {
+            return render(request, 'refine-and-import.html', {
                 "form": refine_form,
                 "dynmodel": dynmodel,
                 "errors": errors,

@@ -1,15 +1,19 @@
+import importlib
 import json
 import logging
 import sys
 
 from django import forms
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError, AppRegistryNotReady
 from django.utils.functional import cached_property
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.urls.base import clear_url_caches
+from django.utils.module_loading import import_module
 from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
 
@@ -214,6 +218,8 @@ class DynamicModel(models.Model):
         super().save(**kwargs)
         self.do_migrations()
         create_models()
+        importlib.reload(import_module(settings.ROOT_URLCONF))
+        clear_url_caches()
         for fn in self._POST_SAVE_SIGNALS:
             fn(self)
 

@@ -132,10 +132,8 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         fields = self.get_fields(Model)
         associated_fields = []
         if name != "DynamicModel":
-            if hasattr(Model, "metadata_status"):
-                associated_fields.append("metadata_status")
-            if hasattr(Model, "metadata_partner"):
-                associated_fields.append("metadata_partner")
+            associated_fields.append("metadata_status")
+            associated_fields.append("metadata_partner")
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared first here
