@@ -55,9 +55,8 @@ def setup_auth(request):
         google_oauth_secret = request.POST.get("google_oauth_secret")
         if password != password_confirm:
             raise ValueError("Passwords do not match!")
-        admin = User.objects.get(username="admin")
-        admin.set_password(password)
-        admin.save()
+        request.user.set_password(password)
+        request.user.save()
         # TODO: store (google_oauth_key, google_oauth_secret) somewhere
         return redirect("setup-complete")
 
