@@ -29,7 +29,9 @@ def setup_complete(request):
     them continue.
     """
     if request.method == "GET":
-        return render(request, 'setup-complete.html', {})
+        return render(request, 'setup-complete.html', {
+            "user": request.user,
+        })
 
 
 @login_required
