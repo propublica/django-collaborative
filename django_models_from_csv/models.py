@@ -87,13 +87,6 @@ class DynamicModel(models.Model):
     # some attributes (as dict) to distinguish dynamic models from
     # eachother, to drive some business logic, etc. not used internally.
     attrs = JSONField(max_length=255, editable=True)
-    # a token for authenticating migration requests
-    # TODO: remove this once we've moved to migrationless
-    token = models.CharField(
-        max_length=16,
-        null=True, blank=True,
-        default=random_token,
-    )
 
     # This is a bit of a hack, but since Django calls post_save
     # migrations inside of save(), and we have to do our manual
