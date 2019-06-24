@@ -26,10 +26,8 @@ class AdminAutoRegistration:
     """
     def __init__(self, include="django_models_from_csv.models"):
         self.include = include
-        self.all_models = apps.get_models()
 
     def attempt_register(self, Model, ModelAdmin):
-        setattr(sys.modules[__name__], ModelAdmin.__name__, ModelAdmin)
         try:
             admin.site.unregister(Model)
         except admin.sites.NotRegistered:

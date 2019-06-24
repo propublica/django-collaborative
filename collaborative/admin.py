@@ -94,13 +94,13 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
     def create_admin(self, Model):
         name = Model._meta.object_name
         if "Metadata" in name or name == "DynamicModel":
-            return super().create_admin(Model)
+            return
 
         meta = []
         # find the Metadata model corresponding to the
         # csv-backed model we're creating admin for.
         # this will end up as an inline admin
-        for MetaModel in self.all_models:
+        for MetaModel in apps.get_models():
             meta_name = MetaModel._meta.object_name
             # all our additonal related models are in this pattern:
             # [ModelName][Contact|*]Metadata
