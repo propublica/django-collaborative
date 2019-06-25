@@ -30,7 +30,7 @@ def setup_complete(request):
     """
     if request.method == "GET":
         return render(request, 'setup-complete.html', {
-            "user": request.user,
+            "user": request.user or "admin",
         })
 
 

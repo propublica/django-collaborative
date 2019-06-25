@@ -223,8 +223,13 @@ def create_model_attrs(dynmodel):
     DynamicModel object (and JSON columns).
     """
     model_name = dynmodel.name
+    class Meta:
+        verbose_name = (model_name)
+        verbose_name_plural = (model_name)
+
     attrs = {
         "__module__": "django_models_from_csv.models.%s" % model_name,
+        "Meta": Meta,
     }
 
     if type(dynmodel.columns) != list:
