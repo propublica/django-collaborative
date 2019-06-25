@@ -32,8 +32,7 @@ setTimeout(done, 500);
       {% blocktrans trimmed %}
           The following errors were encountered while importing the sheet.
           To fix these errors, you can either correct the problems in
-          your sheet or you can go back and
-          <a href="/setup-refine-schema">change the column types</a>.
+          your sheet or you can change the column data types.
       {% endblocktrans %}
       </p>
       {% for pk, errs in errors %}

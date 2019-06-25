@@ -11,6 +11,7 @@ from django_models_from_csv.commands.manage_py import (
     make_and_apply_migrations
 )
 from django_models_from_csv.models import DynamicModel, create_models
+from django_models_from_csv.utils.common import get_setting
 
 # from django.db import DEFAULT_DB_ALIAS, connections, transaction
 
@@ -153,7 +154,7 @@ class BeginViewTestCase(ViewsTestCaseBase):
         })
         new_dynmodel = DynamicModel.objects.first()
         to_url = reverse(
-            'csv_models:refine-schema', args=[new_dynmodel.id]
+            'csv_models:refine-and-import', args=[new_dynmodel.id]
         )
         self.assertTrue(new_dynmodel.columns)
         self.assertGreaterEqual(len(new_dynmodel.columns), 13)
@@ -172,7 +173,7 @@ class BeginViewTestCase(ViewsTestCaseBase):
     #     })
     #     new_dynmodel = DynamicModel.objects.last()
     #     to_url = reverse(
-    #         'csv_models:refine-schema', args=[new_dynmodel.id]
+    #         'csv_models:refine-and-import', args=[new_dynmodel.id]
     #     )
     #     self.assertTrue(new_dynmodel.columns)
     #     self.assertGreaterEqual(len(new_dynmodel.columns), 13)
@@ -272,7 +273,6 @@ class RefineViewTestCase(ViewsTestCaseBase):
             name="RefineTest",
             csv_url="https://refine.test/csv",
             columns=self.columns,
-            token="TOKEN",
         )
         self.dynmodel.save()
 
@@ -282,7 +282,7 @@ class RefineViewTestCase(ViewsTestCaseBase):
 
     def test_can_access_refine_page_authed(self):
         to_url = reverse(
-            'csv_models:refine-schema', args=[self.dynmodel.id]
+            'csv_models:refine-and-import', args=[self.dynmodel.id]
         )
         response = self.client.get(to_url)
         self.assertEqual(response.status_code, 200)
@@ -290,23 +290,29 @@ class RefineViewTestCase(ViewsTestCaseBase):
     def test_cannot_access_refine_page_unauthed(self):
         c = Client()
         to_url = reverse(
-            'csv_models:refine-schema', args=[self.dynmodel.id]
+            'csv_models:refine-and-import', args=[self.dynmodel.id]
         )
         response = c.get(to_url)
         self.assertEqual(response.status_code, 302)
 
-    def test_can_refine_existing_model(self):
+    @patch("django_models_from_csv.views.configuration.fetch_csv")
+    def test_can_refine_existing_model(self, fetch_csv):
+        fetch_csv.return_value = CSV
         to_url = reverse(
-            'csv_models:refine-schema', args=[self.dynmodel.id]
+            'csv_models:refine-and-import', args=[self.dynmodel.id]
         )
+        to_url += "?next=/next/url"
         self.assertEqual(self.dynmodel.columns[0]["type"], "text")
         self.columns[0]["type"] = "datetime"
         response = self.client.post(to_url, {
             "columns": json.dumps(self.columns),
         })
-        self.assertEqual(response.status_code, 302)
-        redir_base = reverse('csv_models:wait')
-        self.assertTrue(response.url.startswith(redir_base))
+        next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
+        if next:
+            self.assertEqual(response.status_code, 302)
+            self.assertTrue(response.url.startswith(next))
+        else:
+            self.assertEqual(response.status_code, 200)
         # make sure the field was actually updated
         self.dynmodel.refresh_from_db()
         self.assertEqual(self.dynmodel.columns[0]["type"], "datetime")
@@ -333,7 +339,7 @@ class ImportViewTestCase(ViewsTestCaseBase):
 
     def test_can_access_import_page_authed(self):
         to_url = reverse(
-            'csv_models:import-data', args=[self.dynmodel.id]
+            'csv_models:refine-and-import', args=[self.dynmodel.id]
         )
         response = self.client.get(to_url)
         self.assertEqual(response.status_code, 200)
@@ -341,7 +347,7 @@ class ImportViewTestCase(ViewsTestCaseBase):
     def test_cannot_access_import_page_unauthed(self):
         c = Client()
         to_url = reverse(
-            'csv_models:import-data', args=[self.dynmodel.id]
+            'csv_models:refine-and-import', args=[self.dynmodel.id]
         )
         response = c.get(to_url)
         self.assertEqual(response.status_code, 302)
@@ -351,7 +357,7 @@ class ImportViewTestCase(ViewsTestCaseBase):
     def test_can_load_import_records_page(self, fetch_csv):
         fetch_csv.return_value = self.csv
         to_url = reverse(
-            'csv_models:import-data', args=[self.dynmodel.id]
+            'csv_models:refine-and-import', args=[self.dynmodel.id]
         )
         response = self.client.post(to_url, {
             "columns": json.dumps(self.columns),
