@@ -26,10 +26,8 @@ def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None)
         attrs.update(extra_attrs)
 
     Meta = type(str('Meta'), (object,), attrs)
-    print("Meta", Meta)
 
     class_name = model.__name__ + 'Resource'
-    print("class_name", class_name)
 
     class_attrs = {
         'Meta': Meta,
@@ -125,20 +123,13 @@ def import_records(csv, Model, dynmodel):
     fix the ones listed before continuing. We don't want
     to overwhelm the user with error messages.
     """
-    column_names = []
-    for c in dynmodel.columns:
-        name = c.get("original_name")
-        if not name:
-            name = c.get("name")
-        column_names.append(name)
-
     dataset = import_records_list(csv, dynmodel)
-
-    logger.debug("Model fields: %s" % Model._meta.fields)
-    logger.debug("Column names: %s" % column_names)
+    column_names = [c.get("name") for c in dynmodel.columns]
+    logger.debug("Column names: %s" % str(column_names))
     logger.debug("Dataset: %s" % dataset)
 
     # Do headers check
+    errors = []
     for row in dataset.dict:
         logger.debug("Importing: %s" % str(row))
         # 1. check fields, any extra fields are thrown out?
@@ -164,7 +155,10 @@ def import_records(csv, Model, dynmodel):
                 obj.save()
             except Exception as e:
                 logger.error("Error updating: %s" % str(e))
-                return str(e)
+                errors.append("Row: %s, Error updating: %s" % (
+                    obj.id, e
+                ))
+                continue
 
         # create new using similar strategy, but we went
         # to include the id field
@@ -173,7 +167,7 @@ def import_records(csv, Model, dynmodel):
             for field in row.keys():
                 if field != "id" and field not in column_names:
                     continue
-                logger.debug("creating field=%s value=%s" % (field, row[field]))
+                # logger.debug("creating field=%s value=%s" % (field, row[field]))
                 obj_data[field] = row[field]
 
             try:
@@ -181,4 +175,9 @@ def import_records(csv, Model, dynmodel):
                 obj.save()
             except Exception as e:
                 logger.error("Error creating: %s" % str(e))
-                return str(e)
+                errors.append("Row: %s, Error creating: %s" % (
+                    obj_data.get("id"), e
+                ))
+                continue
+
+    return errors

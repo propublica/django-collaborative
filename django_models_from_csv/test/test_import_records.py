@@ -78,7 +78,7 @@ class ImportRecordsTestCase(SimpleTestCase):
         errors = import_records(
             self.date_csv, Model, self.sheet
         )
-        self.assertTrue(errors is None)
+        self.assertTrue(not errors)
         self.assertEqual(Model.objects.count(), 2)
 
     def test_can_return_import_errors(self):
@@ -94,12 +94,12 @@ class ImportRecordsTestCase(SimpleTestCase):
         errors = import_records(
             self.date_csv, Model, self.sheet
         )
-        self.assertTrue(errors is None)
+        self.assertTrue(not errors)
         self.assertEqual(Model.objects.count(), 2)
         errors = import_records(
             self.date_csv, Model, self.sheet
         )
-        self.assertTrue(errors is None)
+        self.assertTrue(not errors)
         objects = Model.objects.all()
         self.assertEqual(len(objects), 2)
         self.assertTrue(objects[0].where.endswith("2"))

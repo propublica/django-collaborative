@@ -136,6 +136,7 @@ def refine_and_import(request, id):
         # Handle import errors
         Model = dynmodel.get_model()
         errors = import_records(csv, Model, dynmodel)
+        logger.error("Import errors: %s" % errors)
         if errors:
             return render(request, 'refine-and-import.html', {
                 "form": refine_form,

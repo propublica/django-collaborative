@@ -9,7 +9,14 @@ Database Columns | {{ block.super }}
 <div id="csv-models-config">
   <h2>Refine Database</h2>
   <form action="{% url 'csv_models:refine-and-import' dynmodel.id %}" method="POST">
-      {% if not errors %}
+      {% if errors %}
+      <h3>Import Errors</h3>
+      {% for err in errors %}
+          <p>
+              <b>{{err}}</b><br/>
+          </p>
+      {% endfor %}
+      {% endif %}
       <p>
       {% blocktrans trimmed %}
           These are the column names and types we found in
@@ -18,17 +25,6 @@ Database Columns | {{ block.super }}
       {% endblocktrans %}
       </p>
       {{ form.columns }}
-      {% else %}
-      <h3>Import Errors</h3>
-      {% for pk, errs in errors %}
-          <p>
-              <b>Row {{ pk }}:</b><br/>
-              {% for e in errs %}
-                  {{ e.error.args  }}<br/>
-              {% endfor %}
-          </p>
-      {% endfor %}
-      {% endif %}
       <div class="continue">
           <input type="submit" value="{% trans "Continue" %}" />
       </div>
