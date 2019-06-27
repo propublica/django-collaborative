@@ -2,7 +2,6 @@ import logging
 
 from dateutil import parser as dt_parser
 from import_export.resources import (
-    # modelresource_factory,
     ModelResource, ModelDeclarativeMetaclass,
 )
 from tablib import Dataset
@@ -18,13 +17,19 @@ def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None)
     """
     Factory for creating ``ModelResource`` class for given Django model.
     """
-    attrs = {'model': model}
+    attrs = {
+        'model': model,
+        "skip_unchanged": True,
+        "report_skipped": True,
+    }
     if extra_attrs:
         attrs.update(extra_attrs)
 
     Meta = type(str('Meta'), (object,), attrs)
+    print("Meta", Meta)
 
     class_name = model.__name__ + 'Resource'
+    print("class_name", class_name)
 
     class_attrs = {
         'Meta': Meta,
@@ -120,48 +125,60 @@ def import_records(csv, Model, dynmodel):
     fix the ones listed before continuing. We don't want
     to overwhelm the user with error messages.
     """
-    resource = modelresource_factory(model=Model)()
+    column_names = []
+    for c in dynmodel.columns:
+        name = c.get("original_name")
+        if not name:
+            name = c.get("name")
+        column_names.append(name)
+
     dataset = import_records_list(csv, dynmodel)
-    logger.debug("Importing CSV:\n%s" % dataset.export("csv"))
-    result = resource.import_data(dataset, dry_run=True)
-    logger.debug("DRY RUN: Result has errors? %s" % result.has_errors())
-    # TODO: transform errors to something readable
-    if result.has_errors():
-        errors = result.row_errors()
-        logger.debug("DRY RUN: Errors: %s" % errors)
-        return errors
-    # TODO: Better error handling. There are some strange situations
-    # where the importer will silently fail, despite has_errors, above,
-    # returning False. This will prevent bad imports and actually show
-    # an error, no matter how ugly. One such situation is attempting to
-    # import a badly formatted date into a DateField.
-    try:
-        result = resource.import_data(
-            dataset, dry_run=False, raise_errors=True
-        )
-    except Exception as e:
-        return e
-    if result.has_errors():
-        errors = result.row_errors()
-        return errors
 
+    logger.debug("Model fields: %s" % Model._meta.fields)
+    logger.debug("Column names: %s" % column_names)
+    logger.debug("Dataset: %s" % dataset)
 
-def update_records(csv, Model, dynmodel):
-    """
-    Take a CSV and update an existing model. Here, we want
-    to reconcile old records with the new ones. We do this in
-    the following ways:
+    # Do headers check
+    for row in dataset.dict:
+        logger.debug("Importing: %s" % str(row))
+        # 1. check fields, any extra fields are thrown out?
+        #    or is this done above?
+        # 2. get or create by ID
+        obj = None
+        try:
+            obj = Model.objects.get(pk=row["id"])
+        except Model.DoesNotExist:
+            pass
 
-    Screendoor:
+        logger.debug("Found object? %s" % obj)
 
-        1. Use their ID. Done!
+        # update all fieds found in our model columns, but
+        # leave out the id field (already attached to obj above)
+        if obj is not None:
+            for field in row.keys():
+                if field == "id" or field not in column_names:
+                    continue
+                logger.debug("updating field=%s value=%s" % (field, row[field]))
+                setattr(obj, field, row[field])
+            try:
+                obj.save()
+            except Exception as e:
+                logger.error("Error updating: %s" % str(e))
+                return str(e)
 
-    Google sheets:
+        # create new using similar strategy, but we went
+        # to include the id field
+        else:
+            obj_data = {}
+            for field in row.keys():
+                if field != "id" and field not in column_names:
+                    continue
+                logger.debug("creating field=%s value=%s" % (field, row[field]))
+                obj_data[field] = row[field]
 
-        1. Make sure we have a timestamp field.
-        2. Go through the rows, looking up each corresponding ID.
-        3. Check the timestamp to ensure we've got the same record.
-        4. a. If it's different, scan the list to see if we have
-              a following matching record.
-    """
-    pass
+            try:
+                obj = Model.objects.create(**obj_data)
+                obj.save()
+            except Exception as e:
+                logger.error("Error creating: %s" % str(e))
+                return str(e)
