@@ -68,7 +68,10 @@ ROOT_URLCONF = 'collaborative.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATES_DIR],
+        'DIRS': [
+            TEMPLATES_DIR,
+            'django_models_from_csv/templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

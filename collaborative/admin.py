@@ -7,7 +7,7 @@ from django.apps import apps
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
-from django_models_from_csv.admin import AdminAutoRegistration
+from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.models import DynamicModel
 
 
@@ -93,8 +93,10 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
     def create_admin(self, Model):
         name = Model._meta.object_name
-        if "Metadata" in name or name == "DynamicModel":
+        if "Metadata" in name:
             return
+        if name == "DynamicModel":
+            return super().create_admin(Model)
 
         meta = []
         # find the Metadata model corresponding to the
@@ -136,8 +138,9 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             associated_fields.append("metadata_partner")
         list_display = associated_fields + fields[:5]
 
-        # Note that ExportMixin needs to be declared first here
-        return type("%sAdmin" % name, (ExportMixin, ReverseFKAdmin,), {
+        # Note that ExportMixin needs to be declared before ReverseFKAdmin
+        inheritance = (NoEditMixin, ExportMixin, ReverseFKAdmin,)
+        return type("%sAdmin" % name, inheritance, {
             "inlines": meta,
             "readonly_fields": fields,
             "list_display": list_display,

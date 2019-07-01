@@ -14,4 +14,6 @@ urlpatterns = [
     # Build the database table from the sheet
     path('refine-and-import/<int:id>/', views.refine_and_import,
          name='refine-and-import'),
+    path('refine-and-import/<str:name>/', views.refine_and_import_by_name,
+         name='refine-and-import'),
 ]

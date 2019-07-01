@@ -17,6 +17,14 @@ from django_models_from_csv.utils.common import get_setting
 logger = logging.getLogger(__name__)
 
 
+class NoEditMixin:
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request):
+        return False
+
+
 class AdminAutoRegistration:
     """
     Automatically register dynamic models. Models with a full name
@@ -61,7 +69,8 @@ class AdminAutoRegistration:
         ro_fields = self.get_readonly_fields(Model)
         fields = self.get_fields(Model)
         resource = modelresource_factory(model=Model)()
-        return type("%sAdmin" % name, (ExportMixin, admin.ModelAdmin,), {
+        inheritance = (NoEditMixin, ExportMixin, admin.ModelAdmin,)
+        return type("%sAdmin" % name, inheritance, {
             "resource_class": resource,
             # "fields": fields,
             # "readonly_fields": ro_fields,
