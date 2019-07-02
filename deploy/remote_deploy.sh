@@ -92,5 +92,14 @@ if ! sudo grep -q certbot /etc/crontab; then
         || die "Failure adding certbot cron entry"
 fi
 
+# Application crons
+sudo mv -f /opt/collaborative/app/deploy/cron/refresh_data_sources \
+    /etc/cron.daily/refresh_data_sources \
+    || die "Failure to copy data refreshing cron script"
+sudo chown root:root /etc/cron.daily/refresh_data_sources \
+    || die "Failure to set ownership of data refreshing cron script"
+sudo chmod 755 /etc/cron.daily/refresh_data_sources \
+    || die "Failure to set perms on data refreshing cron script"
+
 # Apply everything
 sudo systemctl restart apache2
