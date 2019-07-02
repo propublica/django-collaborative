@@ -1,0 +1,87 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+/**
+ * #304154 // "PropPublica blue" -- main headers
+ * #405670 // Lighter version of Propublica bluw -- subheaders
+ * #557395 // Accent blue, for hover, etc, brief/small things
+ */
+div#csv-models-config {
+    max-width: 900px;
+    font-size: 18px;
+    margin: 0 auto;
+}
+#csv-models-config h2 {
+    font-size: 25px;
+    padding: 15px 0;
+}
+#csv-models-config h3 {
+    font-size: 20px;
+    padding: 15px 0;
+    border-bottom: 1px solid #aaa;
+}
+#csv-models-config a {
+    color: #304154;
+    text-decoration: underline;
+}
+#csv-models-config a:hover {
+    color: #557395;
+}
+#csv-models-config form label {
+    font-size: 18px;
+    font-weight: bold;
+}
+#csv-models-config table {
+    padding: 15px;
+    display: block;
+}
+#csv-models-config ol {
+  padding-top: 25px;
+  padding-bottom: 10px;
+}
+#csv-models-config li,
+#csv-models-config dt,
+#csv-models-config dd {
+    font-size: 18px;
+    margin-top: 5px;
+}
+#csv-models-config code {
+    font-size: 18px;
+}
+#csv-models-config table {
+  padding-left: 10px;
+}
+#csv-models-config .set-password input,
+#csv-models-config .google-oauth input {
+  min-width: 300px;
+}
+#csv-models-config .google-sheets-authentication {
+    text-align: center;
+}
+#csv-models-config input[type=submit] {
+  font-size: 18px;
+  font-weight: bold;
+}
+#csv-models-config .click-to-login {
+  text-align: center;
+  font-weight: bold;
+}
+#csv-models-config .continue {
+  padding: 25px;
+}
+#csv-models-config .note {
+  font-weight: bold;
+}
+</style>
+{% endblock %}
+
+{% block title %}
+Collaborate
+{% endblock %}
+
+{% block branding %}
+<h1>Collaborate</h1>
+{% endblock %}
