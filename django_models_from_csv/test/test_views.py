@@ -366,21 +366,6 @@ class ImportViewTestCase(ViewsTestCaseBase):
         err_found = self.err_string in str(response.content)
         self.assertTrue(not err_found, "Import rendered error page")
 
-    @skip("Until we can get the dynamic models created in test")
-    @patch("django_models_from_csv.views.dynmodel.fetch_csv")
-    def test_can_redirect_to_next_url(self, fetch_csv):
-        fetch_csv.return_value = self.csv
-        to_url = reverse(
-            'csv_models:import-data', args=[self.dynmodel.id]
-        )
-        to_url += "?next=/next-url"
-        response = self.client.post(to_url, {
-            "columns": json.dumps(self.columns),
-        })
-        err_found = self.err_string in str(response.content)
-        self.assertTrue(not err_found, "Import rendered error page")
-        self.assertEqual(response.status_code, 302)
-
 
 #class NoTransactionImportDataTestCase(SimpleTestCase):
 #    databases = "__all__"

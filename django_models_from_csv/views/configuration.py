@@ -156,8 +156,8 @@ def refine_and_import(request, id):
 
 @login_required
 def refine_and_import_by_name(request, name):
-    dynmodel = get_object_or_404(models.DynamicModel, name=name)
-    return refine_and_import(request, dynmodel.id)
+    id = models.DynamicModel.objects.get_or_404(name=name)
+    return refine_and_import(request, id)
 
 
 @login_required
@@ -168,6 +168,7 @@ def import_data(request, id):
     GET phase isn't really necessary, so the page just POSTs the
     form automatically via JS on load.
     """
+
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
     if request.method == "GET":
         return render(request, 'import-data.html', {

@@ -8,6 +8,9 @@
     padding-left: 16px;
     color: green;
 }
+.delete-imported-sources img {
+	margin-bottom: -2px;
+}
 </style>
 {% endblock %}
 
@@ -27,8 +30,10 @@
         <table>
         <caption>
             <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+			<a href="{% url 'admin:django_models_from_csv_dynamicmodel_changelist' %}" class="section delete-imported-sources" style="float: right">{% if app.app_label == "django_models_from_csv" %}<img src="{% static 'admin/img/icon-deletelink.svg' %}" alt="{% trans 'Delete' %}"> Delete Imports{% endif %}</a>
         </caption>
         {% for model in app.models %}
+		    {% if model.object_name != "DynamicModel" %}
             <tr class="model-{{ model.object_name|lower }}">
             {% if model.admin_url %}
                 <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
@@ -55,6 +60,7 @@
                 <td>&nbsp;</td>
             {% endif %}
             </tr>
+            {% endif %}
         {% endfor %}
         </table>
         </div>
