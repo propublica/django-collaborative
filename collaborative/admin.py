@@ -7,6 +7,9 @@ from django.apps import apps
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
+import social_django.models as social_models
+from social_django.models import Association, Nonce, UserSocialAuth
+
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.models import DynamicModel
 
@@ -155,6 +158,11 @@ admin.site.register(LogEntry)
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"
+
+# unregister django social auth from admin
+admin.site.unregister(Association)
+admin.site.unregister(UserSocialAuth)
+admin.site.unregister(Nonce)
 
 def register_dynamic_admins(*args, **kwargs):
     AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
