@@ -51,6 +51,14 @@ def make_getter(rel_name, attr_name, getter_name):
     return getter
 
 
+class ReimportMixin(ExportMixin):
+    """
+    Mixin for displaying re-import button on admin list view, alongside the
+    export button (from import_export module).
+    """
+    change_list_template = 'django_models_from_csv/change_list_reimport.html'
+
+
 class ReverseFKAdmin(admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
         """
@@ -142,7 +150,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin
-        inheritance = (NoEditMixin, ExportMixin, ReverseFKAdmin,)
+        inheritance = (NoEditMixin, ReimportMixin, ReverseFKAdmin,)
         return type("%sAdmin" % name, inheritance, {
             "inlines": meta,
             "readonly_fields": fields,

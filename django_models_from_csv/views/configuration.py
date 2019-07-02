@@ -156,8 +156,8 @@ def refine_and_import(request, id):
 
 @login_required
 def refine_and_import_by_name(request, name):
-    id = models.DynamicModel.objects.get_or_404(name=name)
-    return refine_and_import(request, id)
+    dynmodel = get_object_or_404(models.DynamicModel, name=name)
+    return refine_and_import(request, dynmodel.id)
 
 
 @login_required
