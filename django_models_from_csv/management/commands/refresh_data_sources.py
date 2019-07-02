@@ -3,6 +3,7 @@ import logging
 
 from django.core.management.base import BaseCommand, CommandError
 
+from collaborative.models import MODEL_TYPES
 from django_models_from_csv.models import DynamicModel
 
 
@@ -41,7 +42,12 @@ class Command(BaseCommand):
             model = self.get_dynmodel(pk=pk)
             models.append(model)
 
+        if not names or not pks:
+            models = DynamicModel.objects.all()
+
         for model in models:
+            if model.attrs.get("type") != MODEL_TYPES.CSV:
+                continue
             logger.info("Refreshing %s" % model)
             errors = model.import_data()
             if not errors:
