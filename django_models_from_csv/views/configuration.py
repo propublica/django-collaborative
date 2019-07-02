@@ -9,13 +9,8 @@ from django_models_from_csv.exceptions import UniqueColumnError
 from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv
-from django_models_from_csv.utils.importing import import_records
 from django_models_from_csv.utils.dynmodel import (
     from_csv_url, from_screendoor, from_private_sheet
-)
-from django_models_from_csv.utils.screendoor import ScreendoorImporter
-from django_models_from_csv.utils.google_sheets import (
-   GoogleOAuth, PrivateSheetImporter
 )
 
 
@@ -110,34 +105,9 @@ def refine_and_import(request, id):
         dynmodel.save()
         dynmodel.refresh_from_db()
 
-        # Now perform the import
-        if dynmodel.csv_url and dynmodel.csv_google_refresh_token:
-            oauther = GoogleOAuth(
-                get_setting("GOOGLE_CLIENT_ID"),
-                get_setting("GOOGLE_CLIENT_SECRET")
-            )
-            access_data = oauther.get_access_data(
-                refresh_token=dynmodel.csv_google_refresh_token
-            )
-            token = access_data["access_token"]
-            csv = PrivateSheetImporter(token).get_csv_from_url(
-                dynmodel.csv_url
-            )
-        elif dynmodel.csv_url:
-            csv = fetch_csv(dynmodel.csv_url)
-        elif dynmodel.sd_api_key:
-            importer = ScreendoorImporter(api_key=dynmodel.sd_api_key)
-            csv = importer.build_csv(
-                dynmodel.sd_project_id, form_id=dynmodel.sd_form_id
-            )
-        else:
-            raise NotImplementedError("Invalid data source for %s" % dynmodel)
-
-        # Handle import errors
-        Model = dynmodel.get_model()
-        errors = import_records(csv, Model, dynmodel)
-        logger.error("Import errors: %s" % errors)
+        errors = dynmodel.import_data()
         if errors:
+            logger.error("Import errors: %s" % errors)
             return render(request, 'refine-and-import.html', {
                 "form": refine_form,
                 "dynmodel": dynmodel,

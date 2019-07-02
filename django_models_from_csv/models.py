@@ -24,6 +24,13 @@ except ImportError:
 
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
+from django_models_from_csv.utils.common import get_setting
+from django_models_from_csv.utils.csv import fetch_csv
+from django_models_from_csv.utils.google_sheets import (
+   GoogleOAuth, PrivateSheetImporter
+)
+from django_models_from_csv.utils.importing import import_records
+from django_models_from_csv.utils.screendoor import ScreendoorImporter
 
 
 logger = logging.getLogger(__name__)
@@ -164,6 +171,44 @@ class DynamicModel(models.Model):
             return apps.get_model('django_models_from_csv', model_name)
         except LookupError as e:
             return None
+
+    def import_data(self):
+        """
+        Perform a (re)import on a previously loaded model. This takes
+        the loaded columns into account, ignoring any new columns that
+        may exist in the spreadsheet.
+        """
+        if not self.columns:
+            logger.warn("Attempted to import source without columns. Baililng")
+            return [
+                "Data source hasn't been configured. Re-import this source " \
+                "using the confiruation wizard."
+            ]
+
+        csv = None
+        if self.csv_url and self.csv_google_refresh_token:
+            oauther = GoogleOAuth(
+                get_setting("GOOGLE_CLIENT_ID"),
+                get_setting("GOOGLE_CLIENT_SECRET")
+            )
+            access_data = oauther.get_access_data(
+                refresh_token=self.csv_google_refresh_token
+            )
+            token = access_data["access_token"]
+            csv = PrivateSheetImporter(token).get_csv_from_url(
+                self.csv_url
+            )
+        elif self.csv_url:
+            csv = fetch_csv(self.csv_url)
+        elif self.sd_api_key:
+            importer = ScreendoorImporter(api_key=self.sd_api_key)
+            csv = importer.build_csv(
+                self.sd_project_id, form_id=self.sd_form_id
+            )
+        else:
+            raise NotImplementedError("Invalid data source for %s" % self)
+
+        return import_records(csv, self.get_model(), self)
 
     def make_token(self):
         return random_token(16)
@@ -306,7 +351,7 @@ def create_models():
             continue
 
         # set DynRow w/o specifying it here
-        logger.info("Registering model", model_name)
+        logger.info("Registering model: %s" % (model_name))
         # setattr(sys.modules[__name__], model_name, _model)
         try:
             apps.get_model(_model._meta.app_label, model_name)

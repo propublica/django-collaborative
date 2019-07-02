@@ -35,6 +35,7 @@ def tag_csv_dynmodel(dynmodel):
     for col in dynmodel.columns:
         if col.get("original_name") is not None:
             dynmodel.attrs["type"] = MODEL_TYPES.CSV
+            dynmodel.save()
             return
 
 
