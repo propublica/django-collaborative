@@ -19,6 +19,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_models_from_csv.forms import SchemaRefineForm
 import requests
 
+from collaborative.models import AppSetting
 from collaborative.settings import BASE_DIR
 from django_models_from_csv import models
 
@@ -59,6 +60,14 @@ def setup_auth(request):
             raise ValueError("Passwords do not match!")
         request.user.set_password(password)
         request.user.save()
-        # TODO: store (google_oauth_key, google_oauth_secret) somewhere
+        setting, created =  AppSetting.objects.get_or_create(
+            name="google_oauth_credentials"
+        )
+        data = {
+            "google_oauth_key": google_oauth_key,
+            "google_oauth_secret": google_oauth_secret,
+        }
+        setting.data = data
+        setting.save()
         return redirect("setup-complete")
 

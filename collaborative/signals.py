@@ -131,7 +131,13 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
         return
 
     meta_model_name = "%sMetadata" % instance._meta.object_name
-    meta_model_desc = models.DynamicModel.objects.get(name=meta_model_name)
+    try:
+        meta_model_desc = models.DynamicModel.objects.get(name=meta_model_name)
+    except models.DynamicModel.DoesNotExist as e:
+        logger.debug("Skipping signal on non-existant model: %s => %s" % (
+            instance._meta.object_name, meta_model_name
+        ))
+        return
     MetaModel = meta_model_desc.get_model()
     meta_direct_count = MetaModel.objects.filter(
         metadata__id=instance.id

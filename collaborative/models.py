@@ -2,6 +2,7 @@ from copy import copy
 
 from django.db import models
 from django.utils.timezone import now
+from jsonfield.fields import JSONField
 
 
 class MODEL_TYPES:
@@ -95,3 +96,15 @@ def default_contact_model_columns(parent_dynmodel):
         },
     })
     return columns
+
+
+class AppSetting(models.Model):
+    """
+    A place to store some information about the current state of the
+    system and to store credentials, etc.
+    """
+    name = models.CharField(max_length=128)
+    data = JSONField(editable=True)
+
+    def __str__(self):
+        return "Application setting: %s" % (self.name.replace("_", " "))
