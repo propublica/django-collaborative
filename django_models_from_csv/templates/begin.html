@@ -42,7 +42,15 @@ function showHide(cls) {
  */
 function init() {
   document.querySelectorAll(".show-hide").forEach((d) => {
-      d.setAttribute("style", "display: none;");
+      let found = false;
+      d.querySelectorAll("input").forEach((i) => {
+          if (i.value) {
+              found = true;
+          }
+      });
+      if (!found) {
+        d.setAttribute("style", "display: none;");
+      }
   });
 }
 // No IE8
@@ -88,6 +96,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="csv_name"
                              type="text"
+                             value="{{ csv_name }}"
                              placeholder="Enter name, e.g., QuestionnaireResponse" />
                   </td>
               </tr>
@@ -100,6 +109,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="csv_url"
                              type="text"
+                             value="{{ csv_url }}"
                              placeholder="e.g., https://docs.google.com/spreadsheets/d/1SiI_sOj_LcW1qXzDSoBaOgZ_SR8SioKZ05auN1o90hc/edit?usp=sharing" />
                       <br/>
                       <h4 class="needs-auth" onclick="showHide('.needs-auth')">
@@ -133,6 +143,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="csv_google_sheets_auth_code"
                              type="text"
+                             value="{{ csv_google_sheets_auth_code }}"
                              placeholder="{% trans 'Paste Google code here' %}" />
                   </td>
               </tr>
@@ -156,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="sd_name"
                              type="text"
+                             value="{{ sd_name }}"
                              placeholder="Enter name, e.g., ScreendoorResponse" />
                   </td>
               </tr>
@@ -167,6 +179,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="sd_api_key"
                              type="text"
+                             value="{{ sd_api_key }}"
                              placeholder="e.g., sOj_LcW1qXzDSoBaOgZ_SR8Sio" />
                   </td>
               </tr>
@@ -178,6 +191,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="sd_project_id"
                              type="text"
+                             value="{{ sd_project_id }}"
                              placeholder="e.g., 2661" />
                   </td>
               </tr>
@@ -189,6 +203,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       <input style="min-width:600px;"
                              name="sd_form_id"
                              type="text"
+                             value="{{ sd_form_id }}"
                              placeholder="e.g., 726" />
                   </td>
               </tr>

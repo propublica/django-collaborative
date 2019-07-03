@@ -66,8 +66,16 @@ def begin(request):
                     form_id=int(sd_form_id) if sd_form_id else None
                 )
         except (UniqueColumnError, DataSourceExistsError) as e:
+            # TODO: move all this into a form
             return render(request, 'begin.html', {
-                "errors": e.render()
+                "errors": e.render(),
+                "csv_name": request.POST.get("csv_name"),
+                "csv_url": csv_url,
+                "csv_google_sheets_auth_code": csv_google_sheets_auth_code,
+                "sd_name": request.POST.get("sd_name"),
+                "sd_api_key": sd_api_key,
+                "sd_project_id": sd_project_id,
+                "sd_form_id": sd_form_id,
             })
         return redirect('csv_models:refine-and-import', dynmodel.id)
 
