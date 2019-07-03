@@ -67,11 +67,16 @@ def csv_precheck(csv_data):
     """
     Do some basic sanity checks on a CSV.
     """
+    duplicate_msg = _(
+        "Duplicate header column '%s' found. Please rename " \
+        "the column in your source spreadsheet and continue" \
+        "again, below."
+    )
     data = Dataset().load(csv_data)
     unique_names = []
     for header in data.headers:
         if header in unique_names:
-            raise UniqueColumnError("Duplicate column found: %s." % header)
+            raise UniqueColumnError(duplicate_msg % (header))
         unique_names.append(header)
 
 
