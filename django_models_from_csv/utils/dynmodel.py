@@ -5,7 +5,6 @@ import string
 
 from django.contrib.auth.models import User
 from django.db import connections, transaction
-from django.utils.translation import gettext_lazy as _
 from tablib import Dataset
 
 from django_models_from_csv.commands.csvsql import run_csvsql
@@ -55,11 +54,7 @@ def require_unique_name(f):
         except DynamicModel.DoesNotExist:
             return f(*args, **kwargs)
         # if we're here, we have an existing model, throw error w/ help
-        raise DataSourceExistsError(
-            _("Data source '%s' already exists. Please choose " \
-              "another name or re-import the existing data source " \
-              "from the administration panel.") % (name)
-        )
+        raise DataSourceExistsError(name)
     return unique_name_wrapper
 
 
@@ -67,16 +62,11 @@ def csv_precheck(csv_data):
     """
     Do some basic sanity checks on a CSV.
     """
-    duplicate_msg = _(
-        "Duplicate header column '%s' found. Please rename " \
-        "the column in your source spreadsheet and continue" \
-        "again, below."
-    )
     data = Dataset().load(csv_data)
     unique_names = []
     for header in data.headers:
         if header in unique_names:
-            raise UniqueColumnError(duplicate_msg % (header))
+            raise UniqueColumnError(header)
         unique_names.append(header)
 
 

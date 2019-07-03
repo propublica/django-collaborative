@@ -1,0 +1,10 @@
+{% load i18n %}
+
+<p class="error">
+{% blocktrans trimmed %}
+Data source {{ name }} already exists. Please choose
+another name or re-import the existing data source
+from the
+{% endblocktrans %}
+<a href="{% url 'admin:index' %}">{% trans 'administration panel' %}</a>.
+</p>

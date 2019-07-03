@@ -65,13 +65,9 @@ def begin(request):
                     int(sd_project_id),
                     form_id=int(sd_form_id) if sd_form_id else None
                 )
-        except UniqueColumnError as e:
+        except (UniqueColumnError, DataSourceExistsError) as e:
             return render(request, 'begin.html', {
-                "errors": str(e)
-            })
-        except DataSourceExistsError as e:
-            return render(request, 'begin.html', {
-                "errors": str(e)
+                "errors": e.render()
             })
         return redirect('csv_models:refine-and-import', dynmodel.id)
 
