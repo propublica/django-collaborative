@@ -5,7 +5,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 
 from django_models_from_csv import models
-from django_models_from_csv.exceptions import UniqueColumnError
+from django_models_from_csv.exceptions import (
+    UniqueColumnError, DataSourceExistsError
+)
 from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv
@@ -64,6 +66,10 @@ def begin(request):
                     form_id=int(sd_form_id) if sd_form_id else None
                 )
         except UniqueColumnError as e:
+            return render(request, 'begin.html', {
+                "errors": str(e)
+            })
+        except DataSourceExistsError as e:
             return render(request, 'begin.html', {
                 "errors": str(e)
             })

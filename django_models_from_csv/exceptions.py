@@ -4,3 +4,10 @@ class UniqueColumnError(Exception):
    header.
    """
    pass
+
+class DataSourceExistsError(Exception):
+    """
+    Thrown when a user attempts to re-create an already existing
+    data source (by name).
+    """
+    pass

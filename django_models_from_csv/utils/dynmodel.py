@@ -1,14 +1,18 @@
+from functools import wraps
 import logging
 import re
 import string
 
 from django.contrib.auth.models import User
 from django.db import connections, transaction
+from django.utils.translation import gettext_lazy as _
 from tablib import Dataset
 
 from django_models_from_csv.commands.csvsql import run_csvsql
 from django_models_from_csv.commands.manage_py import run_inspectdb
-from django_models_from_csv.exceptions import UniqueColumnError
+from django_models_from_csv.exceptions import (
+    UniqueColumnError, DataSourceExistsError
+)
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
@@ -40,6 +44,23 @@ def execute_sql(sql):
     cursor.execute(sql)
     table_name = re.findall("CREATE TABLE ([^ ]+) \(", sql)[0]
     return table_name
+
+
+def require_unique_name(f):
+    @wraps(f)
+    def unique_name_wrapper(*args, **kwargs):
+        name = args[0]
+        try:
+            DynamicModel.objects.get(name=name)
+        except DynamicModel.DoesNotExist:
+            return f(*args, **kwargs)
+        # if we're here, we have an existing model, throw error w/ help
+        raise DataSourceExistsError(
+            _("Data source '%s' already exists. Please choose " \
+              "another name or re-import the existing data source " \
+              "from the administration panel.") % (name)
+        )
+    return unique_name_wrapper
 
 
 def csv_precheck(csv_data):
@@ -113,6 +134,7 @@ def from_csv(name, csv_data, **kwargs):
     return from_models_py(name, fixed_models_py, **kwargs)
 
 
+@require_unique_name
 def from_csv_url(name, csv_url, csv_google_sheets_auth_code=None):
     """
     Build a dynamic model from a CSV URL. This supports Google
@@ -124,6 +146,7 @@ def from_csv_url(name, csv_url, csv_google_sheets_auth_code=None):
     ))
 
 
+@require_unique_name
 def from_screendoor(name, api_key, project_id, form_id=None):
     """
     Build a dynamic model from a screendoor project/form, given
@@ -140,6 +163,7 @@ def from_screendoor(name, api_key, project_id, form_id=None):
     ))
 
 
+@require_unique_name
 def from_private_sheet(name, sheet_url, auth_code=None, refresh_token=None):
     """
     Build a model from a private Google Sheet, given an OAuth auth code
