@@ -3,6 +3,7 @@ import logging
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_save
+from django.db.utils import OperationalError
 from django.dispatch import receiver
 
 from collaborative.models import (
@@ -133,7 +134,7 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
     meta_model_name = "%sMetadata" % instance._meta.object_name
     try:
         meta_model_desc = models.DynamicModel.objects.get(name=meta_model_name)
-    except models.DynamicModel.DoesNotExist as e:
+    except (models.DynamicModel.DoesNotExist, OperationalError) as e:
         logger.debug("Skipping signal on non-existant model: %s => %s" % (
             instance._meta.object_name, meta_model_name
         ))

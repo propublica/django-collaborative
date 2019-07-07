@@ -2,6 +2,7 @@ from unittest.mock import patch, Mock
 
 from django.test import TestCase
 import requests
+from tablib import Dataset
 
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
 
@@ -2211,15 +2212,27 @@ class ScreendoorTestCase(TestCase):
         maps = importer.get_header_maps(data)
         self.assertTrue(maps)
         self.assertEqual(len(maps.keys()), 23)
-        self.assertEqual(maps["xyejrz01"], "What's your email address?")
+        self.assertEqual(
+            maps["xyejrz01"], "What's your email address? (ID: xyejrz01)"
+        )
 
     @patch.object(requests, "get")
     def test_can_build_csv(self, mockget):
         importer = ScreendoorImporter(api_key="KEY", base_url="https://fake.tld")
         csv = importer.build_csv_from_data(LIST_FORMS[0], LIST_RESPONSES)
         self.assertTrue(csv)
-        lines = csv.split("\n")
-        self.assertTrue("What's your email address?" in lines[0])
+        parsed_csv = Dataset().load(csv)
+        self.assertTrue(
+            "What's your email address? (ID: xyejrz01)" in parsed_csv.headers
+        )
+
+    @patch.object(requests, "get")
+    def test_can_build_csv_with_ids(self, mockget):
+        importer = ScreendoorImporter(api_key="KEY", base_url="https://fake.tld")
+        csv = importer.build_csv_from_data(LIST_FORMS[0], LIST_RESPONSES)
+        self.assertTrue(csv)
+        parsed_csv = Dataset().load(csv)
+        self.assertTrue("id" in parsed_csv.headers)
 
     # @patch.object(requests, "get")
     # def test_can_use_buildin_id_during_import(self, mockget):

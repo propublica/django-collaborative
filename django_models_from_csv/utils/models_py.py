@@ -1,3 +1,4 @@
+import logging
 import re
 import requests
 
@@ -5,6 +6,9 @@ from django.contrib.auth.models import User
 
 from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.models import DynamicModel, TYPE_TO_FIELDNAME
+
+
+logger = logging.getLogger(__name__)
 
 
 def fix_models_py(models_py):
@@ -71,17 +75,32 @@ def extract_fields(models_py):
     fields = {}
     dedupe_fields = {}
     for line in models_py.split("\n"):
+        line = line.strip()
+
+        if not line:
+            logger.debug("Skipping blank line")
+            continue
+
         # skip imports
         if re.match(".*from.*import.*", line):
+            logger.debug("Skipping import line: %s" % line)
             continue
+
         # skip class declarations
-        if re.match(".*class\s+.*models\.Model.*", line):
+        if re.match(r".*class\s+.*models\.Model.*", line):
+            logger.debug("Skipping class declaration for line: %s" % line)
             continue
+
         # extract field name
-        field_matches = re.match("\s*([^\s\-=]+)\s*=\s*(.*)$", line)
+        field_matches = re.match(
+            r"\s*([^\s\-=\(\)]+)\s*=\s*(models\.[A-Za-z0-9]+\(.*\))$", line
+        )
         if not field_matches or not field_matches.groups():
+            logger.debug("No matches for line: %s" % line)
             continue
+
         field, declaration = field_matches.groups()
+        logger.debug("field: %s, declaration: %s" % (field, declaration))
 
         # shorten field names
         if len(field) > MAX_HSIZE:
@@ -107,15 +126,28 @@ def extract_fields(models_py):
     return fields
 
 
+def extract_field_declaration_args_eval(declaration_str):
+    """
+    Extract the arguments (**kwargs) from a field declaration string.
+
+    Returns a dict of the arguments.
+    """
+    matches = re.match(r".*models.[A-Za-z0-9]+(\(.*\))$", declaration_str)
+    if not matches or not matches.groups():
+        return dict()
+    grps = matches.groups()
+    return eval("dict%s" % grps[0])
+
+
 def extract_field_declaration_args(declaration_str):
     """
     Extract the arguments (**kwargs) from a field declaration string.
 
     Returns a dict of the arguments.
     """
-    matches = re.match(".*\((.*)\)", declaration_str)
-    args_str = matches.groups()[0]
-    indiv_args = re.split(",\s*", args_str)
+    matches = re.match(r".*\((.*)\)", declaration_str).groups()
+    args_str = matches[0]
+    indiv_args = re.split(r",\s*", args_str)
     kw_arguments = {}
     for arg in indiv_args:
         try:
@@ -128,9 +160,8 @@ def extract_field_declaration_args(declaration_str):
 
 def extract_field_type(declaration_str):
     """
-    Take a models.py declaration string, extract the field type class
-    and match it to a name that we will show users for
-    selecting column types.
+    Take a field type class and match it to a name that we will show
+    users for selecting column types.
 
     For example, we have this field declaration (as a string):
 
@@ -142,11 +173,13 @@ def extract_field_type(declaration_str):
     django classes based on the user input and to help show users friendlier
     names for the different column types.
     """
-    matches = re.match(".*(models\.[A-Za-z0-9_]+)\(", declaration_str)
-    field_class_str = matches.groups()[0]
-    # TODO: default here? or use default dict in TYPE_TO_FIELDNAME
+    matches = re.match(r".*(models.[A-Za-z0-9]+)(\(.*\))$", declaration_str)
+    if not matches or not matches.groups():
+        return TYPE_TO_FIELDNAME["models.TextField"]
+
+    field_type = matches.groups()[0]
     try:
-        type_name = TYPE_TO_FIELDNAME[field_class_str]
+        type_name = TYPE_TO_FIELDNAME[field_type]
     except KeyError as e:
         type_name = TYPE_TO_FIELDNAME["models.TextField"]
     return type_name

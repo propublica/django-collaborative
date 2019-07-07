@@ -20,8 +20,8 @@ class UniqueColumnError(RenderableErrorBase):
     header.
     """
     MESSAGE = _(
-        "Duplicate header column '%s' found. Please rename " \
-        "the column in your source spreadsheet and continue " \
+        "Duplicate header column '%s' found. Please rename "
+        "the column in your source spreadsheet and continue "
         "again, below."
     )
     TEMPLATE = "django_models_from_csv/exceptions/unique_column_error.html"
@@ -33,8 +33,8 @@ class DataSourceExistsError(RenderableErrorBase):
     data source (by name).
     """
     MESSAGE = _(
-        "Data source '%s' already exists. Please choose " \
-        "another name or re-import the existing data source " \
+        "Data source '%s' already exists. Please choose "
+        "another name or re-import the existing data source "
         "from the administration panel."
     )
     TEMPLATE = "django_models_from_csv/exceptions/unique_name_error.html"

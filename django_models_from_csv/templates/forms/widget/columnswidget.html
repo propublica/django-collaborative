@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load field_verbose_name %}
 
 {% block extrahead %}
   {{ widget.media }}
@@ -127,7 +128,7 @@
         </select>
       </td>
       <td style="max-width: 200px">
-          {{ column.original_name }}
+          {{ column.original_name|verbose_name }}<br/>
       </td>
       <td class="option">
         <input type="checkbox"

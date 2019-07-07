@@ -1,6 +1,8 @@
 import re
 
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
+
 import requests
 from tablib import Dataset
 

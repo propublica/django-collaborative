@@ -3,6 +3,9 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
+from tablib.core import UnsupportedFormat
+from requests.exceptions import ConnectionError
 
 from django_models_from_csv import models
 from django_models_from_csv.exceptions import (
@@ -45,6 +48,17 @@ def begin(request):
         sd_api_key = request.POST.get("sd_api_key")
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
+
+        # TODO: move all this into a form
+        context = {
+            "csv_name": request.POST.get("csv_name"),
+            "csv_url": csv_url,
+            "csv_google_sheets_auth_code": csv_google_sheets_auth_code,
+            "sd_name": request.POST.get("sd_name"),
+            "sd_api_key": sd_api_key,
+            "sd_project_id": sd_project_id,
+            "sd_form_id": sd_form_id,
+        }
         try:
             if csv_url and csv_google_sheets_auth_code:
                 name = request.POST.get("csv_name")
@@ -66,16 +80,23 @@ def begin(request):
                     form_id=int(sd_form_id) if sd_form_id else None
                 )
         except (UniqueColumnError, DataSourceExistsError) as e:
-            # TODO: move all this into a form
             return render(request, 'begin.html', {
                 "errors": e.render(),
-                "csv_name": request.POST.get("csv_name"),
-                "csv_url": csv_url,
-                "csv_google_sheets_auth_code": csv_google_sheets_auth_code,
-                "sd_name": request.POST.get("sd_name"),
-                "sd_api_key": sd_api_key,
-                "sd_project_id": sd_project_id,
-                "sd_form_id": sd_form_id,
+                **context
+            })
+        # handles valid URLs to non-CSV data and also just bad URLs
+        except (UnsupportedFormat, ConnectionError) as e:
+            err_msg = _(
+                "Invalid data source. Please make sure you "
+                "linked to a valid CSV data source, there aren't "
+                "typos in the URL, and that the data isn't "
+                "protected. If you're trying to use a protected "
+                "Google Sheet, you need to use the private Sheet "
+                "authenticator, below."
+            )
+            return render(request, 'begin.html', {
+                "errors": err_msg,
+                **context
             })
         return redirect('csv_models:refine-and-import', dynmodel.id)
 

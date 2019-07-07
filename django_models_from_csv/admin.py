@@ -18,10 +18,19 @@ logger = logging.getLogger(__name__)
 
 
 class NoEditMixin:
-    def has_add_permission(self, request):
+    """
+    Disallow all editing and adding from within the admin. That needs
+    to be done from within the add source flow.
+
+    Note that we're using args and kwargs here because request is
+    always the first arg, but sometimes we get the requested object
+    as the second arg. We can safelt ignore them in this case since it's
+    a blanket deny.
+    """
+    def has_add_permission(self, *args, **kwargs):
         return False
 
-    def has_change_permission(self, request):
+    def has_change_permission(self, *args, **kwargs):
         return False
 
 

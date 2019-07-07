@@ -269,6 +269,7 @@ def create_model_attrs(dynmodel):
     """
     model_name = dynmodel.name
     class Meta:
+        managed = False
         verbose_name = (model_name)
         verbose_name_plural = (model_name)
 

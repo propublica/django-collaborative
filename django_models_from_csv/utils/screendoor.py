@@ -52,7 +52,7 @@ class ScreendoorImporter:
         for field in form_data.get("field_data", []):
             label = field.get("label")
             id = field.get("id")
-            header_map[id] = label
+            header_map[id] = "%s (ID: %s)" % (label, id)
         return header_map
 
     def attachment_link(self, data):
@@ -63,11 +63,15 @@ class ScreendoorImporter:
 
     def build_csv_from_data(self, form_data, response_data):
         id_to_label = self.get_header_maps(form_data)
-        headers = list(id_to_label.values())
-        data = Dataset(headers=[re.sub("[\,\n\r]+", "", h) for h in headers])
+        headers = ["id"]
+        for c in id_to_label.values():
+            headers.append(re.sub("[\,\n\r]+", "", c))
+
+        data = Dataset(headers=headers)
         for response_info in response_data:
             response = response_info.get("responses", {})
-            row = []
+            row_id = response_info["id"]
+            row = [row_id]
             for pk in response.keys():
                 value = response.get(pk)
                 if isinstance(value, str) or not value:

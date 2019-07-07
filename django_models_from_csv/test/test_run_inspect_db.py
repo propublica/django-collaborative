@@ -47,7 +47,7 @@ CREATE TABLE %s (
         print("Generated models.py", models_py)
         self.assertIsNot(models_py, None)
         self.assertGreater(len(models_py), 0)
-        model_match = "class Tmp4Wlpvd0C\(models.Model\):"
+        model_match = r"class Tmp4Wlpvd0C\(models.Model\):"
         models_py_flat = " ".join(models_py.split("\n"))
         self.assertEqual(len(re.findall(model_match, models_py_flat)), 1)
 

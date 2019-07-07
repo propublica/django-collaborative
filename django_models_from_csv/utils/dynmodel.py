@@ -17,6 +17,7 @@ from django_models_from_csv.utils.common import get_setting
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
 from django_models_from_csv.utils.models_py import (
     fix_models_py, extract_field_declaration_args,
+    extract_field_declaration_args_eval,
     extract_field_type, extract_fields
 )
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
@@ -41,7 +42,7 @@ def execute_sql(sql):
     conn = connections[CSV_MODELS_TEMP_DB]
     cursor = conn.cursor()
     cursor.execute(sql)
-    table_name = re.findall("CREATE TABLE ([^ ]+) \(", sql)[0]
+    table_name = re.findall("CREATE TABLE ([^ ]+) \\(", sql)[0]
     return table_name
 
 
@@ -51,7 +52,7 @@ def require_unique_name(f):
         name = args[0]
         try:
             DynamicModel.objects.get(name=name)
-        except DynamicModel.DoesNotExist:
+        except DynamicModel.DoesNotExist as e:
             return f(*args, **kwargs)
         # if we're here, we have an existing model, throw error w/ help
         raise DataSourceExistsError(name)
@@ -79,26 +80,32 @@ def from_models_py(name, models_py, **model_attrs):
     fields = extract_fields(models_py)
     columns = []
     for field_name, declaration in fields.items():
-        logger.info("Column field_name", field_name, "declaration", declaration)
-        kwargs = extract_field_declaration_args(declaration)
+        logger.info("Column field_name: %s declaration: %s" % (
+            field_name, declaration
+        ))
+
+        kwargs = extract_field_declaration_args_eval(declaration)
         if not kwargs:
             kwargs = {}
-        logger.info("Field kwargs", kwargs)
+            logger.info("Field kwargs: %s" % (kwargs))
+
         field_type = extract_field_type(declaration)
-        logger.info("field_type", field_type)
+        logger.info("field_type: %s" % (field_type))
+
         try:
             original_name = kwargs.pop("db_column")
         except KeyError as e:
             original_name = field_name
-        columns.append({
+        column = {
             "name": field_name,
             "original_name": original_name,
             "type": field_type,
             "attrs": kwargs,
             "searchable": True,
             "filterable": False,
-        })
-        logger.info("from_models_py Columns: %s" % columns)
+        }
+        columns.append(column)
+        logger.info("from_models_py Columns: %s" % column)
     dynmodel = DynamicModel.objects.create(
         name = name,
         columns = columns,
