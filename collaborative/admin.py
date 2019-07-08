@@ -94,6 +94,11 @@ class ReverseFKAdmin(admin.ModelAdmin):
                 setattr(Model, getter_name, getter)
 
 
+class DynamicModelAdmin(admin.ModelAdmin):
+    def get_queryset(self, request):
+        return DynamicModel.objects.exclude(name__icontains="Metadata")
+
+
 class AdminMetaAutoRegistration(AdminAutoRegistration):
     def should_register_admin(self, Model):
         name = Model._meta.object_name
@@ -103,12 +108,18 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             AdminMetaAutoRegistration, self
         ).should_register_admin(Model)
 
+    def create_dynmodel_admin(self, Model):
+        name = Model._meta.object_name
+
+        inheritance = (NoEditMixin, DynamicModelAdmin,)
+        return type("%sAdmin" % name, inheritance, {})
+
     def create_admin(self, Model):
         name = Model._meta.object_name
         if "Metadata" in name:
             return
         if name == "DynamicModel":
-            return super().create_admin(Model)
+            return self.create_dynmodel_admin(Model)
 
         meta = []
         # find the Metadata model corresponding to the
