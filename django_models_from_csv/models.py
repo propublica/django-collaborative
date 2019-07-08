@@ -1,11 +1,13 @@
 import importlib
 import json
 import logging
+import re
 import sys
 
 from django import forms
 from django.apps import apps
 from django.conf import settings
+from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError, AppRegistryNotReady
@@ -24,7 +26,7 @@ except ImportError:
 
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
-from django_models_from_csv.utils.common import get_setting
+from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.google_sheets import (
    GoogleOAuth, PrivateSheetImporter
@@ -252,14 +254,34 @@ class DynamicModel(models.Model):
             old_field = self.find_old_field(OldModel, new_field)
             FieldSchemaEditor(old_field).update_column(NewModel, new_field)
 
-    def save(self, **kwargs):
-        super().save(**kwargs)
-        self.do_migrations()
+    def unregister_model(self, name):
+        try:
+            admin.site.unregister(self.get_model())
+        except admin.sites.NotRegistered:
+            pass
+        try:
+            del apps.all_models["django_models_from_csv"][name]
+        except KeyError as err:
+            raise LookupError("'{}' not found.".format(model_name)) from err
+
+    def model_cleanup(self):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
         clear_url_caches()
+
+    def save(self, **kwargs):
+        self.name = slugify(self.name)
+        super().save(**kwargs)
+        self.do_migrations()
+        self.model_cleanup()
         for fn in self._POST_SAVE_SIGNALS:
             fn(self)
+
+    def delete(self, **kwargs):
+        Model = apps.get_model("django_models_from_csv", self.name)
+        ModelSchemaEditor().drop_table(Model)
+        self.unregister_model(self.name)
+        super().delete(**kwargs)
 
 
 def create_model_attrs(dynmodel):
@@ -295,7 +317,14 @@ def create_model_attrs(dynmodel):
         original_to_model_headers[og_column_name] = column_name
 
         Field = FIELD_TYPES[column_type]
-        attrs[column_name] = Field(*column_args, **column_attrs)
+        if column_type == "foreignkey":
+            fk_model_name = column_args[0]
+            fk_on_delete = getattr(models, column_args[1])
+            attrs[column_name] = Field(
+                fk_model_name, fk_on_delete, **column_attrs
+            )
+        else:
+            attrs[column_name] = Field(*column_args, **column_attrs)
 
         # include any column choice structs as [COL_NAME]_CHOICES
         choices = column_attrs.get("choices")

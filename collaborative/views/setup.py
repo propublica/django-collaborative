@@ -42,11 +42,17 @@ def setup_auth(request):
     OAuth social login.
     """
     # Don't show the password change screen if we've already
-    # added models.
-    # TODO: use a more elegant and reliable way to determine
-    # if the configuration flow has been completed. We will need
-    # to allow users to re-enter the Google OAuth configuration
-    # step if they passed it initially (also store tokens!)
+    # added models or setup an initial password.
+    try:
+        AppSetting.objects.get(
+            name="initial_setup_completed"
+        )
+        return redirect('/admin/')
+    except AppSetting.DoesNotExist as e:
+        pass
+    # if we have more than three models, we've gone through
+    # at least once. this is probably unnecessary unless
+    # models got imported in some weird way w/o appsettings
     if models.DynamicModel.objects.count() > 3:
         return redirect('/admin/')
     if request.method == "GET":
@@ -60,6 +66,12 @@ def setup_auth(request):
             raise ValueError("Passwords do not match!")
         request.user.set_password(password)
         request.user.save()
+        # set an appsetting that will prevent the configure auth
+        # screen from showing up again
+        AppSetting.objects.create(
+            name="initial_setup_completed",
+        )
+
         setting, created =  AppSetting.objects.get_or_create(
             name="google_oauth_credentials"
         )

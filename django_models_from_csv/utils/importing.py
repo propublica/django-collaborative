@@ -45,10 +45,10 @@ def import_records_list(csv, dynmodel):
     data = Dataset().load(csv)
     # add an ID column matching the row number
     if dynmodel.csv_url:
-        data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
+        data.insert_col(0, col=[i+1 for i in range(len(data))], header="id")
     # # screendoor: use the builtin ID field
     # elif dynmodel.csv_url:
-    #     # data.insert_col(0, col=[i+1 for i in range(len(data))], header='id')
+    #     # data.insert_col(0, col=[i+1 for i in range(len(data))], header="id")
 
     # Turn our CSV columns into model columns
     for i in range(len(data.headers)):

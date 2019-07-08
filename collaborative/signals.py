@@ -64,7 +64,7 @@ def build_and_link_metadata_fk(dynmodel):
     if mtype == MODEL_TYPES.CSV:
         # 1. look for dynmodel's corresponding meta model
         Model = dynmodel.get_model()
-        metamodel_name = "%sMetadata" % dynmodel.name
+        metamodel_name = "%smetadata" % dynmodel.name
 
         dyn_metamodel_count = models.DynamicModel.objects.filter(
             name=metamodel_name
@@ -101,7 +101,7 @@ def build_and_link_metadata_fk(dynmodel):
         # with contact model, we know that contact model
         # hasn't been created if metadata doesn't already
         # exist (so no additional check)
-        contact_model_name = "%sContactMetadata" % dynmodel.name
+        contact_model_name = "%scontactmetadata" % dynmodel.name
         contact_columns = default_contact_model_columns(dynmodel)
         dyn_contactmodel = models.DynamicModel.objects.create(
             name = contact_model_name,
@@ -131,7 +131,7 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
     if not instance:
         return
 
-    meta_model_name = "%sMetadata" % instance._meta.object_name
+    meta_model_name = "%smetadata" % instance._meta.object_name
     try:
         meta_model_desc = models.DynamicModel.objects.get(name=meta_model_name)
     except (models.DynamicModel.DoesNotExist, OperationalError) as e:

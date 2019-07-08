@@ -96,13 +96,63 @@ class ReverseFKAdmin(admin.ModelAdmin):
 
 class DynamicModelAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
-        return DynamicModel.objects.exclude(name__icontains="Metadata")
+        return DynamicModel.objects.exclude(name__icontains="metadata")
+
+    def get_full_deletion_set(self, queryset, only_meta=False):
+        """
+        This is called when a user selects some dynamic models to be
+        deleted. Since the admin queryset only displays the main models,
+        not the metadata models, each item in the queryset can be
+        assumed to be a primary data source model. Here, we want to
+        also add the corresponding meta models.
+        """
+        pks = []
+        for model in queryset:
+            name = model.name
+            meta = "%smetadata" % (name)
+            contact_meta = "%scontactmetadata" % (name)
+
+            names = (meta, contact_meta)
+            if not only_meta:
+                names = (name, meta, contact_meta)
+
+            for dynmodel in DynamicModel.objects.filter(name__in=names):
+                pks.append(dynmodel.pk)
+
+        # order this by descending id, since the original model gets
+        # created first, and we need to delete the reverse fk attached
+        # models first to avoid a cascade
+        return DynamicModel.objects.filter(
+            pk__in=pks
+        )#.order_by("-id")
+
+    def get_deleted_objects(self, queryset, request):
+        extended_queryset = self.get_full_deletion_set(queryset)
+        return super().get_deleted_objects(extended_queryset, request)
+
+    def delete_queryset(self, request, queryset):
+        # for model in queryset:
+        # for model in self.get_full_deletion_set(queryset):
+        for model in queryset:
+            Model = model.get_model()
+            model_qs = DynamicModel.objects.filter(pk=model.pk)
+            # wipe all relations, by truncating table
+            for related in self.get_full_deletion_set(model_qs, only_meta=True):
+                RelatedModel = related.get_model()
+                for obj in RelatedModel.objects.all():
+                    obj.delete()
+            model.delete()
+        # NOTE: we have to delete these *after* we wipe the original.
+        # otherwise django throws all kinds of errors or will gracefuly
+        # succeed but throw errors later during normal admin operation
+        for metamodel in self.get_full_deletion_set(model_qs, only_meta=True):
+            metamodel.delete()
 
 
 class AdminMetaAutoRegistration(AdminAutoRegistration):
     def should_register_admin(self, Model):
         name = Model._meta.object_name
-        if name.endswith("Metadata"):
+        if name.endswith("metadata"):
             return False
         return super(
             AdminMetaAutoRegistration, self
@@ -110,13 +160,12 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
     def create_dynmodel_admin(self, Model):
         name = Model._meta.object_name
-
         inheritance = (NoEditMixin, DynamicModelAdmin,)
         return type("%sAdmin" % name, inheritance, {})
 
     def create_admin(self, Model):
         name = Model._meta.object_name
-        if "Metadata" in name:
+        if "metadata" in name:
             return
         if name == "DynamicModel":
             return self.create_dynmodel_admin(Model)
@@ -128,9 +177,9 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         for MetaModel in apps.get_models():
             meta_name = MetaModel._meta.object_name
             # all our additonal related models are in this pattern:
-            # [ModelName][Contact|*]Metadata
+            # [model-name][contact|*]metadata
             if not meta_name.startswith(name) or \
-               not meta_name.endswith("Metadata"):
+               not meta_name.endswith("metadata"):
                 continue
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,

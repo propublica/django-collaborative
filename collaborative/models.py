@@ -12,7 +12,11 @@ class MODEL_TYPES:
 
 
 def get_metamodel_name(name):
-    return "%sMetadata" % name
+    return "%smetadata" % name
+
+
+def get_contact_metamodel_name(name):
+    return "%scontactmetadata" % name
 
 
 DEFAULT_STATUSES = (

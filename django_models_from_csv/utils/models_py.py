@@ -102,6 +102,14 @@ def extract_fields(models_py):
         field, declaration = field_matches.groups()
         logger.debug("field: %s, declaration: %s" % (field, declaration))
 
+        # NOTE: we don't want to override the datatype of a provided id
+        # or primary key field. django will auto-create this with the
+        # correct type and we can use it accordingly as the primary
+        # field type, unique source of truth.
+        if field in ["id", "pk"]:
+            logger.debug("Skipping id or pk field: %s" % declaration)
+            continue
+
         # shorten field names
         if len(field) > MAX_HSIZE:
             field = field[:MAX_HSIZE]

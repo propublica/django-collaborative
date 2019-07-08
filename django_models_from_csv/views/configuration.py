@@ -12,7 +12,7 @@ from django_models_from_csv.exceptions import (
     UniqueColumnError, DataSourceExistsError
 )
 from django_models_from_csv.forms import SchemaRefineForm
-from django_models_from_csv.utils.common import get_setting
+from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.dynmodel import (
     from_csv_url, from_screendoor, from_private_sheet
@@ -61,18 +61,18 @@ def begin(request):
         }
         try:
             if csv_url and csv_google_sheets_auth_code:
-                name = request.POST.get("csv_name")
+                name = slugify(request.POST.get("csv_name"))
                 dynmodel = from_private_sheet(
                     name, csv_url, auth_code=csv_google_sheets_auth_code,
                 )
             elif csv_url:
-                name = request.POST.get("csv_name")
+                name = slugify(request.POST.get("csv_name"))
                 dynmodel = from_csv_url(
                     name, csv_url,
                     csv_google_sheets_auth_code=csv_google_sheets_auth_code
                 )
             elif sd_api_key:
-                name = request.POST.get("sd_name")
+                name = slugify(request.POST.get("sd_name"))
                 dynmodel = from_screendoor(
                     name,
                     sd_api_key,
