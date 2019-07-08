@@ -284,6 +284,18 @@ class DynamicModel(models.Model):
         super().delete(**kwargs)
 
 
+def verbose_namer(name, make_friendly=False):
+    """
+    Removes all values of screendoor IDs from the column name. Optionally
+    this will make the column name friendly by removing dashes/underscore
+    with spaces.
+    """
+    no_sd_id = re.sub(r"\s*\(ID:\s*[a-z0-9]+\)$", "", name)
+    if not make_friendly:
+        return no_sd_id
+    return re.sub(r"[_\-]+", " ", no_sd_id)
+
+
 def create_model_attrs(dynmodel):
     """
     Build an individual model's attributes, specified by the
@@ -292,8 +304,8 @@ def create_model_attrs(dynmodel):
     model_name = dynmodel.name
     class Meta:
         managed = False
-        verbose_name = (model_name)
-        verbose_name_plural = (model_name)
+        verbose_name = verbose_namer(model_name, make_friendly=True)
+        verbose_name_plural = verbose_namer(model_name, make_friendly=True)
 
     attrs = {
         "__module__": "django_models_from_csv.models.%s" % model_name,
@@ -324,7 +336,15 @@ def create_model_attrs(dynmodel):
                 fk_model_name, fk_on_delete, **column_attrs
             )
         else:
-            attrs[column_name] = Field(*column_args, **column_attrs)
+            verbose = column_name
+            if og_column_name:
+                verbose = re.sub(
+                    r"\s*\(ID:\s*[a-z0-9]+\)$", "", og_column_name
+                )
+            attrs[column_name] = Field(
+                verbose_name=verbose,
+                *column_args, **column_attrs
+            )
 
         # include any column choice structs as [COL_NAME]_CHOICES
         choices = column_attrs.get("choices")
