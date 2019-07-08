@@ -25,6 +25,23 @@
 
 {% if app_list %}
     {% for app in app_list %}
+        {% if app.app_label == "django_models_from_csv" and app.models|length < 2 %}
+        <div class="app-{{ app.app_label }} module">
+            <table>
+                <caption>
+                    <span class="section" >{{ app.name }}</span>
+                </caption>
+                <tr class="model-{{ model.object_name|lower }}">
+                    <th>
+                        <a class="section" href="/db-config/begin?addnew=true">
+                            No data sources added. Import one here.
+                        </a>
+                    </th>
+                    <th>&nbsp;</th>
+                </tr>
+            </table>
+        </div>
+        {% else %}
         <div class="app-{{ app.app_label }} module">
         <table>
         <caption>
@@ -63,6 +80,7 @@
         {% endfor %}
         </table>
         </div>
+      {% endif %}
     {% endfor %}
 {% else %}
     <p>{% trans "You don't have permission to view or edit anything." %}</p>
