@@ -1,0 +1,10 @@
+{
+  "name": "django-collaborative",
+  "description": "ProPublica's collaborative tip-gathering framework. Import and manage CSV, Google Sheets and Screendoor data with ease.",
+  "repository": "https://github.com/propublica/django-collaborative",
+  "logo": "https://media.glassdoor.com/sqll/420393/propublica-squarelogo-1496908234360.png",
+  "keywords": ["django", "collaborative", "admin"],
+  "addons": {
+  	"heroku-postgresql:hobby-basic"
+  }
+}
