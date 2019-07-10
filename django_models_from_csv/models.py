@@ -252,7 +252,8 @@ class DynamicModel(models.Model):
                 continue
             # TODO: ONLY call this when it's changed!
             old_field = self.find_old_field(OldModel, new_field)
-            FieldSchemaEditor(old_field).update_column(NewModel, new_field)
+            if old_field:
+                FieldSchemaEditor(old_field).update_column(NewModel, new_field)
 
     def unregister_model(self, name):
         try:

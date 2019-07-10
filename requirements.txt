@@ -10,11 +10,13 @@ csvkit==1.0.4
 dbfread==2.0.7
 defusedxml==0.5.0
 diff-match-patch==20181111
-Django>=2.2.2
+dj-database-url==0.5.0
+Django==2.2.3
 django-import-export==1.2.0
 django-jsonfield==1.2.0
 et-xmlfile==1.0.1
 future==0.17.1
+gunicorn==19.9.0
 idna==2.8
 isodate==0.6.0
 jdcal==1.4
@@ -23,6 +25,7 @@ oauthlib==3.0.1
 odfpy==1.4.0
 openpyxl==2.6.2
 parsedatetime==2.4
+psycopg2-binary==2.8.3
 PyJWT==1.7.1
 python-dateutil==2.8.0
 python-slugify==3.0.2
@@ -39,5 +42,7 @@ SQLAlchemy==1.3.2
 sqlparse==0.3.0
 tablib==0.13.0
 text-unidecode==1.2
+urllib3==1.24.3
+whitenoise==4.1.2
 xlrd==1.2.0
 xlwt==1.3.0
