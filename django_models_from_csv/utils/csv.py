@@ -30,7 +30,7 @@ def clean_csv_headers(csv):
     up the translation from CSV -> database table. CSVKit, in particular,
     doesn't like header columns with these chars in it.
     """
-    data = Dataset().load(csv)
+    data = Dataset().load(csv, format="csv")
     headers = [re.sub("[,\"'\n]", "", h) for h in data.headers]
 
     new_data = Dataset(headers=headers)

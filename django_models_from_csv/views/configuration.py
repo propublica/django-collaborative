@@ -85,10 +85,18 @@ def begin(request):
                 **context
             })
         # handles valid URLs to non-CSV data and also just bad URLs
-        except (UnsupportedFormat, ConnectionError) as e:
+        except UnsupportedFormat as e:
             err_msg = _(
                 "Invalid data source. Please make sure you "
-                "linked to a valid CSV data source, there aren't "
+                "linked to a valid CSV data source."
+            )
+            return render(request, 'begin.html', {
+                "errors": err_msg,
+                **context
+            })
+        except ConnectionError as e:
+            err_msg = _(
+                "Invalid URL. Please make sure there aren't "
                 "typos in the URL, and that the data isn't "
                 "protected. If you're trying to use a protected "
                 "Google Sheet, you need to use the private Sheet "

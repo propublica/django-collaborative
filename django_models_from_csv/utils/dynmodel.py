@@ -63,7 +63,7 @@ def csv_precheck(csv_data):
     """
     Do some basic sanity checks on a CSV.
     """
-    data = Dataset().load(csv_data)
+    data = Dataset().load(csv_data, format="csv")
     unique_names = []
     for header in data.headers:
         if header in unique_names:
