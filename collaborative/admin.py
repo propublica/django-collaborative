@@ -1,4 +1,5 @@
 import logging
+import re
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
@@ -92,6 +93,16 @@ class ReverseFKAdmin(admin.ModelAdmin):
                 getter_name = "%s_%s" % (rel_name, attr_name)
                 getter = make_getter(rel_name, attr_name, getter_name)
                 setattr(Model, getter_name, getter)
+                short_desc = re.sub(r"[\-_]+", " ", attr_name)
+                getattr(Model, getter_name).short_description = short_desc
+                getattr(Model, getter_name).admin_order_field = "%s__%s" % (
+                    rel_name, attr_name
+                )
+
+    def get_view_label(self, obj):
+        return "View"
+
+    get_view_label.short_description = 'Records'
 
 
 class DynamicModelAdmin(admin.ModelAdmin):
@@ -204,10 +215,12 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)
         fields = self.get_fields(Model)
-        associated_fields = []
+        associated_fields = ["get_view_label"]
         if name != "DynamicModel":
             associated_fields.append("metadata_status")
             associated_fields.append("metadata_partner")
+            filterable.append("metadata__status")
+            filterable.append("metadata__partner")
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin

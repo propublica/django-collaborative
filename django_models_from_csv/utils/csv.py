@@ -16,7 +16,7 @@ def extract_key_from_csv_url(url):
     we can convert it into a CSV export URL.
     """
     matches = re.findall(
-        "https://docs.google.com/spreadsheets/d/([^/]+)/edit",
+        "https://docs.google.com/spreadsheets/d/([^/]+)/.*",
         url
     )
     if not matches:
