@@ -26,11 +26,11 @@ repository and installing the Python dependencies. Python 3.6 or 3.7 and Django 
 Assuming everything worked, let's bootstrap and then start the local server:
 
     # get the database ready
-    ./manage.py migrate
+    python manage.py migrate
     # create a default admin account
-    ./manage.py createsuperuser
+    python manage.py createsuperuser
     # start the local application
-    ./manage.py runserver
+    python manage.py runserver
 
 You can then access the application `http://localhost:8000` and log
 in with the credentials you selected in the `createsuperuser` step
