@@ -1,3 +1,6 @@
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/heroku)
+
+
 # Collaborative Tip Gathering
 
 This is a web application for managing and building stories based on
