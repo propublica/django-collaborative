@@ -39,7 +39,7 @@ DEFAULT_META_COLUMNS = [{
         "default": DEFAULT_STATUSES[0][0],
     },
 },{
-    "name": "partner",
+    "name": "assignee",
     "type": "short-text",
     "attrs": {
         "max_length": 120,

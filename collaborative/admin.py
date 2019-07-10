@@ -218,9 +218,9 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         associated_fields = ["get_view_label"]
         if name != "DynamicModel":
             associated_fields.append("metadata_status")
-            associated_fields.append("metadata_partner")
+            associated_fields.append("metadata_assignee")
             filterable.append("metadata__status")
-            filterable.append("metadata__partner")
+            filterable.append("metadata__assignee")
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin
