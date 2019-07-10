@@ -42,7 +42,7 @@ def import_records_list(csv, dynmodel):
     Take a fetched CSV and turn it into a tablib Dataset, with
     a row ID column and all headers translated to model field names.
     """
-    data = Dataset().load(csv)
+    data = Dataset().load(csv, format="csv")
     # add an ID column matching the row number
     if dynmodel.csv_url:
         data.insert_col(0, col=[i+1 for i in range(len(data))], header="id")
