@@ -20,7 +20,6 @@ class ColumnsWidget(JSONWidget):
             'admin/js/vendor/jquery/jquery%s.js' % extra,
             'admin/js/jquery.init.js',
             'admin/js/core.js',
-            # 'django_models_from_csv/forms/widgets/columnswidget.js',
         )
 
     def __init__(self, column_types, *args, **kwargs):
@@ -30,12 +29,19 @@ class ColumnsWidget(JSONWidget):
     def get_context(self, name, value, attrs):
         context = {}
         attrs = self.build_attrs(self.attrs, attrs)
+        columns = json.loads(value)
+        indexed_columns = []
+        for i in range(len(columns)):
+            indexed_columns.append({
+                "ix": i,
+                **columns[i]
+            })
         context['widget'] = {
             'name': name,
             'is_hidden': self.is_hidden,
             'required': self.is_required,
-            'value_obj': json.loads(value),
-            'value': value,
+            'value_obj': indexed_columns,
+            'value': json.dumps(indexed_columns, indent=2),
             'column_types': self.COLUMN_TYPES,
             'attrs': attrs,
             'template_name': self.template_name,

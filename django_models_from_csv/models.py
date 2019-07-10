@@ -296,6 +296,15 @@ def verbose_namer(name, make_friendly=False):
     return re.sub(r"[_\-]+", " ", no_sd_id)
 
 
+def get_source_dynmodel(self):
+    name = self._meta.object_name
+    try:
+        return DynamicModel.objects.get(name=name)
+    except DynamicModel.DoesNotExist as e:
+        logger.warning("Couldn't find DynamicModel with name=%s" % name)
+        pass
+
+
 def create_model_attrs(dynmodel):
     """
     Build an individual model's attributes, specified by the
@@ -310,6 +319,7 @@ def create_model_attrs(dynmodel):
     attrs = {
         "__module__": "django_models_from_csv.models.%s" % model_name,
         "Meta": Meta,
+        "source_dynmodel": get_source_dynmodel,
     }
 
     if type(dynmodel.columns) != list:

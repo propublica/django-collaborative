@@ -214,7 +214,8 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)
-        fields = self.get_fields(Model)
+        dynmodel = Model.source_dynmodel(Model)
+        fields = self.get_fields(Model, dynmodel=dynmodel)
         associated_fields = ["get_view_label"]
         if name != "DynamicModel":
             associated_fields.append("metadata_status")

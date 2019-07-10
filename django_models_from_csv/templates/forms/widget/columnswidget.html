@@ -1,19 +1,86 @@
-{% load staticfiles %}
+{% load static %}
 {% load field_verbose_name %}
 
 {% block extrahead %}
   {{ widget.media }}
+  <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+  <script src="{% static "html5sortable/html5sortable.min.js" %}"></script>
+
   <style>
-#content div.columns-widget {
-    padding: 15px;
-}
-.columns-selector-wrapper {
-}
-.columns-selector-wrapper input[type=text] {
-    min-width: 300px;
-    margin-right: 20px;
-}
+    #content div.columns-widget {
+        padding: 15px;
+    }
+    .columns-selector-wrapper {
+    }
+    .columns-selector-wrapper input[type=text] {
+        min-width: 300px;
+        margin-right: 20px;
+    }
+    .sortable tr:hover {
+        background-color: #eeeeee;
+    }
+    .sortable tbody tr:nth-child(1) th {
+        border-bottom: 2px solid #cccccc;
+    }
+    .sortable tbody tr:nth-child(6) td {
+        border-bottom: 2px solid #cccccc;
+    }
   </style>
+
+
+  <script>
+    $(function() {
+      const sortCSS = '.sortable tbody';
+      const options = {
+          items: 'tr',
+          forcePlaceholderSize: true,
+      };
+      sortable(sortCSS, options)[0].addEventListener('sortupdate', function(e) {
+        /**
+         * This event is triggered when the user stopped sorting and the DOM
+         * position has changed.
+         *
+         * e.detail.item - {HTMLElement} dragged element
+         *
+         * Origin Container Data
+         * ======================
+         * e.detail.origin.index - {Integer} Index of the element within
+         *     Sortable Items Only
+         * e.detail.origin.elementIndex - {Integer} Index of the element in all
+         *     elements in the Sortable Container
+         * e.detail.origin.container - {HTMLElement} Sortable Container that
+         *     element was moved out of (or copied from)
+         * e.detail.origin.itemsBeforeUpdate - {Array} Sortable Items
+         *  before the move
+         * e.detail.origin.items - {Array} Sortable Items after the move
+         *
+         * Destination Container Data
+         * ==========================
+         * e.detail.destination.index - {Integer} Index of the element within
+         *     Sortable Items Only
+         * e.detail.destination.elementIndex - {Integer} Index of the element
+         *     in all elements in the Sortable Container
+         * e.detail.destination.container - {HTMLElement} Sortable Container
+         *     that element was moved out of (or copied from)
+         * e.detail.destination.itemsBeforeUpdate - {Array} Sortable Items
+         *     before the move
+         * e.detail.destination.items - {Array} Sortable Items after the move
+         */
+        const start = e.detail.origin.index - 1;
+        const end = e.detail.destination.index - 1;
+
+        const widget = document.querySelector(".columns-widget");
+        const cols = JSON.parse($("textarea", widget).val());
+        let col = cols.splice(start, 1)[0];
+        cols.splice(end, 0, col);
+
+        const jsonStr = JSON.stringify(cols, null, 2);
+        const textArea = $("textarea", widget);
+        textArea.val(jsonStr);
+      });
+    });
+  </script>
+
   <script type="text/javascript">
     (function($) {
       'use strict';
@@ -31,6 +98,7 @@
           // along with the column JSON structure (validators.py)
           $(".option", tr).each((_, td) => {
             const select = $("select", td);
+            // update the name of the column
             if (select && select.length) {
               const name = select.attr("name");
               if (name) {
@@ -91,7 +159,7 @@
   </textarea>
 
   {% if widget.value_obj %}
-  <table class="columns-selector-wrapper">
+  <table id="csv-models-columns" class="columns-selector-wrapper sortable">
     <tr>
       <th>
           Column name
@@ -139,6 +207,10 @@
         <input type="checkbox"
                name="filterable"
                {% if column.filterable %}checked{% endif %} />
+        <!-- hidden fields, positional index -->
+        <input type="hidden"
+               name="ix"
+               value="{{ column.ix }}" />
       </td>
     </tr>
     {% endif %}

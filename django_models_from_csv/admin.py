@@ -64,9 +64,15 @@ class AdminAutoRegistration:
     def get_readonly_fields(self, Model):
         return []
 
-    def get_fields(self, Model):
+    def get_fields(self, Model, dynmodel=None):
         fields = []
+        # assign column fields first, to preserve the order
+        # as it appeared in the refine stage
+        if dynmodel is not None:
+            for c in dynmodel.columns:
+                fields.append(c["name"])
         for f in Model._meta.get_fields():
+            if f.name in fields: continue
             if f.is_relation: continue
             if not hasattr(f, "auto_created"): continue
             if f.auto_created: continue
