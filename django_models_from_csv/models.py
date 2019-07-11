@@ -24,6 +24,10 @@ try:
 except ImportError:
     import six
 
+import django_models_from_csv
+from django_models_from_csv.apps import (
+    DjangoDynamicModelsConfig, hydrate_django_models_in_db
+)
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 from django_models_from_csv.utils.common import get_setting, slugify
@@ -268,6 +272,10 @@ class DynamicModel(models.Model):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
         clear_url_caches()
+        hydrate_django_models_in_db(DjangoDynamicModelsConfig(
+            "django_models_from_csv",
+            django_models_from_csv
+        ))
 
     def save(self, **kwargs):
         self.name = slugify(self.name)
@@ -411,8 +419,7 @@ def create_models():
             continue
 
         # set DynRow w/o specifying it here
-        logger.info("Registering model: %s" % (model_name))
-        # setattr(sys.modules[__name__], model_name, _model)
+        setattr(sys.modules[__name__], model_name, _model)
         try:
             apps.get_model(_model._meta.app_label, model_name)
             logger.info("Model alread %s registered! Skipping." % model_name)
