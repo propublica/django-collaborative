@@ -10,6 +10,7 @@ from django.utils.module_loading import import_module
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
+# from django_models_from_csv.forms import create_taggable_form
 from django_models_from_csv.models import create_models
 from django_models_from_csv.utils.common import get_setting
 
@@ -86,6 +87,7 @@ class AdminAutoRegistration:
         resource = modelresource_factory(model=Model)()
         inheritance = (NoEditMixin, ExportMixin, admin.ModelAdmin,)
         return type("%sAdmin" % name, inheritance, {
+            # "form": create_taggable_form(Model),
             "resource_class": resource,
             # "fields": fields,
             # "readonly_fields": ro_fields,

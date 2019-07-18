@@ -18,6 +18,7 @@ from django.urls.base import clear_url_caches
 from django.utils.module_loading import import_module
 from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
+from taggit.managers import TaggableManager
 
 try:
     from django.utils import six
@@ -328,6 +329,7 @@ def create_model_attrs(dynmodel):
         "__module__": "django_models_from_csv.models.%s" % model_name,
         "Meta": Meta,
         "source_dynmodel": get_source_dynmodel,
+        "tags": TaggableManager(blank=True),
     }
 
     if type(dynmodel.columns) != list:

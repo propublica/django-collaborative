@@ -13,6 +13,7 @@ from social_django.models import Association, Nonce, UserSocialAuth
 
 from collaborative.models import AppSetting
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
+from django_models_from_csv.forms import create_taggable_form
 from django_models_from_csv.models import DynamicModel
 
 
@@ -192,9 +193,12 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             if not meta_name.startswith(name) or \
                not meta_name.endswith("metadata"):
                 continue
+            dynmodel_meta = MetaModel.source_dynmodel(MetaModel)
+            fields_meta = self.get_fields(MetaModel, dynmodel=dynmodel_meta)
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
                 (admin.StackedInline,), {
+                    "form": create_taggable_form(MetaModel, fields=fields_meta),
                     "model": MetaModel,
                     "extra": 0,
                 })

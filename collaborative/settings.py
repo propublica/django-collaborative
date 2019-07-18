@@ -39,6 +39,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'dal',
+    'dal_select2',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +51,8 @@ INSTALLED_APPS = [
 
     'social_django',
     'import_export',
+    'taggit',
+
     'django_models_from_csv',
     'collaborative',
 ]
