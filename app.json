@@ -8,8 +8,8 @@
      "heroku-postgresql:hobby-dev"
   ],
   "env": {
-    "DEBUG_COLLECTSTATIC": {
-       "description": "Debug collectstatic command",
+    "DISABLE_COLLECTSTATIC": {
+       "description": "Disable collectstatic command",
        "value": "1"
     }
   }
