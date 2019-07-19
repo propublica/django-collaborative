@@ -16,4 +16,8 @@ urlpatterns = [
          name='refine-and-import'),
     path('refine-and-import/<str:name>/', views.refine_and_import_by_name,
          name='refine-and-import'),
+
+    # endpoint for autocompleting tags
+    url(r'^tag-autocomplete/$', views.TagAutocomplete.as_view(),
+        name='tag-autocomplete'),
 ]

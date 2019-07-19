@@ -18,12 +18,17 @@ from django.urls.base import clear_url_caches
 from django.utils.module_loading import import_module
 from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
+from taggit.managers import TaggableManager
 
 try:
     from django.utils import six
 except ImportError:
     import six
 
+import django_models_from_csv
+from django_models_from_csv.apps import (
+    DjangoDynamicModelsConfig, hydrate_django_models_in_db
+)
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 from django_models_from_csv.utils.common import get_setting, slugify
@@ -61,6 +66,7 @@ FIELD_TYPES = {
     "datetime": models.DateTimeField,
     "number": models.IntegerField,
     "foreignkey": models.ForeignKey,
+    "tagging": TaggableManager,
 }
 
 
@@ -269,6 +275,10 @@ class DynamicModel(models.Model):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
         clear_url_caches()
+        hydrate_django_models_in_db(DjangoDynamicModelsConfig(
+            "django_models_from_csv",
+            django_models_from_csv
+        ))
 
     def save(self, **kwargs):
         self.name = slugify(self.name)
@@ -297,6 +307,15 @@ def verbose_namer(name, make_friendly=False):
     return re.sub(r"[_\-]+", " ", no_sd_id)
 
 
+def get_source_dynmodel(self):
+    name = self._meta.object_name
+    try:
+        return DynamicModel.objects.get(name=name)
+    except DynamicModel.DoesNotExist as e:
+        logger.warning("Couldn't find DynamicModel with name=%s" % name)
+        pass
+
+
 def create_model_attrs(dynmodel):
     """
     Build an individual model's attributes, specified by the
@@ -311,6 +330,8 @@ def create_model_attrs(dynmodel):
     attrs = {
         "__module__": "django_models_from_csv.models.%s" % model_name,
         "Meta": Meta,
+        "source_dynmodel": get_source_dynmodel,
+        # "tags": TaggableManager(blank=True),
     }
 
     if type(dynmodel.columns) != list:
@@ -402,8 +423,7 @@ def create_models():
             continue
 
         # set DynRow w/o specifying it here
-        logger.info("Registering model: %s" % (model_name))
-        # setattr(sys.modules[__name__], model_name, _model)
+        setattr(sys.modules[__name__], model_name, _model)
         try:
             apps.get_model(_model._meta.app_label, model_name)
             logger.info("Model alread %s registered! Skipping." % model_name)

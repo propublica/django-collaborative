@@ -13,6 +13,7 @@ from social_django.models import Association, Nonce, UserSocialAuth
 
 from collaborative.models import AppSetting
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
+from django_models_from_csv.forms import create_taggable_form
 from django_models_from_csv.models import DynamicModel
 
 
@@ -36,6 +37,10 @@ def make_getter(rel_name, attr_name, getter_name):
     def getter(self):
         if hasattr(self, rel_name):
             rel = getattr(self, rel_name).first()
+            # handle tagging separately
+            if attr_name == "tags":
+                return ", ".join(o.name for o in rel.tags.all())
+
             # try to lookup choices for field
             choices = getattr(
                 rel, "%s_CHOICES" % attr_name.upper(), []
@@ -61,6 +66,22 @@ class ReimportMixin(ExportMixin):
     change_list_template = 'django_models_from_csv/change_list_reimport.html'
 
 
+# # TODO: if we find the performance of the make_getter for retrieving tags,
+# # metadata_tags, is really bad, we need to do something like this to prefetch
+# # all the tags and then use them in the tags metadata getter
+# class TagListMixin:
+#     """
+#     Provides a method for including tags via admin list_display. Once you
+#     include this, you'll be able to include 'tag_list' in your list_display.
+#     """
+#
+#     def get_queryset(self, request):
+#         return super().get_queryset(request).prefetch_related('tags')
+#
+#     def tag_list(self, obj):
+#         return u", ".join(o.name for o in obj.tags.all())
+
+
 class ReverseFKAdmin(admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
         """
@@ -71,25 +92,25 @@ class ReverseFKAdmin(admin.ModelAdmin):
         Model, site = args
         if "DynamicModel" == Model._meta.object_name:
             return
-
         # setup reverse related attr getters so we can do things like
         # metadata__status in the reverse direction
         for rel in Model._meta.related_objects:
             rel_name = rel.get_accessor_name() # "metadata", etc, related_name
-
             rel_model = rel.related_model
             if not rel_model:
                 continue
 
             for rel_field in rel_model._meta.get_fields():
-                # remove auto fields and other fields of that nature. we
-                # only want the directly acessible fields of this method
-                if rel_field.is_relation: continue
-                if not hasattr(rel_field, "auto_created"): continue
-                if rel_field.auto_created: continue
-
                 # build a getter for this relation attribute
                 attr_name = rel_field.name
+
+                # remove auto fields and other fields of that nature. we
+                # only want the directly acessible fields of this method
+                if attr_name != "tags":
+                    if rel_field.is_relation: continue
+                    if not hasattr(rel_field, "auto_created"): continue
+                    if rel_field.auto_created: continue
+
                 getter_name = "%s_%s" % (rel_name, attr_name)
                 getter = make_getter(rel_name, attr_name, getter_name)
                 setattr(Model, getter_name, getter)
@@ -192,12 +213,18 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             if not meta_name.startswith(name) or \
                not meta_name.endswith("metadata"):
                 continue
+            dynmodel_meta = MetaModel.source_dynmodel(MetaModel)
+            meta_attrs = {
+                "model": MetaModel,
+                "extra": 0,
+            }
+            if not meta_name.endswith("contactmetadata"):
+                fields_meta = self.get_fields(MetaModel, dynmodel=dynmodel_meta)
+                form_meta = create_taggable_form(MetaModel, fields=fields_meta)
+                meta_attrs["form"] = form_meta
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
-                (admin.StackedInline,), {
-                    "model": MetaModel,
-                    "extra": 0,
-                })
+                (admin.StackedInline,), meta_attrs)
             meta.append(MetaModelInline)
 
         # get searchable and filterable (from column attributes)
@@ -214,13 +241,20 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
         # Build our CSV-backed admin, attaching inline meta model
         ro_fields = self.get_readonly_fields(Model)
-        fields = self.get_fields(Model)
+        dynmodel = Model.source_dynmodel(Model)
+        fields = self.get_fields(Model, dynmodel=dynmodel)
         associated_fields = ["get_view_label"]
         if name != "DynamicModel":
-            associated_fields.append("metadata_status")
-            associated_fields.append("metadata_assignee")
-            filterable.append("metadata__status")
-            filterable.append("metadata__assignee")
+            test_item = Model.objects.first()
+            if hasattr(test_item, "metadata"):
+                associated_fields.append("metadata_status")
+                filterable.append("metadata__status")
+                associated_fields.append("metadata_assignee")
+                filterable.append("metadata__assignee")
+                test_metadata = test_item.metadata.first()
+                if hasattr(test_metadata, "tags"):
+                    associated_fields.append("metadata_tags")
+                    filterable.append("metadata__tags")
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin

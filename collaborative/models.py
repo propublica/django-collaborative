@@ -32,6 +32,12 @@ DEFAULT_STATUSES = (
 
 
 DEFAULT_META_COLUMNS = [{
+    "name": "tags",
+    "type": "tagging",
+    "attrs": {
+        "blank": True
+    },
+},{
     "name": "status",
     "type": "number",
     "attrs": {

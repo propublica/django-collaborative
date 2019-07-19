@@ -24,6 +24,14 @@ Database Columns | {{ block.super }}
           any mistakes before continuing.
       {% endblocktrans %}
       </p>
+      <p>
+      {% blocktrans trimmed %}
+          The first five columns (below) will be displayed in the
+          imported records list. The remaining columns will
+          only be shown inside each record's full detail page.
+          Re-order the columns by dragging them around.
+      {% endblocktrans %}
+      </p>
       {{ form.columns }}
       <div class="continue">
           <input type="submit" value="{% trans "Continue" %}" />
