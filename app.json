@@ -6,5 +6,11 @@
   "keywords": ["django", "collaborative", "admin"],
   "addons": [
      "heroku-postgresql:hobby-dev"
-  ]
+  ],
+  "env": {
+    "DEBUG_COLLECTSTATIC": {
+       "description": "Debug collectstatic command",
+       "value": "1"
+    }
+  }
 }
