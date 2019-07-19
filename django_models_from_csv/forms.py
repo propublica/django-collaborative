@@ -34,10 +34,10 @@ def create_taggable_form(Model, fields=None):
     name = "Taggable%sForm" % Model._meta.object_name
     attrs = {
         "model": Model,
-        "fields": (),
+        "fields": "__all__",
         "widgets": {
             "tags": autocomplete.TaggitSelect2(
-                reverse("csv_models:tag-autocomplete")
+                reverse("csv_models:tag-autocomplete"),
             ),
         },
     }

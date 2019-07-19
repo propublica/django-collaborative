@@ -12,6 +12,7 @@ COLUMN_TYPES = (
     ("datetime", "Date and time field"),
     ("number", "Number field"),
     # ("foreignkey", "Associated Table"),
+    ("tagging", "Tags field"),
 )
 REQUIRED_FIELDS = (
     "name", "type",

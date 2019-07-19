@@ -194,14 +194,17 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
                not meta_name.endswith("metadata"):
                 continue
             dynmodel_meta = MetaModel.source_dynmodel(MetaModel)
-            fields_meta = self.get_fields(MetaModel, dynmodel=dynmodel_meta)
+            meta_attrs = {
+                "model": MetaModel,
+                "extra": 0,
+            }
+            if not meta_name.endswith("contactmetadata"):
+                fields_meta = self.get_fields(MetaModel, dynmodel=dynmodel_meta)
+                form_meta = create_taggable_form(MetaModel, fields=fields_meta)
+                meta_attrs["form"] = form_meta
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
-                (admin.StackedInline,), {
-                    "form": create_taggable_form(MetaModel, fields=fields_meta),
-                    "model": MetaModel,
-                    "extra": 0,
-                })
+                (admin.StackedInline,), meta_attrs)
             meta.append(MetaModelInline)
 
         # get searchable and filterable (from column attributes)
