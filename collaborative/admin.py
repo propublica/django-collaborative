@@ -1,10 +1,11 @@
 import logging
 import re
 
+from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
-from django.apps import apps
+from django.core.exceptions import FieldError
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
@@ -220,8 +221,12 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             }
             if not meta_name.endswith("contactmetadata"):
                 fields_meta = self.get_fields(MetaModel, dynmodel=dynmodel_meta)
-                form_meta = create_taggable_form(MetaModel, fields=fields_meta)
-                meta_attrs["form"] = form_meta
+                try:
+                    form_meta = create_taggable_form(MetaModel, fields=fields_meta)
+                    meta_attrs["form"] = form_meta
+                # no tags on this model
+                except FieldError:
+                    pass
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
                 (admin.StackedInline,), meta_attrs)
