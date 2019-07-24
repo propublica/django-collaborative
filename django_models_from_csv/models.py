@@ -27,7 +27,8 @@ except ImportError:
 
 import django_models_from_csv
 from django_models_from_csv.apps import (
-    DjangoDynamicModelsConfig, hydrate_django_models_in_db
+    DjangoDynamicModelsConfig, hydrate_django_models_in_db,
+    build_permission_groups,
 )
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
@@ -273,11 +274,13 @@ class DynamicModel(models.Model):
     def model_cleanup(self):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
-        clear_url_caches()
-        hydrate_django_models_in_db(DjangoDynamicModelsConfig(
+        app_config = DjangoDynamicModelsConfig(
             "django_models_from_csv",
             django_models_from_csv
-        ))
+        )
+        hydrate_django_models_in_db(app_config)
+        apps.clear_cache()
+        clear_url_caches()
 
     def save(self, **kwargs):
         self.name = slugify(self.name)
@@ -321,10 +324,11 @@ def create_model_attrs(dynmodel):
     DynamicModel object (and JSON columns).
     """
     model_name = dynmodel.name
-    class Meta:
-        managed = False
-        verbose_name = verbose_namer(model_name, make_friendly=True)
-        verbose_name_plural = verbose_namer(model_name, make_friendly=True)
+    Meta = type("Meta", (), dict(
+        managed = False,
+        verbose_name = verbose_namer(model_name, make_friendly=True),
+        verbose_name_plural = verbose_namer(model_name, make_friendly=True),
+    ))
 
     attrs = {
         "__module__": "django_models_from_csv.models.%s" % model_name,
@@ -421,14 +425,10 @@ def create_models():
             logger.error("No model was created for: %s" % model_name)
             continue
 
-        # set DynRow w/o specifying it here
-        setattr(sys.modules[__name__], model_name, _model)
-        try:
-            apps.get_model(_model._meta.app_label, model_name)
-            logger.info("Model alread %s registered! Skipping." % model_name)
-            continue
-        except LookupError as e:
-            pass
+        these_models = apps.all_models["django_models_from_csv"]
+        logger.debug("DBG these_models: %s" % str(these_models))
+        logger.debug("DBG adding model %s" % model_name)
+        these_models[model_name] = _model
 
 
 try:

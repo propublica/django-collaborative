@@ -43,23 +43,20 @@ def hydrate_django_models_in_db(app_config):
     """
     try:
         create_contenttypes(app_config)
-    except OperationalError:
-        pass
+    except OperationalError as e:
+        logger.error("Error creating content-types: %s" % e)
 
     try:
         create_permissions(app_config)
-    except OperationalError:
-        pass
+    except OperationalError as e:
+        logger.error("Error creating permissions: %s" % e)
 
     try:
         build_permission_groups(app_config.name)
     except (OperationalError, AppRegistryNotReady) as e:
-        pass
+        logger.error("Error creating permission groupss: %s" % e)
 
 
 class DjangoDynamicModelsConfig(AppConfig):
     name = 'django_models_from_csv'
     verbose_name = "Data Sources"
-
-    def ready(self):
-        hydrate_django_models_in_db(self)

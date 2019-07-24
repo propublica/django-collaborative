@@ -153,6 +153,11 @@ def refine_and_import(request, id):
                 "errors": errors,
             })
 
+        # this will re-run the admin setup and build up
+        # the related fields properly
+        logger.info("Doing post-import, re-setup save for admin...")
+        dynmodel.save()
+
         next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
         if next:
             return redirect(next)
