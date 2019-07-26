@@ -46,18 +46,21 @@ def build_permission_groups(app_label):
         meta_name = "%smetadata" % (name)
         contact_meta_name = "%scontactmetadata" % (name)
 
-        content_type = ContentType.objects.get(
-            app_label=app_label,
-            model=name,
-        )
-        content_type_meta = ContentType.objects.get(
-            app_label=app_label,
-            model=meta_name,
-        )
-        content_type_contactmeta = ContentType.objects.get(
-            app_label=app_label,
-            model=contact_meta_name,
-        )
+        try:
+            content_type = ContentType.objects.get(
+                app_label=app_label,
+                model=name,
+            )
+            content_type_meta = ContentType.objects.get(
+                app_label=app_label,
+                model=meta_name,
+            )
+            content_type_contactmeta = ContentType.objects.get(
+                app_label=app_label,
+                model=contact_meta_name,
+            )
+        except ContentType.DoesNotExist:
+            return
 
         # create the permission group for this source. it simply bears the
         # name of the source and grants all perms

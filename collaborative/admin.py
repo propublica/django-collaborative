@@ -12,6 +12,7 @@ from import_export.resources import modelresource_factory
 import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
+from collaborative.filters import TagListFilter
 from collaborative.models import AppSetting
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.forms import create_taggable_form
@@ -266,7 +267,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
                 test_metadata = test_item.metadata.first()
                 if hasattr(test_metadata, "tags"):
                     associated_fields.append("metadata_tags")
-                    filterable.append("metadata__tags")
+                    filterable.append(TagListFilter)
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin
