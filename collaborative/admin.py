@@ -35,11 +35,6 @@ def make_getter(rel_name, attr_name, getter_name):
     Build a reverse lookup getter, to be attached to the custom
     dynamic lookup admin class.
     """
-    logger.debug(
-        "DBG ADMIN make_getter rel_name=%s attr_name=%s getter_name=%s" %(
-            rel_name, attr_name, getter_name
-        )
-    )
     def getter(self):
         if hasattr(self, rel_name):
             rel = getattr(self, rel_name).first()
@@ -96,16 +91,12 @@ class ReverseFKAdmin(admin.ModelAdmin):
         """
         super().__init__(*args, **kwargs)
         Model, site = args
-        logger.debug(
-            "DBG ADMIN ReverseFKAdmin init %s" % Model._meta.object_name
-        )
         if "DynamicModel" == Model._meta.object_name:
             return
         # setup reverse related attr getters so we can do things like
         # metadata__status in the reverse direction
         for rel in Model._meta.related_objects:
             rel_name = rel.get_accessor_name() # "metadata", etc, related_name
-            logger.debug("rel_name=%s" % rel_name)
             rel_model = rel.related_model
             if not rel_model:
                 logger.warning("No related model found!")
@@ -114,7 +105,6 @@ class ReverseFKAdmin(admin.ModelAdmin):
             for rel_field in rel_model._meta.get_fields():
                 # build a getter for this relation attribute
                 attr_name = rel_field.name
-                logger.debug("attr_name=%s" % attr_name)
 
                 # remove auto fields and other fields of that nature. we
                 # only want the directly acessible fields of this method
@@ -123,9 +113,7 @@ class ReverseFKAdmin(admin.ModelAdmin):
                     if not hasattr(rel_field, "auto_created"): continue
                     if rel_field.auto_created: continue
 
-                logger.debug("DBG ADMIN creating getter...")
                 getter_name = "%s_%s" % (rel_name, attr_name)
-                logger.debug("DBG ADMIN getter=%s" % getter_name)
 
                 getter = make_getter(rel_name, attr_name, getter_name)
                 setattr(Model, getter_name, getter)
@@ -134,7 +122,6 @@ class ReverseFKAdmin(admin.ModelAdmin):
                 getattr(Model, getter_name).admin_order_field = "%s__%s" % (
                     rel_name, attr_name
                 )
-                logger.debug("DBG ADMIN short_desc=%s" % short_desc)
 
     def get_view_label(self, obj):
         return "View"
@@ -246,9 +233,6 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
                     meta_attrs["form"] = form_meta
                 # no tags on this model
                 except FieldError:
-                    logger.warning("DBG ADMIN FieldError 'form' not in attrs=%s" % (
-                        str(meta_attrs)
-                    ))
                     pass
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
@@ -274,19 +258,12 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         associated_fields = ["get_view_label"]
         if name != "DynamicModel":
             test_item = Model.objects.first()
-            logger.debug("DBG ADMIN test_item=%s" % test_item)
-            # import IPython; IPython.embed(); import time; time.sleep(2)
-            if not hasattr(test_item, "metadata"):
-                logger.warn("DBG ADMIN no 'metadata' on test_item")
             if hasattr(test_item, "metadata"):
                 associated_fields.append("metadata_status")
                 filterable.append("metadata__status")
                 associated_fields.append("metadata_assignee")
                 filterable.append("metadata__assignee")
                 test_metadata = test_item.metadata.first()
-                logger.debug("DBG ADMIN test_metadata=%s" % test_metadata)
-                if not hasattr(test_metadata, "tags"):
-                    logger.warn("DBG ADMIN No 'tags' on test_metadata")
                 if hasattr(test_metadata, "tags"):
                     associated_fields.append("metadata_tags")
                     filterable.append("metadata__tags")

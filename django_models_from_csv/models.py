@@ -26,11 +26,10 @@ except ImportError:
     import six
 
 import django_models_from_csv
-from django_models_from_csv.apps import (
-    DjangoDynamicModelsConfig, hydrate_django_models_in_db,
-    build_permission_groups,
-)
 from django_models_from_csv.fields import ColumnsField
+from django_models_from_csv.permissions import (
+    hydrate_models_and_permissions,
+)
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
@@ -274,11 +273,8 @@ class DynamicModel(models.Model):
     def model_cleanup(self):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
-        app_config = DjangoDynamicModelsConfig(
-            "django_models_from_csv",
-            django_models_from_csv
-        )
-        hydrate_django_models_in_db(app_config)
+        app_config = apps.get_app_config("django_models_from_csv")
+        hydrate_models_and_permissions(app_config)
         apps.clear_cache()
         clear_url_caches()
 
@@ -407,10 +403,7 @@ def construct_model(dynmodel):
             "WARNING: skipping model: %s. not enough columns" % dynmodel.name)
         return
 
-    logger.info("Creating Model class")
-    _model = type(model_name, (models.Model,), attrs)
-    logger.info("Done!")
-    return _model
+    return type(model_name, (models.Model,), attrs)
 
 
 def create_models():
@@ -426,8 +419,6 @@ def create_models():
             continue
 
         these_models = apps.all_models["django_models_from_csv"]
-        logger.debug("DBG these_models: %s" % str(these_models))
-        logger.debug("DBG adding model %s" % model_name)
         these_models[model_name] = _model
 
 

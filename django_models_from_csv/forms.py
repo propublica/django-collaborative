@@ -36,9 +36,6 @@ def create_taggable_form(Model, fields=None):
     """
     Create a ModelForm with support for select2-based tagging with autocomplete.
     """
-    logger.debug("DBG FORMS create_taggable_form Model=%s fields=%s" % (
-        str(Model), str(fields)
-    ))
     name = "Taggable%sForm" % Model._meta.object_name
     attrs = {
         "model": Model,
@@ -54,8 +51,6 @@ def create_taggable_form(Model, fields=None):
         attrs["fields"] = fields
     if "tags" not in fields:
         fields.append("tags")
-
-    logger.debug("DBG FORMS final fields=%s" % str(fields))
 
     Meta = type("Meta", (object,), attrs)
     return type(name, (autocomplete.FutureModelForm,), {

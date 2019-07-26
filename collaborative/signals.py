@@ -12,6 +12,7 @@ from collaborative.models import (
 )
 from collaborative.user import set_staff_status
 from django_models_from_csv import models
+from django_models_from_csv.permissions import build_tag_permission_group
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +27,9 @@ def ensure_staff(sender, **kwargs):
     user = kwargs.get("instance")
     if user and not user.is_staff:
         set_staff_status(user)
+
+    tag_perm_group = build_tag_permission_group()
+    tag_perm_group.user_set.add(user)
 
 
 def tag_csv_dynmodel(dynmodel):
