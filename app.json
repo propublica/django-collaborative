@@ -6,11 +6,6 @@
   "keywords": ["django", "collaborative", "admin"],
   "addons": [
      "heroku-postgresql:hobby-dev"
-  ],
-  "env": {
-    "DISABLE_COLLECTSTATIC": {
-       "description": "Disable collectstatic command",
-       "value": "1"
-    }
+  ]
   }
 }
