@@ -26,10 +26,10 @@ except ImportError:
     import six
 
 import django_models_from_csv
-from django_models_from_csv.apps import (
-    DjangoDynamicModelsConfig, hydrate_django_models_in_db
-)
 from django_models_from_csv.fields import ColumnsField
+from django_models_from_csv.permissions import (
+    hydrate_models_and_permissions,
+)
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
@@ -274,11 +274,10 @@ class DynamicModel(models.Model):
     def model_cleanup(self):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
+        app_config = apps.get_app_config("django_models_from_csv")
+        hydrate_models_and_permissions(app_config)
+        apps.clear_cache()
         clear_url_caches()
-        hydrate_django_models_in_db(DjangoDynamicModelsConfig(
-            "django_models_from_csv",
-            django_models_from_csv
-        ))
 
     def save(self, **kwargs):
         self.name = slugify(self.name)
@@ -322,10 +321,11 @@ def create_model_attrs(dynmodel):
     DynamicModel object (and JSON columns).
     """
     model_name = dynmodel.name
-    class Meta:
-        managed = False
-        verbose_name = verbose_namer(model_name, make_friendly=True)
-        verbose_name_plural = verbose_namer(model_name, make_friendly=True)
+    Meta = type("Meta", (), dict(
+        managed = False,
+        verbose_name = verbose_namer(model_name, make_friendly=True),
+        verbose_name_plural = verbose_namer(model_name, make_friendly=True),
+    ))
 
     attrs = {
         "__module__": "django_models_from_csv.models.%s" % model_name,
@@ -404,10 +404,7 @@ def construct_model(dynmodel):
             "WARNING: skipping model: %s. not enough columns" % dynmodel.name)
         return
 
-    logger.info("Creating Model class")
-    _model = type(model_name, (models.Model,), attrs)
-    logger.info("Done!")
-    return _model
+    return type(model_name, (models.Model,), attrs)
 
 
 def create_models():
@@ -422,14 +419,8 @@ def create_models():
             logger.error("No model was created for: %s" % model_name)
             continue
 
-        # set DynRow w/o specifying it here
-        setattr(sys.modules[__name__], model_name, _model)
-        try:
-            apps.get_model(_model._meta.app_label, model_name)
-            logger.info("Model alread %s registered! Skipping." % model_name)
-            continue
-        except LookupError as e:
-            pass
+        these_models = apps.all_models["django_models_from_csv"]
+        these_models[model_name] = _model
 
 
 try:

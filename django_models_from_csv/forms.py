@@ -1,3 +1,5 @@
+import logging
+
 from django import forms
 from django.urls import reverse
 from jsonfield.forms import JSONFormField
@@ -6,6 +8,9 @@ from dal import autocomplete
 from django_models_from_csv.widgets import ColumnsWidget
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.validators import validate_columns, COLUMN_TYPES
+
+
+logger = logging.getLogger(__name__)
 
 
 class ColumnsFormField(JSONFormField):

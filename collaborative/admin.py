@@ -1,16 +1,18 @@
 import logging
 import re
 
+from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
-from django.apps import apps
+from django.core.exceptions import FieldError
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
 import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
+from collaborative.filters import TagListFilter
 from collaborative.models import AppSetting
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.forms import create_taggable_form
@@ -98,6 +100,7 @@ class ReverseFKAdmin(admin.ModelAdmin):
             rel_name = rel.get_accessor_name() # "metadata", etc, related_name
             rel_model = rel.related_model
             if not rel_model:
+                logger.warning("No related model found!")
                 continue
 
             for rel_field in rel_model._meta.get_fields():
@@ -112,6 +115,7 @@ class ReverseFKAdmin(admin.ModelAdmin):
                     if rel_field.auto_created: continue
 
                 getter_name = "%s_%s" % (rel_name, attr_name)
+
                 getter = make_getter(rel_name, attr_name, getter_name)
                 setattr(Model, getter_name, getter)
                 short_desc = re.sub(r"[\-_]+", " ", attr_name)
@@ -184,6 +188,7 @@ class DynamicModelAdmin(admin.ModelAdmin):
 class AdminMetaAutoRegistration(AdminAutoRegistration):
     def should_register_admin(self, Model):
         name = Model._meta.object_name
+        # metadata models get admin created along with the base model
         if name.endswith("metadata"):
             return False
         return super(
@@ -209,19 +214,27 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         for MetaModel in apps.get_models():
             meta_name = MetaModel._meta.object_name
             # all our additonal related models are in this pattern:
-            # [model-name][contact|*]metadata
+            # [model-name][contact|]metadata
             if not meta_name.startswith(name) or \
                not meta_name.endswith("metadata"):
                 continue
             dynmodel_meta = MetaModel.source_dynmodel(MetaModel)
+            # for contact log, always show a blank one for easy access
+            extra = 0
+            if meta_name.endswith("contactmetadata"):
+                extra = 1
             meta_attrs = {
                 "model": MetaModel,
-                "extra": 0,
+                "extra": extra,
             }
             if not meta_name.endswith("contactmetadata"):
                 fields_meta = self.get_fields(MetaModel, dynmodel=dynmodel_meta)
-                form_meta = create_taggable_form(MetaModel, fields=fields_meta)
-                meta_attrs["form"] = form_meta
+                try:
+                    form_meta = create_taggable_form(MetaModel, fields=fields_meta)
+                    meta_attrs["form"] = form_meta
+                # no tags on this model
+                except FieldError:
+                    pass
             MetaModelInline = type(
                 "%sInlineAdmin" % meta_name,
                 (admin.StackedInline,), meta_attrs)
@@ -254,7 +267,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
                 test_metadata = test_item.metadata.first()
                 if hasattr(test_metadata, "tags"):
                     associated_fields.append("metadata_tags")
-                    filterable.append("metadata__tags")
+                    filterable.append(TagListFilter)
         list_display = associated_fields + fields[:5]
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin

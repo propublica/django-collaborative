@@ -13,7 +13,7 @@
     .columns-selector-wrapper {
     }
     .columns-selector-wrapper input[type=text] {
-        min-width: 300px;
+        min-width: 200px;
         margin-right: 20px;
     }
     .sortable tr:hover {
@@ -24,6 +24,27 @@
     }
     .sortable tbody tr:nth-child(6) td {
         border-bottom: 2px solid #cccccc;
+    }
+    .sortable .grippy {
+      content: '....';
+      width: 10px;
+      height: 20px;
+      display: inline-block;
+      overflow: hidden;
+      line-height: 5px;
+      padding: 3px 4px;
+      cursor: move;
+      vertical-align: middle;
+      margin-top: -.7em;
+      margin-right: .3em;
+      font-size: 12px;
+      font-family: sans-serif;
+      letter-spacing: 2px;
+      color: #cccccc;
+      text-shadow: 1px 0 1px black;
+    }
+    .sortable .grippy::after {
+      content: '.. .. .. ..';
     }
   </style>
 
@@ -181,6 +202,7 @@
     {% if column.original_name %}
     <tr class="column-selector">
       <td class="option">
+        <span class="grippy"></span>
         <input type="text"
                name="name"
                value="{{ column.name }}" />
