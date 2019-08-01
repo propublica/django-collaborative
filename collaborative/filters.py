@@ -32,7 +32,7 @@ class TagListFilter(admin.SimpleListFilter):
         )
         tags = Tag.objects.filter(
             taggit_taggeditem_items__content_type=ct
-        ).values_list("name", "slug")
+        ).values_list("name", "slug").distinct()
         return tags
 
     def queryset(self, request, queryset):
