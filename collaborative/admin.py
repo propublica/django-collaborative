@@ -5,7 +5,9 @@ from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
+from django.contrib.admin.views.main import ChangeList
 from django.core.exceptions import FieldError
+from django.db.models.functions import Lower
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
@@ -84,6 +86,22 @@ class ReimportMixin(ExportMixin):
 #         return u", ".join(o.name for o in obj.tags.all())
 
 
+class CaseInsensitiveChangeList(ChangeList):
+    """
+    Provides case-insensitive ordering for admin list view.
+    """
+    def get_ordering(self, request, queryset):
+        ordering = super().get_ordering(request, queryset)
+        for i in range(len(ordering)):
+            field = ordering[i]
+            if field.startswith("-"):
+                field = field[1:]
+                ordering[i] = Lower(field).desc()
+            else:
+                ordering[i] = Lower(field)
+        return ordering
+
+
 class ReverseFKAdmin(admin.ModelAdmin):
     def __init__(self, *args, **kwargs):
         """
@@ -120,14 +138,18 @@ class ReverseFKAdmin(admin.ModelAdmin):
                 setattr(Model, getter_name, getter)
                 short_desc = re.sub(r"[\-_]+", " ", attr_name)
                 getattr(Model, getter_name).short_description = short_desc
-                getattr(Model, getter_name).admin_order_field = "%s__%s" % (
-                    rel_name, attr_name
-                )
+                getattr(Model, getter_name).admin_order_field = \
+                        "%s__%s" % (rel_name, attr_name)
 
     def get_view_label(self, obj):
         return "View"
 
     get_view_label.short_description = 'Records'
+
+    def get_changelist(self, request, **kwargs):
+        # This controls how the admin list view works. Override the
+        # ChangeList to modify ordering, template, etc
+        return CaseInsensitiveChangeList
 
 
 class DynamicModelAdmin(admin.ModelAdmin):
