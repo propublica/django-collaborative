@@ -41,8 +41,6 @@ class TagListFilter(admin.SimpleListFilter):
         provided in the query string and retrievable via
         `self.value()`.
         """
-        # Compare the requested value (either '80s' or '90s')
-        # to decide how to filter the queryset.
         value = self.value()
         if not value:
             return queryset
