@@ -85,9 +85,12 @@ class ScreendoorImporter:
                 elif value.get("other_text"):
                     row.append(value.get("other_text"))
                 else:
-                    logger.error(
-                        "Unhandled response data structure: %s" % response
-                    )
+                    logger.error("Unhandled value type: %s (%s)." % (
+                        value, type(value)
+                    ))
+                    logger.error("Response data structure: %s" % (
+                        response
+                    ))
                     row.append(None)
             data.append(row)
         return data.export("csv")
