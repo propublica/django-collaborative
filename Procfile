@@ -1,2 +1,2 @@
-release: python manage.py migrate && python manage.py collectstatic --no-input
+release: ./deploy/heroku/release-tasks.sh
 web: gunicorn wsgi:application --log-file -
