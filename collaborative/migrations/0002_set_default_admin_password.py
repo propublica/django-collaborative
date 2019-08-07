@@ -9,9 +9,9 @@ logger = logging.getLogger(__name__)
 
 
 def forwards(apps, schema_editor):
-    username = os.getenv("COLLAB_DEFAULT_USERNAME", "admin")
-    email = os.getenv("COLLAB_DEFAULT_EMAIL")
-    password = os.getenv("COLLAB_DEFAULT_PASSWORD")
+    username = os.getenv("COLLAB_ADMIN_USERNAME", "admin")
+    email = os.getenv("COLLAB_ADMIN_EMAIL")
+    password = os.getenv("COLLAB_ADMIN_PASSWORD")
     User = apps.get_model("auth", "User")
     # Don't create a new admin account if users exist (this means
     # the user has already gone through the user config or that
@@ -31,12 +31,17 @@ def forwards(apps, schema_editor):
         email=email,
         password=make_password(password),
         is_staff=True,
+        is_superuser=True,
     )
     user.save()
 
 
 def backwards(apps, schema_editor):
-    pass
+    username = os.getenv("COLLAB_ADMIN_USERNAME", "admin")
+    email = os.getenv("COLLAB_ADMIN_EMAIL")
+    password = os.getenv("COLLAB_ADMIN_PASSWORD")
+    User = apps.get_model("auth", "User")
+    User.objects.filter(username=username).delete()
 
 
 class Migration(migrations.Migration):
