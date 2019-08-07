@@ -6,5 +6,19 @@
   "keywords": ["django", "collaborative", "admin"],
   "addons": [
      "heroku-postgresql:hobby-dev"
-  ]
+  ],
+  "env": {
+    "COLLAB_ADMIN_USERNAME": {
+      "description": "Default admin account username.",
+      "value": "admin"
+    },
+    "COLLAB_ADMIN_EMAIL": {
+      "description": "Default admin account email for recovery.",
+      "required": true
+    },
+    "COLLAB_ADMIN_PASSWORD": {
+      "description": "Default admin account password.",
+      "required": true
+    }
+  }
 }
