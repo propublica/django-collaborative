@@ -103,9 +103,15 @@ sudo chown root:root /etc/cron.daily/refresh_data_sources \
     || die "Failure to set ownership of data refreshing cron script"
 sudo chmod 644 /etc/cron.daily/refresh_data_sources \
     || die "Failure to set perms on data refreshing cron script"
+
+# Logging
 sudo mv -f /opt/collaborative/app/deploy/logrotate/refresh_data_sources \
     /etc/logrotate.d/refresh_data_sources \
     || die "Failure to copy data refreshing logrotate config"
+sudo touch /var/log/refresh_data_sources.log \
+    || die "Unable to ensure data refresh log is available"
+sudo chown www-data /var/log/refresh_data_sources.log \
+    || die "Unable to set permissiong on data refresh log"
 
 # Apply everything
 sudo systemctl restart apache2
