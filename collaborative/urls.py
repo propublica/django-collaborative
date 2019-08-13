@@ -26,4 +26,7 @@ urlpatterns = [
     path('setup-auth/', views.setup_auth, name='setup-auth'),
     # Success page
     path('setup-complete/', views.setup_complete, name='setup-complete'),
+
+    # Admin list view field updater
+    path('object-updater/', views.field_updater, name='field-updater'),
 ]

@@ -8,6 +8,7 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
 from django.core.exceptions import FieldError
 from django.db.models.functions import Lower
+from django.utils.html import mark_safe, format_html
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
@@ -33,17 +34,27 @@ UserAdmin.add_fieldsets = ((None, {
 logger = logging.getLogger(__name__)
 
 
-def make_getter(rel_name, attr_name, getter_name):
+def make_getter(rel_name, attr_name, getter_name, field=None):
     """
     Build a reverse lookup getter, to be attached to the custom
     dynamic lookup admin class.
     """
     def getter(self):
         if hasattr(self, rel_name):
+            print("!!! Building getter...")
             rel = getattr(self, rel_name).first()
+            print("    rel type:\t\t", type(rel))
+            print("    rel:\t\t", rel)
+            print("    field type:\t\t", type(field))
+            print("    field:\t\t", field)
+            print("    self type:\t\t", type(self))
+            print("    self:\t\t", self)
             # handle tagging separately
             if attr_name == "tags":
-                return ", ".join(o.name for o in rel.tags.all())
+                tags_str = ", ".join(o.name for o in rel.tags.all())
+                return mark_safe(format_html(
+                    "<b class='tags'>{}</b>", tags_str
+                ))
 
             # try to lookup choices for field
             choices = getattr(
@@ -52,9 +63,17 @@ def make_getter(rel_name, attr_name, getter_name):
             value = getattr(rel, attr_name)
             for pk, txt in choices:
                 if pk == value:
-                    return txt
+                    return mark_safe(format_html(
+                        "<b class='choice'>{}</b>", txt
+                    ))
+
             # no choice found, return field value
-            return value
+            print("    value type:\t\t", type(value))
+            print("    value:\t\t", value)
+            return mark_safe(format_html(
+                "<b class='text-or-other'>{}</b>", value or "-"
+            ))
+
     # the header in django admin is named after the function name. if
     # this line is removed, the header will be "GETTER" for all derived
     # reverse lookup columns
@@ -132,14 +151,18 @@ class ReverseFKAdmin(admin.ModelAdmin):
                     if not hasattr(rel_field, "auto_created"): continue
                     if rel_field.auto_created: continue
 
-                getter_name = "%s_%s" % (rel_name, attr_name)
 
-                getter = make_getter(rel_name, attr_name, getter_name)
-                setattr(Model, getter_name, getter)
+                getter_name = "%s_%s" % (rel_name, attr_name)
                 short_desc = re.sub(r"[\-_]+", " ", attr_name)
-                getattr(Model, getter_name).short_description = short_desc
-                getattr(Model, getter_name).admin_order_field = \
-                        "%s__%s" % (rel_name, attr_name)
+
+                getter = make_getter(
+                    rel_name, attr_name, getter_name, field=rel_field
+                )
+                setattr(self, getter_name, getter)
+                getattr(self, getter_name).short_description = short_desc
+                getattr(
+                    self, getter_name
+                ).admin_order_field = "%s__%s" % (rel_name, attr_name)
 
     def get_view_label(self, obj):
         return "View"
