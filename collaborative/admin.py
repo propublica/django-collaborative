@@ -8,10 +8,13 @@ from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
 from django.core.exceptions import FieldError
 from django.db.models.functions import Lower
+from django.forms import modelform_factory
+from django.urls import reverse
 from django.utils.html import mark_safe, format_html
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
+from dal import autocomplete
 import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
@@ -34,6 +37,15 @@ UserAdmin.add_fieldsets = ((None, {
 logger = logging.getLogger(__name__)
 
 
+def widget_for_object_field(obj, field_name):
+    FieldForm = modelform_factory(
+        obj.source_dynmodel().get_model(),
+        fields=(field_name,)
+    )
+    widget = FieldForm().fields[field_name].widget
+    return widget
+
+
 def make_getter(rel_name, attr_name, getter_name, field=None):
     """
     Build a reverse lookup getter, to be attached to the custom
@@ -41,19 +53,17 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
     """
     def getter(self):
         if hasattr(self, rel_name):
-            print("!!! Building getter...")
             rel = getattr(self, rel_name).first()
-            print("    rel type:\t\t", type(rel))
-            print("    rel:\t\t", rel)
-            print("    field type:\t\t", type(field))
-            print("    field:\t\t", field)
-            print("    self type:\t\t", type(self))
-            print("    self:\t\t", self)
             # handle tagging separately
             if attr_name == "tags":
-                tags_str = ", ".join(o.name for o in rel.tags.all())
+                all_tags = rel.tags.all()
+                tags_str = ", ".join([t.name for t in all_tags])
+                widget = autocomplete.TaggitSelect2(
+                    reverse("csv_models:tag-autocomplete"),
+                )
+                html = widget.render(getter_name, all_tags)
                 return mark_safe(format_html(
-                    "<b class='tags'>{}</b>", tags_str
+                    "<span class='inline-editable'>{}</span>", html
                 ))
 
             # try to lookup choices for field
@@ -63,15 +73,17 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
             value = getattr(rel, attr_name)
             for pk, txt in choices:
                 if pk == value:
+                    widget = widget_for_object_field(rel, attr_name)
+                    html = widget.render(getter_name, value)
                     return mark_safe(format_html(
-                        "<b class='choice'>{}</b>", txt
+                        "<span class='inline-editable'>{}</span>", html
                     ))
 
             # no choice found, return field value
-            print("    value type:\t\t", type(value))
-            print("    value:\t\t", value)
+            widget = widget_for_object_field(rel, attr_name)
+            html = widget.render(getter_name, value)
             return mark_safe(format_html(
-                "<b class='text-or-other'>{}</b>", value or "-"
+                "<span class='inline-editable'>{}</span>", html
             ))
 
     # the header in django admin is named after the function name. if
