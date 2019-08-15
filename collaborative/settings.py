@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'social_django',
     'import_export',
     'taggit',
+    'django_extensions',
 
     'django_models_from_csv',
     'collaborative',

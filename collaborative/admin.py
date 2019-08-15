@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.db.models.functions import Lower
 from django.forms import modelform_factory
@@ -52,39 +53,54 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
     dynamic lookup admin class.
     """
     def getter(self):
-        if hasattr(self, rel_name):
-            rel = getattr(self, rel_name).first()
-            # handle tagging separately
-            if attr_name == "tags":
-                all_tags = rel.tags.all()
-                tags_str = ", ".join([t.name for t in all_tags])
-                widget = autocomplete.TaggitSelect2(
-                    reverse("csv_models:tag-autocomplete"),
-                )
-                html = widget.render(getter_name, all_tags)
-                return mark_safe(format_html(
-                    "<span class='inline-editable'>{}</span>", html
-                ))
+        if not hasattr(self, rel_name):
+            return None
 
-            # try to lookup choices for field
-            choices = getattr(
-                rel, "%s_CHOICES" % attr_name.upper(), []
+        rel = getattr(self, rel_name).first()
+        fieldname = "%s__%s" % (rel_name, attr_name)
+        content_type_id = ContentType.objects.get_for_model(self).id
+
+        print("Relation", rel)
+        print("  fieldname:\t", fieldname)
+        print("  content type ID:\t", content_type_id)
+
+        # handle tagging separately
+        if attr_name == "tags":
+            all_tags = rel.tags.all()
+            tags_str = ", ".join([t.name for t in all_tags])
+            widget = autocomplete.TaggitSelect2(
+                reverse("csv_models:tag-autocomplete"),
             )
-            value = getattr(rel, attr_name)
-            for pk, txt in choices:
-                if pk == value:
-                    widget = widget_for_object_field(rel, attr_name)
-                    html = widget.render(getter_name, value)
-                    return mark_safe(format_html(
-                        "<span class='inline-editable'>{}</span>", html
-                    ))
-
-            # no choice found, return field value
-            widget = widget_for_object_field(rel, attr_name)
-            html = widget.render(getter_name, value)
+            html = widget.render(fieldname, all_tags)
             return mark_safe(format_html(
-                "<span class='inline-editable'>{}</span>", html
+                "<span content_type_id={} class='inline-editable'>{}</span>",
+                content_type_id,
+                html,
             ))
+
+        # try to lookup choices for field
+        choices = getattr(
+            rel, "%s_CHOICES" % attr_name.upper(), []
+        )
+        value = getattr(rel, attr_name)
+        for pk, txt in choices:
+            if pk == value:
+                widget = widget_for_object_field(rel, attr_name)
+                html = widget.render(fieldname, value)
+                return mark_safe(format_html(
+                    "<span content_type_id={} class='inline-editable'>{}</span>",
+                    content_type_id,
+                    html,
+               ))
+
+        # no choice found, return field value
+        widget = widget_for_object_field(rel, attr_name)
+        html = widget.render(fieldname, value)
+        return mark_safe(format_html(
+            "<span content_type_id={} class='inline-editable'>{}</span>",
+            content_type_id,
+            html,
+        ))
 
     # the header in django admin is named after the function name. if
     # this line is removed, the header will be "GETTER" for all derived

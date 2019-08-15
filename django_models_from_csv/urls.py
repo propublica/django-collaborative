@@ -20,4 +20,7 @@ urlpatterns = [
     # endpoint for autocompleting tags
     url(r'^tag-autocomplete/$', views.TagAutocomplete.as_view(),
         name='tag-autocomplete'),
+
+    # Admin list view field updater
+    path('object-updater/', views.field_updater, name='object-updater'),
 ]
