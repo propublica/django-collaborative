@@ -3,6 +3,30 @@
 
 {% block extrahead %}
     {{ block.super }}
+    <style>
+    #inline-editable-notifier {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 999;
+        display: block;
+        width: 100%;
+        min-height: 25px;
+        font-size: 1.2em;
+        text-align: center;
+        border: 1px solid black;
+        margin: 0 auto;
+    }
+    #inline-editable-notifier.success {
+        background-color: #87ea87;
+        color: black;
+    }
+    #inline-editable-notifier.failure{
+        background-color: #ff6161;
+        color: black;
+        font-weight: bold;
+    }
+    </style>
     <link href="{% static 'admin/css/vendor/select2/select2.css' %}" type="text/css" media="screen" rel="stylesheet">
     <link href="{% static 'admin/css/autocomplete.css' %}" type="text/css" media="screen" rel="stylesheet">
     <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="screen" rel="stylesheet">
@@ -15,6 +39,11 @@
     <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
     <script type="text/javascript" src="{% static 'autocomplete_light/jquery.post-setup.js' %}"></script>
     <script type="text/javascript" src="{% static 'django_models_from_csv/inline-editable.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  <div id="inline-editable-notifier" style="display: none;"></div>
+  {{ block.super }}
 {% endblock %}
 
 {# taken from import_export module #}

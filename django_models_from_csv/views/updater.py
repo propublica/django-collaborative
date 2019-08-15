@@ -1,7 +1,8 @@
 import logging
 
 from django.contrib.contenttypes.models import ContentType
-from django.shortcuts import HttpResponse
+
+from django_models_from_csv.utils.common import http_response
 
 
 logger = logging.getLogger(__name__)
@@ -53,19 +54,19 @@ def field_updater(request):
 
     if not request.user.is_superuser and \
        not user_has_access(model_ct, request.user):
-        return HttpResponse(403, {
+        return http_response({
             "status": "FAILURE",
             "message": "Access denied.",
-        })
+        }, status=403)
 
     object_pk = request.POST.get('object')
     object = Model.objects.get(pk=object_pk)
     logger.debug("Object ID=%s, object=%s" % (object_pk, object))
     if not object:
-        return HttpResponse(404, {
+        return http_response({
             "status": "FAILURE",
             "message": "Row %s not found." % (object_pk),
-        })
+        }, status=400)
 
     field_name = request.POST.get('field')
     new_value = request.POST.get('value')
@@ -74,7 +75,7 @@ def field_updater(request):
     if "__" not in field_name:
         setattr(object, field_name, new_value)
         object.save()
-        return HttpResponse(200, {"status": "OK"})
+        return http_response({"status": "OK", "message": "Saved!"})
 
     # NOTE: we _do not_ support many-to-many here. we
     # assume ForeignKey (with single value) as the only
@@ -91,4 +92,4 @@ def field_updater(request):
     logger.debug("Setting field=%s to value=%s" % (last_part, new_value))
     setattr(path, last_part, new_value)
     path.save()
-    return HttpResponse(200, {"status": "OK"})
+    return http_response({"status": "OK", "message": "Saved!"})

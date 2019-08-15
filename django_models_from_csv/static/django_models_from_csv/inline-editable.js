@@ -1,4 +1,24 @@
 (() => {
+  /**
+   * Pop the success/failure bar at the top of the admin along
+   * with a specified message.
+   *
+   * success (Boolean) -- False means failure (also styles accordingly)
+   * message (String) -- Message to be displayed to the user inside the box.
+   */
+  const notify = (success, message) => {
+    const block = $("#inline-editable-notifier");
+    block.addClass(success ? "success" : "failure");
+    block.text(message);
+    block.show();
+
+    const duration = success ? 2000 : 5000;
+    $("#inline-editable-notifier").fadeOut(duration, () => {
+      block.removeClass("success");
+      block.hide();
+    })
+  };
+
   const getCSRF = () => {
     return $("input[name='csrfmiddlewaretoken']")[0].value;
   };
@@ -14,9 +34,9 @@
       csrfmiddlewaretoken: csrf,
     };
     console.log("url:", url, "body:", body);
-    $.post(url, body, function( data ) {
-      // TODO: pop a success indicator (for a short period)
-      console.log("Response data", data)
+    $.post(url, body, (data, status, xhr) => {
+      console.log("Response data:", data, "status:", status, "xhr:", xhr);
+      notify(xhr.status === 200, data.message);
     }, "json");
   };
 
