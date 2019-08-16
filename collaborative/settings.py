@@ -22,7 +22,9 @@ LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY", 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
+)
 
 # Google OAuth for Private Sheets Access
 GOOGLE_CLIENT_ID = "507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com"
@@ -141,18 +143,28 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_REDIRECT_URL = "/setup-check/"
 
-# You can pass each row imported from a spreadsheet through a custom data pipeline function.
-# Every row gets passed into these functions in turn, modifying the data to suit your needs.
-# For more information, please see the documentation at http://TKTKTK.
+# You can pass each row imported from a spreadsheet through a custom
+# data pipeline function.  Every row gets passed into these functions in
+# turn, modifying the data to suit your needs.  For more information,
+# please see the documentation at http://TKTKTK.
 DATA_PIPELINE = [
-    # To have the app automatically redact personally identifiable information from a spreadsheet,
-    # uncomment the line of code below, and make sure the header of the fields you want to redact
-    # end with "-PII".
+    # To have the app automatically redact personally identifiable
+    # information from a spreadsheet, uncomment the line of code below,
+    # and make sure the header of the columns you want to redact end
+    # with "-PII". Also make sure to set the COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
+    # setting to the path for your DLP credentials.json file (below).
     # 'collabortive.data_pipeline.google_redactor',
 
     # Example data pipeline processor that uppercases everything
     # 'collaborative.data_pipeline.uppercase',
 ]
+
+# Google DLP credentials JSON file location
+# COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE = "/path/to/credentials.json"
+# Types of private information to filter out
+# COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS = [
+#     "EMAIL_ADDRESS", "FIRST_NAME", "LAST_NAME"
+# ]
 
 # Google Sign In
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
@@ -246,7 +258,7 @@ STATICFILES_DIRS = [
 
 try:
     from collaborative.settings_dev import *
-except:
+except ModuleNotFoundError:
     pass
 
 # Setings (OAuth, etc) from configuration wizard
@@ -254,5 +266,5 @@ except:
 # storage solution
 try:
     from collaborative.settings_prod import *
-except:
+except ModuleNotFoundError:
     pass
