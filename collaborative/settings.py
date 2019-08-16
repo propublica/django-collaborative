@@ -141,6 +141,16 @@ AUTHENTICATION_BACKENDS = (
 
 LOGIN_REDIRECT_URL = "/setup-check/"
 
+# You can pass each row imported from a spreadsheet through a custom data pipeline function.
+# Every row gets passed into these functions in turn, modifying the data to suit your needs.
+# For more information, please see the documentation at http://TKTKTK.
+DATA_PIPELINE = [
+    # To have the app automatically redact personally identifiable information from a spreadsheet,
+    # uncomment the line of code below, and make sure the header of the fields you want to redact
+    # end with "-PII".
+    #'data_pipeline.google_redactor',
+]
+
 # Google Sign In
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ""
