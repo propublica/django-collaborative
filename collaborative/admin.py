@@ -73,7 +73,7 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
             )
             html = widget.render(fieldname, all_tags)
             return mark_safe(format_html(
-                "<span content_type_id={} class='inline-editable'>{}</span>",
+                "<span content_type_id='{}' class='inline-editable-tags'>{}</span>",
                 content_type_id,
                 html,
             ))
@@ -88,7 +88,7 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
                 widget = widget_for_object_field(rel, attr_name)
                 html = widget.render(fieldname, value)
                 return mark_safe(format_html(
-                    "<span content_type_id={} class='inline-editable'>{}</span>",
+                    "<span content_type_id='{}' class='inline-editable'>{}</span>",
                     content_type_id,
                     html,
                ))
@@ -97,7 +97,7 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
         widget = widget_for_object_field(rel, attr_name)
         html = widget.render(fieldname, value)
         return mark_safe(format_html(
-            "<span content_type_id={} class='inline-editable'>{}</span>",
+            "<span content_type_id='{}' class='inline-editable'>{}</span>",
             content_type_id,
             html,
         ))

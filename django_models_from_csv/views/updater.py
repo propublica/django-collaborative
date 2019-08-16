@@ -40,10 +40,22 @@ def field_updater(request):
             "value": "Brandon"
           }
 
-        Returns 200 with:
+    Example for a tag foreign key removal:
+
+        POST /object-updater/
           {
-            "status": "OK"
+            "model": 2,
+            "object": 11,
+            "field": "metadata__tags",
+            "value": "Brandon",
+            "fk_operation": "remove"
           }
+
+    Upon success, this endpoint returns 200 with body:
+      {
+        "status": "OK",
+        "message": "Saved!"
+      }
     """
     model_pk = request.POST.get('model') # content-type
     model_ct = ContentType.objects.get(pk=model_pk)
@@ -90,6 +102,13 @@ def field_updater(request):
         logger.debug("New relation path: %s" % (path))
 
     logger.debug("Setting field=%s to value=%s" % (last_part, new_value))
-    setattr(path, last_part, new_value)
-    path.save()
+    if last_part != "tags":
+        setattr(path, last_part, new_value)
+        path.save()
+    else:
+        # handle tags separately
+        tagger = getattr(path, last_part)
+        if not tagger.filter(name=new_value).count():
+            tag, _ = Tag.objects.get_or_create(name=new_value)
+            tagger.add(tag)
     return http_response({"status": "OK", "message": "Saved!"})
