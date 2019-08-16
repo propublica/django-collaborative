@@ -242,7 +242,7 @@ STATICFILES_DIRS = [
 ]
 
 try:
-   from collaborative.settings_dev import *
+    from collaborative.settings_dev import *
 except:
     pass
 
@@ -250,6 +250,6 @@ except:
 # This is a stopgap until we find a better credential
 # storage solution
 try:
-   from collaborative.settings_prod import *
+    from collaborative.settings_prod import *
 except:
     pass
