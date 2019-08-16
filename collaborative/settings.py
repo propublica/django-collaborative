@@ -148,7 +148,10 @@ DATA_PIPELINE = [
     # To have the app automatically redact personally identifiable information from a spreadsheet,
     # uncomment the line of code below, and make sure the header of the fields you want to redact
     # end with "-PII".
-    #'data_pipeline.google_redactor',
+    # 'collabortive.data_pipeline.google_redactor',
+
+    # Example data pipeline processor that uppercases everything
+    # 'collaborative.data_pipeline.uppercase',
 ]
 
 # Google Sign In

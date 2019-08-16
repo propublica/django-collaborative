@@ -1,6 +1,8 @@
+import importlib
 import logging
 
 from dateutil import parser as dt_parser
+from django.conf import settings
 from import_export.resources import (
     ModelResource, ModelDeclarativeMetaclass,
 )
@@ -131,6 +133,10 @@ def import_records(csv, Model, dynmodel):
     # Do headers check
     errors = []
     for row in dataset.dict:
+        for pipeline in getattr(settings, "DATA_PIPELINE", []):
+            module = importlib.import_module(pipeline)
+            module.run(row)
+
         logger.debug("Importing: %s" % str(row))
         # 1. check fields, any extra fields are thrown out?
         #    or is this done above?
