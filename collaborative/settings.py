@@ -158,7 +158,7 @@ DATA_PIPELINE = [
     # and make sure the header of the columns you want to redact end
     # with "-PII". Also make sure to set the COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
     # setting to the path for your DLP credentials.json file (below).
-    # 'collabortive.data_pipeline.google_redactor',
+    # 'collaborative.data_pipeline.google_redactor',
 
     # Example data pipeline processor that uppercases everything
     # 'collaborative.data_pipeline.uppercase',

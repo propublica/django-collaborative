@@ -30,7 +30,7 @@ COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS = getattr(
 
 
 def deidentify_with_mask(project, string, info_types, masking_character=None,
-                         number_to_mask=0):
+                         number_to_mask=0, dlp=None):
     """Uses the Data Loss Prevention API to deidentify sensitive data in a
     string by masking it with a character.
     Args:
@@ -96,13 +96,14 @@ def run(row):
     project = account_json.get("project_id")
 
     for header in row:
-        if not header.lower().endswith("-pii"):
+        if not header.lower().endswith("_pii"):
             continue
         try:
             row[header] = deidentify_with_mask(
                 project,
                 row[header],
-                COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS
+                COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS,
+                dlp=dlp,
             )
         except Exception as e:
-            logger.warn("Google DLP error: %s" % (e))
+            logger.warning("Google DLP error: %s" % (e))
