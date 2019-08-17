@@ -1,19 +1,23 @@
-# Collaborative Tip Gathering
-
-This is a web application for managing and building stories based on
-tips solicited from the public. This project is meant to be easy to
-setup, intuitive to use and highly extendable for non-programmers and
-experts alike.
-
-The project is broken up into several components:
-- A system for transforming CSV files (Google Sheets links) into
-  managed database records.
-- Customizable fields for tagging, querying, annotating and tracking tips.
-- A "one-click", turnkey deployment option for Google Application Engine.
+# Django Collaborative
 
 ![Google News Initiative](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/Google-News-Initiative.png)
 
 ![ProPublica](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/ProPublica.png)
+
+This is a web application for managing and building stories based on
+tips solicited from the public. This project is meant to be easy to
+setup for non-programmer, intuitive to use and highly extendable.
+
+Here are a few use cases:
+- Collection of data from various sources (Google Form via Google Sheets, Screendoor, Private Google Spreadsheets)
+- An easy to setup data entry system
+- Organizing data from multiple sources and allowing many users to view and annotate it
+
+The project is broken up into several components:
+- A system for transforming CSV files into managed database records
+- A default and automatic Django admin panel built for rapid and easy editing,
+  managing and browsing of data
+- Customizable fields for tagging, querying, annotating and tracking tips
 
 This is a project of [ProPublica](https://www.propublica.org/),
 supported by the [Google News Initiative](https://newsinitiative.withgoogle.com/).
