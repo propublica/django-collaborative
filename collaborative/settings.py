@@ -9,8 +9,8 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
 import os
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -141,6 +141,11 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+# When you log in, by default you'll be directed to the admin
+# overview page. Here, we override that and direct users to an
+# endpoint that checks to see if any data sources have been added
+# and, if not, will direct them to the wizard. If sources have been
+# created, this will direct users to the admin, as usual.
 LOGIN_REDIRECT_URL = "/setup-check/"
 
 # You can pass each row imported from a spreadsheet through a custom

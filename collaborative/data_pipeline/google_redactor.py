@@ -89,7 +89,6 @@ def run(row):
 
     account_json = json.loads(account_json_str)
 
-    # Instantiate a client.
     dlp = google.cloud.dlp.DlpServiceClient.from_service_account_json(
         COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
     )
