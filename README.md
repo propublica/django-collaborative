@@ -11,7 +11,12 @@ The project is broken up into several components:
 - Customizable fields for tagging, querying, annotating and tracking tips.
 - A "one-click", turnkey deployment option for Google Application Engine.
 
-_This is very much a work-in-progress and the code is quickly evolving._ Pretty much everything in the codebase should be considered volatile right now and subject to bold changes.
+![Google News Initiative](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/Google-News-Initiative.png)
+
+![ProPublica](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/ProPublica.png)
+
+This is a project of [ProPublica](https://www.propublica.org/),
+supported by the [Google News Initiative](https://newsinitiative.withgoogle.com/).
 
 ## Getting Started (Local Testing/Development)
 
