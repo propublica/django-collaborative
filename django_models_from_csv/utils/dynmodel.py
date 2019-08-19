@@ -121,7 +121,7 @@ def from_csv(name, csv_data, **kwargs):
     The model is given a specified name and is populated with the
     attributes found in kwargs.
     """
-    logger.debug("New model from CSV:\n %s" % csv_data)
+    logger.debug("New model from CSV:\n %s" % name)
     csv_precheck(csv_data)
     # build SQL from CSV
     sql = run_csvsql(csv_data)
