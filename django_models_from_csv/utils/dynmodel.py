@@ -2,6 +2,7 @@ from functools import wraps
 import logging
 import re
 import string
+from io import StringIO
 
 from django.contrib.auth.models import User
 from django.db import connections, transaction
@@ -13,7 +14,7 @@ from django_models_from_csv.exceptions import (
     UniqueColumnError, DataSourceExistsError
 )
 from django_models_from_csv.models import DynamicModel
-from django_models_from_csv.utils.common import get_setting
+from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
 from django_models_from_csv.utils.models_py import (
     fix_models_py, extract_field_declaration_args,
@@ -134,6 +135,25 @@ def from_csv(name, csv_data, **kwargs):
     fixed_models_py = fix_models_py(models_py)
     logger.debug("fixed_models_py: %s" % fixed_models_py)
     return from_models_py(name, fixed_models_py, **kwargs)
+
+
+@require_unique_name
+def from_csv_file(filename, file):
+    """
+    Import a file from an upload, using its filename as the data
+    source name.
+    """
+    csv = clean_csv_headers(file.read().decode("utf-8"))
+    name = filename
+    no_ext = re.findall(r"^(.*)\.csv$", name)
+    if no_ext:
+        name = no_ext[0]
+    dynmodel = from_csv(slugify(name), csv)
+    fio = StringIO()
+    fio.write(csv)
+    dynmodel.csv_file.save(name, fio)
+    dynmodel.save()
+    return dynmodel
 
 
 @require_unique_name

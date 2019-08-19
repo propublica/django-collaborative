@@ -46,7 +46,7 @@ def import_records_list(csv, dynmodel):
     """
     data = Dataset().load(csv, format="csv")
     # add an ID column matching the row number
-    if dynmodel.csv_url:
+    if dynmodel.csv_url or dynmodel.csv_file:
         data.insert_col(0, col=[i+1 for i in range(len(data))], header="id")
     # # screendoor: use the builtin ID field
     # elif dynmodel.csv_url:

@@ -15,7 +15,8 @@ from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.dynmodel import (
-    from_csv_url, from_screendoor, from_private_sheet
+    from_csv_url, from_screendoor, from_private_sheet,
+    from_csv_file,
 )
 
 
@@ -41,13 +42,18 @@ def begin(request):
         return render(request, 'begin.html', {})
     elif  request.method == "POST":
         # get params from request
+        # For CSV URL/Google Sheets (public)
         csv_url = request.POST.get("csv_url")
+        # Private Google Sheet
         csv_google_sheets_auth_code = request.POST.get(
             "csv_google_sheets_auth_code"
         )
+        # Screendoor
         sd_api_key = request.POST.get("sd_api_key")
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
+        # CSV File Upload
+        csv_file = request.FILES.get("csv_file_upload")
 
         # TODO: move all this into a form
         context = {
@@ -79,6 +85,16 @@ def begin(request):
                     int(sd_project_id),
                     form_id=int(sd_form_id) if sd_form_id else None
                 )
+            elif csv_file:
+                dynmodel = from_csv_file(
+                    csv_file.name, csv_file,
+                )
+            else:
+                return render(request, 'begin.html', {
+                    "errors": "No data source selected!",
+                    **context
+                })
+
         except (UniqueColumnError, DataSourceExistsError) as e:
             return render(request, 'begin.html', {
                 "errors": e.render(),

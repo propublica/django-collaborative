@@ -78,7 +78,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
   </div>
   {% endif %}
 
-  <form action="{% url 'db-config:begin' %}" method="POST">
+  <form action="{% url 'db-config:begin' %}"
+        enctype="multipart/form-data"
+        method="POST">
       <h3 class="from-csv" onclick="showHide('.from-csv')">
           <span class="icon">➕</span> Import From Google Sheets/CSV URL
       </h3>
@@ -209,6 +211,28 @@ document.addEventListener("DOMContentLoaded", function(event) {
               </tr>
           </table>
       </div>
+
+      <h3 class="from-csv-file" onclick="showHide('.from-csv-file')">
+          <span class="icon">➕</span> File Upload (CSV)
+      </h3>
+      <div class="show-hide from-csv-file-body">
+          <p>
+          Upload a file (CSV) as a data source. Note that using this will not
+          allow you to re-import the file. If you need automatic updating or
+          the ability to re-import, try the Google Sheets or CSV URL data
+          sources.
+          </p>
+          <table>
+              <tr>
+                  <td>
+                      <input style="min-width:600px;"
+                             name="csv_file_upload"
+                             type="file" />
+                  </td>
+              </tr>
+          </table>
+      </div>
+
       <div class="continue">
           <input type="submit" value="{% trans 'Continue' %}" />
       </div>
