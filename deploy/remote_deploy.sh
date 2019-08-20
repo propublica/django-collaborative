@@ -15,6 +15,8 @@ sudo mkdir -p /opt/collaborative/app \
     || die "Failure making proc dir"
 sudo unzip -o /tmp/collaborative.zip -d /opt/collaborative/app/ \
     || die "Failure unzipping code"
+sudo mkdir -p /opt/collaborative/app/media/csv_uploads \
+    || die "Can't create CSV uploads directory"
 
 # Setup Letsencrypt
 if ! sudo ls /etc/letsencrypt/live/collaborative-test.bxroberts.org; then
