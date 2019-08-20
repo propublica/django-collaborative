@@ -117,4 +117,4 @@ collaborative/settings_prod.py
 Makefile
 
 # CSV file uploads
-csv_uploads/
+media/
