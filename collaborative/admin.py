@@ -67,15 +67,17 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
         # handle tagging separately
         if attr_name == "tags":
             all_tags = rel.tags.all()
-            tags_str = ", ".join([t.name for t in all_tags])
-            widget = autocomplete.TaggitSelect2(
-                reverse("csv_models:tag-autocomplete"),
-            )
-            html = widget.render(fieldname, all_tags)
+            tags_html = []
+            for t in all_tags:
+                name = t.name
+                html = "<span class='tag-bubble'>%s</span>" % (name)
+                tags_html.append(html)
+            # widget = autocomplete.TaggitSelect2(
+            #     reverse("csv_models:tag-autocomplete"),
+            # )
+            # html = widget.render(fieldname, all_tags)
             return mark_safe(format_html(
-                "<span content_type_id='{}' class='inline-editable-tags'>{}</span>",
-                content_type_id,
-                html,
+                "".join(tags_html)
             ))
 
         # try to lookup choices for field
