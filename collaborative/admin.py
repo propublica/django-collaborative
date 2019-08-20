@@ -70,12 +70,12 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
             tags_html = []
             for t in all_tags:
                 name = t.name
-                html = "<span class='tag-bubble'>%s</span>" % (name)
+                html = (
+                    "<span class='tag-bubble'>"
+                    "<span class='remtag'>x</span>"
+                    "%s</span>"
+                ) % (name)
                 tags_html.append(html)
-            # widget = autocomplete.TaggitSelect2(
-            #     reverse("csv_models:tag-autocomplete"),
-            # )
-            # html = widget.render(fieldname, all_tags)
             return mark_safe(format_html(
                 "".join(tags_html)
             ))
