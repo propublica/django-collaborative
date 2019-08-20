@@ -17,12 +17,28 @@ $(document).ready(function() {
 });
 </script>
 <style>
+.actions .action-counter {
+    padding-right: 15px;
+}
 div#tagger {
-    padding-left: 20px;
     display: inline-block;
 }
 #tagger .select2 {
     margin-left: 10px;
+}
+#tagger .save button {
+    border-radius: 5px;
+    border: 1px dotted #304154;
+    background-color: transparent;
+    color: black;
+    height: 31px;
+    padding: 5px;
+    cursor: pointer;
+}
+#tagger .save button:hover {
+    background-color: #304154;
+    color: #eeeeee;
+    border: 1px dotted white;
 }
 </style>
 {% endblock %}
@@ -54,7 +70,7 @@ div#tagger {
           <option value="one">One</option>
           <option value="another">Another</option>
       </select>
-      <span>
+      <span class="save">
           <button>Add</button>
           <button>Remove</button>
       </span>
