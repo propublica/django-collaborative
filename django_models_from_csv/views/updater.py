@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.contenttypes.models import ContentType
+from taggit.models import Tag
 
 from django_models_from_csv.utils.common import http_response
 
@@ -105,10 +106,39 @@ def field_updater(request):
     if last_part != "tags":
         setattr(path, last_part, new_value)
         path.save()
-    else:
-        # handle tags separately
-        tagger = getattr(path, last_part)
-        if not tagger.filter(name=new_value).count():
-            tag, _ = Tag.objects.get_or_create(name=new_value)
-            tagger.add(tag)
-    return http_response({"status": "OK", "message": "Saved!"})
+        return http_response({"status": "OK", "message": "Saved!"})
+
+    # handle tags separately
+    fk_operation = request.POST.get("fk_operation", "add")
+    tagger = getattr(path, last_part)
+    if tagger.filter(name=new_value).count():
+        return http_response({
+            "status": "OK", "message": "Tag already exists."
+        })
+
+    if fk_operation == "add":
+        tag, _ = Tag.objects.get_or_create(name=new_value)
+        tagger.add(tag)
+        return http_response({
+            "status": "OK",
+            "object": object_pk,
+            "message": "Tag added."
+        })
+    elif fk_operation == "remove":
+        try:
+            tag = Tag.objects.get(name=new_value)
+        except Tag.DoesNotExist:
+            return http_response({
+                "status": "OK",
+                "message": "Non-existant tag, ignoring remove"
+            })
+        tagger.remove(tag)
+        return http_response({
+            "status": "OK",
+            "object": object_pk,
+            "message": "Tag removed."
+        })
+
+    return http_response({
+        "status": "Failure", "message": "Bad tag operation."
+    }, status=400)

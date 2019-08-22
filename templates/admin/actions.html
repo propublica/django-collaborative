@@ -1,8 +1,106 @@
 {% load i18n %}
 {% block extrahead %}
 <script>
+const tagSelector = "#bulk-tagger";
+
+const readTags = () => {
+    return $(tagSelector).find(':selected').map((i, el) => {
+        const pk = el.value;
+        const name = el.text;
+        return {
+            pk: pk,
+            name: name,
+        };
+    });
+};
+
+const getSelectedPks = () => {
+    const selector = "#result_list tr.selected input[type='checkbox']";
+    return $(selector).map((i, el) => {
+        return el.value;
+    });
+};
+
+const getCSRF = () => {
+  return $("input[name='csrfmiddlewaretoken']")[0].value;
+};
+
+const requestTagUpdate = (modelId, objectId, field, value, operation) => {
+    const url = "/db-config/object-updater/";
+    const csrf = getCSRF();
+    const body = {
+        model: modelId,
+        object: objectId,
+        field: field,
+        value: value,
+        fk_operation: operation,
+        csrfmiddlewaretoken: csrf,
+    };
+    return $.post(url, body, (data, status, xhr) => {
+        // notify(xhr.status === 200, data.message);
+    }, "json");
+};
+
+/**
+ * Update the DOM, for a given row object ID, adding or
+ * removing the tag from the tags elements list.
+ */
+const updateDOM = (operation, objectId, tags) => {
+    const tagNames = [];
+    tags.each((i, t) => { tagNames.push(t.name); });
+    const modelId = $("#result_list")
+      .find("tr.selected")
+      .each((i, el) => {
+        const pk = $(el).find("input[type='checkbox']").value;
+        const tagEl = $(el).find(".field-metadata_tags")
+        if (operation === "add") {
+          tags.each((i, t) => {
+            tagEl.append(`<span class="tag-bubble"><span class="remtag">x</span>${t.name}</span>`);
+          });
+        } else if (operation === "remove") {
+          tagEl.find(".tag-bubble").each((i, el) => {
+              const rawName = $(el).text();
+              // remove the x button
+              const name = rawName.slice(1, rawName.length);
+              const ix = tagNames.indexOf(name);
+              if (ix === -1) {
+                  return;
+              }
+              $(el).remove();
+          });
+        }
+        // TODO: remove selected class
+        $(el).removeClass("selected");
+        $(el).find("input[type='checkbox']").prop("checked", false);
+      });
+};
+
+const doUpdate = (operation) => {
+    // modelId, objectId, field, value, operation
+    const modelId = $("#result_list")
+      .find("tr")
+      .find("span.inline-editable")
+      .attr("content_type_id");
+    const tags = readTags();
+    const objectIds = getSelectedPks();
+    const field = "metadata__tags";
+    // TODO: send out ajax calls for all tag update
+    objectIds.each((i, objId) => {
+        tags.each((ii, tag) => {
+            requestTagUpdate(
+                modelId, objId, field, tag.name, operation
+            ).then((result, a, b) => {
+                updateDOM(operation, result.object, tags);
+            });
+            // TODO: error handle
+        });
+    });
+    // TODO: on each success, update the row element
+};
+
 $(document).ready(function() {
-    $('.js-example-basic-multiple').select2({
+    // setup the select2 tag selector
+    $(tagSelector).select2({
         // this enables freeform tagging (adding new options, not
         // just selecting)
         tags: true,
@@ -14,8 +112,15 @@ $(document).ready(function() {
             // https://select2.org/data-sources/ajax
         }
     });
+    $("#add-tag").on("click", (event, el) => {
+        doUpdate("add");
+    });
+    $("#remove-tag").on("click", (event, el) => {
+        doUpdate("remove");
+    });
 });
 </script>
+
 <style>
 .actions .action-counter {
     padding-right: 15px;
@@ -40,8 +145,25 @@ div#tagger {
     color: #eeeeee;
     border: 1px dotted white;
 }
+
+/**
+ * NOTE: These styles are copied from:
+ * django_models_from_csv/change_list_reimport.html .tag-bubble
+ */
+#tagger .select2-selection .select2-selection__choice {
+    border-radius: 5px;
+    border: 1px solid #555555;
+    background-color: white;
+    color: black;
+}
+#tagger .select2-selection__choice__remove {
+    color: black;
+    font-size: 0.9em;
+    font-weight: bold;
+}
 </style>
 {% endblock %}
+
 <div class="actions">
   {% block actions %}
     {% block actions-form %}
@@ -65,14 +187,14 @@ div#tagger {
   {% endblock %}
   <div id="tagger">
       <label for="states[]">Tags:</label>
-      <select class="js-example-basic-multiple" name="states[]" multiple="multiple">
+      <select id="bulk-tagger" name="states[]" multiple="multiple">
           <option value="brandon">Brandon</option>
           <option value="one">One</option>
           <option value="another">Another</option>
       </select>
       <span class="save">
-          <button>Add</button>
-          <button>Remove</button>
+          <button id="add-tag">Add</button>
+          <button id="remove-tag">Remove</button>
       </span>
   </div>
 </div>
