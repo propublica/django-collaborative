@@ -69,10 +69,73 @@ const updateDOM = (operation, objectId, tags) => {
               $(el).remove();
           });
         }
-        // TODO: remove selected class
         $(el).removeClass("selected");
         $(el).find("input[type='checkbox']").prop("checked", false);
+        // reset onclick events for new tags
+        $(".tag-bubble .remtag").off("click");
+        $(".tag-bubble .remtag").on("click", (event, el) => {
+            removeTag(event, el);
+        });
       });
+};
+
+const removeOneDOM = (objectId, tag) => {
+    const modelId = $("#result_list")
+      .find("tr.selected")
+      .each((i, el) => {
+        const pk = $(el).find("input[type='checkbox']").value;
+        const tagEl = $(el).find(".field-metadata_tags")
+        if (operation === "add") {
+          tags.each((i, t) => {
+            tagEl.append(`<span class="tag-bubble"><span class="remtag">x</span>${t.name}</span>`);
+          });
+        } else if (operation === "remove") {
+          tagEl.find(".tag-bubble").each((i, el) => {
+              const rawName = $(el).text();
+              // remove the x button
+              const name = rawName.slice(1, rawName.length);
+              const ix = tagNames.indexOf(name);
+              if (ix === -1) {
+                  return;
+              }
+              $(el).remove();
+          });
+        }
+        $(el).removeClass("selected");
+        $(el).find("input[type='checkbox']").prop("checked", false);
+        // reset onclick events for new tags
+        $(".tag-bubble .remtag").off("click");
+        $(".tag-bubble .remtag").on("click", (event, el) => {
+            removeTag(event, el);
+        });
+      });
+};
+
+const removeTag = (event) => {
+    const thisRow = $(event.target).closest("tr");
+
+    const modelId = thisRow
+      .closest("tr")
+      .find("span.inline-editable")
+      .attr("content_type_id");
+    const objectId = thisRow
+      .find("input[type='checkbox'].action-select")[0]
+      .value;
+    const field = "metadata__tags";
+    const rawValue = $(event.target).closest("span.tag-bubble").text();
+    // remove the "x" button text
+    const value = rawValue.slice(1, rawValue.length);
+    requestTagUpdate(modelId, objectId, field, value, "remove")
+        .then((result) => {
+            $(event.target).closest("span.tag-bubble").each((i, el) => {
+                const rawName = $(el).text();
+                // remove the x button
+                const name = rawName.slice(1, rawName.length);
+                if (name == value) {
+                    $(el).remove();
+                }
+            });
+        });
 };
 
 const doUpdate = (operation) => {
@@ -84,18 +147,16 @@ const doUpdate = (operation) => {
     const tags = readTags();
     const objectIds = getSelectedPks();
     const field = "metadata__tags";
-    // TODO: send out ajax calls for all tag update
     objectIds.each((i, objId) => {
         tags.each((ii, tag) => {
             requestTagUpdate(
                 modelId, objId, field, tag.name, operation
-            ).then((result, a, b) => {
+            ).then((result) => {
                 updateDOM(operation, result.object, tags);
             });
             // TODO: error handle
         });
     });
-    // TODO: on each success, update the row element
 };
 
 $(document).ready(function() {
@@ -117,6 +178,9 @@ $(document).ready(function() {
     });
     $("#remove-tag").on("click", (event, el) => {
         doUpdate("remove");
+    });
+    $(".tag-bubble .remtag").on("click", (event, el) => {
+        removeTag(event, el);
     });
 });
 </script>

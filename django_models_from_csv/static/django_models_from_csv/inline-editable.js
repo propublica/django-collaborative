@@ -41,9 +41,6 @@
   };
 
   const inlineChanged = (event) => {
-    window.E = event;
-    window.T = event.target;
-    console.log("inlineChanged event:", event, "target:", event.target);
     event.preventDefault();
     event.stopPropagation();
 
@@ -52,7 +49,6 @@
     // object ID and field name/value to send up to the
     // server side updater endpoint
     const thisRow = $(event.target).closest("tr");
-    window.R = thisRow;
 
     let name = $(event.target).attr("name");
     // try for tag autocomplete field

@@ -111,7 +111,7 @@ def field_updater(request):
     # handle tags separately
     fk_operation = request.POST.get("fk_operation", "add")
     tagger = getattr(path, last_part)
-    if tagger.filter(name=new_value).count():
+    if not tagger.filter(name=new_value).count():
         return http_response({
             "status": "OK", "message": "Tag already exists."
         })
