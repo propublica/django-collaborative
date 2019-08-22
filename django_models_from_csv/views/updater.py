@@ -133,6 +133,10 @@ def field_updater(request):
                 "message": "Non-existant tag, ignoring remove"
             })
         tagger.remove(tag)
+        # remove any tags that aren't being used anywhere
+        n_tagged = tag.taggit_taggeditem_items.count()
+        if not n_tagged:
+            tag.delete()
         return http_response({
             "status": "OK",
             "object": object_pk,
