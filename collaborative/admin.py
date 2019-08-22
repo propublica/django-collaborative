@@ -6,11 +6,16 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError
 from django.db.models.functions import Lower
+from django.forms import modelform_factory
+from django.urls import reverse
+from django.utils.html import mark_safe, format_html
 from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
+from dal import autocomplete
 import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
@@ -33,28 +38,72 @@ UserAdmin.add_fieldsets = ((None, {
 logger = logging.getLogger(__name__)
 
 
-def make_getter(rel_name, attr_name, getter_name):
+def widget_for_object_field(obj, field_name):
+    FieldForm = modelform_factory(
+        obj.source_dynmodel().get_model(),
+        fields=(field_name,)
+    )
+    widget = FieldForm().fields[field_name].widget
+    return widget
+
+
+def make_getter(rel_name, attr_name, getter_name, field=None):
     """
     Build a reverse lookup getter, to be attached to the custom
     dynamic lookup admin class.
     """
     def getter(self):
-        if hasattr(self, rel_name):
-            rel = getattr(self, rel_name).first()
-            # handle tagging separately
-            if attr_name == "tags":
-                return ", ".join(o.name for o in rel.tags.all())
+        if not hasattr(self, rel_name):
+            return None
 
-            # try to lookup choices for field
-            choices = getattr(
-                rel, "%s_CHOICES" % attr_name.upper(), []
-            )
-            value = getattr(rel, attr_name)
-            for pk, txt in choices:
-                if pk == value:
-                    return txt
-            # no choice found, return field value
-            return value
+        rel = getattr(self, rel_name).first()
+        fieldname = "%s__%s" % (rel_name, attr_name)
+        content_type_id = ContentType.objects.get_for_model(self).id
+
+        print("Relation", rel)
+        print("  fieldname:\t", fieldname)
+        print("  content type ID:\t", content_type_id)
+
+        # handle tagging separately
+        if attr_name == "tags":
+            all_tags = rel.tags.all()
+            tags_html = []
+            for t in all_tags:
+                name = t.name
+                html = (
+                    "<span class='tag-bubble'>"
+                    "<span class='remtag'>x</span>"
+                    "%s</span>"
+                ) % (name)
+                tags_html.append(html)
+            return mark_safe(format_html(
+                "".join(tags_html)
+            ))
+
+        # try to lookup choices for field
+        choices = getattr(
+            rel, "%s_CHOICES" % attr_name.upper(), []
+        )
+        value = getattr(rel, attr_name)
+        for pk, txt in choices:
+            if pk == value:
+                widget = widget_for_object_field(rel, attr_name)
+                html = widget.render(fieldname, value)
+                return mark_safe(format_html(
+                    "<span content_type_id='{}' class='inline-editable'>{}</span>",
+                    content_type_id,
+                    html,
+               ))
+
+        # no choice found, return field value
+        widget = widget_for_object_field(rel, attr_name)
+        html = widget.render(fieldname, value)
+        return mark_safe(format_html(
+            "<span content_type_id='{}' class='inline-editable'>{}</span>",
+            content_type_id,
+            html,
+        ))
+
     # the header in django admin is named after the function name. if
     # this line is removed, the header will be "GETTER" for all derived
     # reverse lookup columns
@@ -132,14 +181,18 @@ class ReverseFKAdmin(admin.ModelAdmin):
                     if not hasattr(rel_field, "auto_created"): continue
                     if rel_field.auto_created: continue
 
-                getter_name = "%s_%s" % (rel_name, attr_name)
 
-                getter = make_getter(rel_name, attr_name, getter_name)
-                setattr(Model, getter_name, getter)
+                getter_name = "%s_%s" % (rel_name, attr_name)
                 short_desc = re.sub(r"[\-_]+", " ", attr_name)
-                getattr(Model, getter_name).short_description = short_desc
-                getattr(Model, getter_name).admin_order_field = \
-                        "%s__%s" % (rel_name, attr_name)
+
+                getter = make_getter(
+                    rel_name, attr_name, getter_name, field=rel_field
+                )
+                setattr(self, getter_name, getter)
+                getattr(self, getter_name).short_description = short_desc
+                getattr(
+                    self, getter_name
+                ).admin_order_field = "%s__%s" % (rel_name, attr_name)
 
     def get_view_label(self, obj):
         return "View"
