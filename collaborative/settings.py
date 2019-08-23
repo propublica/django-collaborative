@@ -165,11 +165,18 @@ DATA_PIPELINE = [
     # 'collaborative.data_pipeline.uppercase',
 ]
 
-# Google DLP credentials JSON file location
+# Google DLP credentials JSON file location (if you're deploying the
+# file, you may want to follow the TEMPLATES_DIR example at the top
+# of this file and use relative directories). Just make sure your
+# credentials file isn't available to the web!
 # COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE = "/path/to/credentials.json"
-# Types of private information to filter out
+
+# Types of private information to filter out, here are some example
+# options. A full list can be found here:
+#     https://cloud.google.com/dlp/docs/infotypes-reference
 # COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS = [
-#     "EMAIL_ADDRESS", "FIRST_NAME", "LAST_NAME"
+#     "EMAIL_ADDRESS", "FIRST_NAME", "LAST_NAME", "PHONE_NUMBER",
+#     "STREET_ADDRESS",
 # ]
 
 # Google Sign In
