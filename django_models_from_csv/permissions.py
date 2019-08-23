@@ -9,13 +9,18 @@ from django.core.exceptions import AppRegistryNotReady
 from django.db.utils import OperationalError
 
 
-def build_tag_permission_group():
+def get_permission_models():
     Permission = ContentType.objects.get(
         app_label="auth", model="permission"
     ).model_class()
     Group = ContentType.objects.get(
         app_label="auth", model="group"
     ).model_class()
+    return Permission, Group
+
+
+def build_tag_permission_group():
+    Permission, Group = get_permission_models()
 
     tag_cts = ContentType.objects.filter(app_label="taggit")
     tag_perm_group, created = Group.objects.get_or_create(
@@ -33,12 +38,7 @@ def build_permission_groups(app_label):
     DynamicModel = ContentType.objects.get(
         app_label=app_label, model="dynamicmodel"
     ).model_class()
-    Permission = ContentType.objects.get(
-        app_label="auth", model="permission"
-    ).model_class()
-    Group = ContentType.objects.get(
-        app_label="auth", model="group"
-    ).model_class()
+    Permission, Group = get_permission_models()
 
     dynmodels = DynamicModel.objects.exclude(name__endswith="metadata")
     for dynmodel in dynmodels:
@@ -99,3 +99,28 @@ def hydrate_models_and_permissions(app_config):
     except (OperationalError, AppRegistryNotReady) as e:
         logger.error("Error creating tagging perm group: %s" % e)
 
+
+def wipe_models_and_permissions(app_config, name):
+    """
+    Completely wipe a single model. Unlike the above functions, this
+    does not also remove the meta models attached.
+    """
+    Permission, Group = get_permission_models()
+    app_label = app_config.name
+
+    content_type = ContentType.objects.filter(
+        app_label=app_label,
+        model=name,
+    ).first()
+
+    Group.objects.filter(
+        name=name
+    ).delete()
+    Permission.objects.filter(content_type=[
+        content_type,
+    ]).delete()
+
+    ContentType.objects.filter(
+        app_label=app_label,
+        model=name,
+    ).delete()

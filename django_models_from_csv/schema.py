@@ -5,7 +5,12 @@ and columns backing a dynamically generated model.
 This is taken and modified from django-dynamic-models library:
 https://github.com/rvinzent/django-dynamic-models
 """
+import logging
+
 from django.db import connection
+
+
+logger = logging.getLogger(__name__)
 
 
 class ModelSchemaEditor:
@@ -46,6 +51,7 @@ class ModelSchemaEditor:
         Delete a database table for the model.
         """
         with self.editor() as editor:
+            logger.debug("Dropping table for model: %s" % (model))
             editor.delete_model(model)
 
 
