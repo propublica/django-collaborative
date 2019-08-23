@@ -2,8 +2,6 @@
  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/heroku)
 
 
-# Collaborative Tip Gathering
-=======
 # Django Collaborative
 
 ![Google News Initiative](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/Google-News-Initiative.png)
