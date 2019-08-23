@@ -18,11 +18,8 @@ django-jsonfield==1.2.0
 django-taggit==1.1.0
 et-xmlfile==1.0.1
 future==0.17.1
-<<<<<<< HEAD
 gunicorn==19.9.0
-=======
 google-cloud-dlp==0.12.1
->>>>>>> 8d392971fbebd7d05ecc9dbcfc7886e9a5e6d136
 idna==2.8
 isodate==0.6.0
 jdcal==1.4
