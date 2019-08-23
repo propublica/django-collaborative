@@ -141,8 +141,12 @@ class CaseInsensitiveChangeList(ChangeList):
             field = ordering[i]
             if field.startswith("-"):
                 field = field[1:]
+                if field in ["id", "pk"]:
+                    return ordering
                 ordering[i] = Lower(field).desc()
             else:
+                if field in ["id", "pk"]:
+                    return ordering
                 ordering[i] = Lower(field)
         return ordering
 
