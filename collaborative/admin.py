@@ -60,10 +60,6 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
         fieldname = "%s__%s" % (rel_name, attr_name)
         content_type_id = ContentType.objects.get_for_model(self).id
 
-        print("Relation", rel)
-        print("  fieldname:\t", fieldname)
-        print("  content type ID:\t", content_type_id)
-
         # handle tagging separately
         if attr_name == "tags":
             all_tags = rel.tags.all()
@@ -116,7 +112,7 @@ class ReimportMixin(ExportMixin):
     Mixin for displaying re-import button on admin list view, alongside the
     export button (from import_export module).
     """
-    change_list_template = 'django_models_from_csv/change_list_reimport.html'
+    change_list_template = 'django_models_from_csv/change_list_dynmodel.html'
 
 
 # # TODO: if we find the performance of the make_getter for retrieving tags,

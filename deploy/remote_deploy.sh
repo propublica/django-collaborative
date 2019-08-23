@@ -13,6 +13,8 @@ sudo apt -y install apache2 libapache2-mod-wsgi-py3 libapache2-mod-nss \
 # Get deploy files
 sudo mkdir -p /opt/collaborative/app \
     || die "Failure making proc dir"
+# clear out any old templates
+sudo find /opt/collaborative/app -iname '*.html' -delete
 sudo unzip -o /tmp/collaborative.zip -d /opt/collaborative/app/ \
     || die "Failure unzipping code"
 sudo mkdir -p /opt/collaborative/app/media/csv_uploads \

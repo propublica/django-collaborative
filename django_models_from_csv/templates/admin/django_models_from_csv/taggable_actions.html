@@ -148,14 +148,26 @@ const doUpdate = (operation) => {
     const objectIds = getSelectedPks();
     const field = "metadata__tags";
     objectIds.each((i, objId) => {
-        tags.each((ii, tag) => {
-            requestTagUpdate(
-                modelId, objId, field, tag.name, operation
-            ).then((result) => {
-                updateDOM(operation, result.object, tags);
+        if (operation === "remove") {
+            tags.each((ii, tag) => {
+                requestTagUpdate(
+                    modelId, objId, field, tag.name, operation
+                ).then((result) => {
+                    updateDOM(operation, result.object, tags);
+                });
+                // TODO: error handle
             });
-            // TODO: error handle
-        });
+        } else {
+            const promises = tags.map((ii, tag) => {
+                return requestTagUpdate(
+                    modelId, objId, field, tag.name, operation
+                );
+            });
+            Promise.all(promises).then((result) => {
+                // TODO: on failure, show the error
+                location.reload();
+            });
+        }
     });
 };
 
