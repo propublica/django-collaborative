@@ -7,7 +7,8 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import FieldError
+from django.core.exceptions import FieldError, FieldDoesNotExist
+from django.db import connection
 from django.db.models.functions import Lower
 from django.forms import modelform_factory
 from django.urls import reverse
@@ -138,16 +139,27 @@ class CaseInsensitiveChangeList(ChangeList):
     def get_ordering(self, request, queryset):
         ordering = super().get_ordering(request, queryset)
         for i in range(len(ordering)):
-            field = ordering[i]
-            if field.startswith("-"):
-                field = field[1:]
-                if field in ["id", "pk"]:
-                    return ordering
-                ordering[i] = Lower(field).desc()
+            desc = False
+            fieldname = ordering[i]
+            if fieldname.startswith("-"):
+                fieldname = fieldname[1:]
+                desc = True
+
+            try:
+                field = queryset.model()._meta.get_field(
+                    "id" if fieldname == "pk" else fieldname
+                )
+            except FieldDoesNotExist:
+                continue
+
+            f_type = field.db_type(connection)
+            if f_type != "text":
+                continue
+
+            if desc:
+                ordering[i] = Lower(fieldname).desc()
             else:
-                if field in ["id", "pk"]:
-                    return ordering
-                ordering[i] = Lower(field)
+                ordering[i] = Lower(fieldname)
         return ordering
 
 
