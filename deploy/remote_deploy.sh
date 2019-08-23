@@ -15,6 +15,8 @@ sudo mkdir -p /opt/collaborative/app \
     || die "Failure making proc dir"
 sudo unzip -o /tmp/collaborative.zip -d /opt/collaborative/app/ \
     || die "Failure unzipping code"
+sudo mkdir -p /opt/collaborative/app/media/csv_uploads \
+    || die "Can't create CSV uploads directory"
 
 # Setup Letsencrypt
 if ! sudo ls /etc/letsencrypt/live/collaborative-test.bxroberts.org; then
@@ -50,6 +52,9 @@ fi
 
 # Python dependencies/environment
 sudo rm -rf /opt/collaborative/app/venv
+sudo find /opt/collaborative/app/venv -iname '*.py[c|o]' -delete
+sudo find /opt/collaborative/app/venv -iname '__pycache__' -delete
+
 sudo virtualenv -p $(which python3) /opt/collaborative/app/venv \
     || die "Failure setting up Python virtualenv"
 sudo /opt/collaborative/app/venv/bin/pip install \
@@ -94,12 +99,21 @@ fi
 
 # Application crons
 sudo mv -f /opt/collaborative/app/deploy/cron/refresh_data_sources \
-    /etc/cron.daily/refresh_data_sources \
+    /etc/cron.d/refresh_data_sources \
     || die "Failure to copy data refreshing cron script"
-sudo chown root:root /etc/cron.daily/refresh_data_sources \
+sudo chown root:root /etc/cron.d/refresh_data_sources \
     || die "Failure to set ownership of data refreshing cron script"
-sudo chmod 755 /etc/cron.daily/refresh_data_sources \
+sudo chmod 644 /etc/cron.d/refresh_data_sources \
     || die "Failure to set perms on data refreshing cron script"
+
+# Logging
+sudo mv -f /opt/collaborative/app/deploy/logrotate/refresh_data_sources \
+    /etc/logrotate.d/refresh_data_sources \
+    || die "Failure to copy data refreshing logrotate config"
+sudo touch /var/log/refresh_data_sources.log \
+    || die "Unable to ensure data refresh log is available"
+sudo chown www-data /var/log/refresh_data_sources.log \
+    || die "Unable to set permissiong on data refresh log"
 
 # Apply everything
 sudo systemctl restart apache2

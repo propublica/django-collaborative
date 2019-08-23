@@ -1,0 +1,6 @@
+/var/log/refresh_data_sources.log {
+    rotate 12
+    weekly
+    compress
+    missingok
+}

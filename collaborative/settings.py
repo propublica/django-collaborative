@@ -9,21 +9,24 @@ https://docs.djangoproject.com/en/2.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/2.2/ref/settings/
 """
-
 import os
 import dj_database_url
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_ROOT = os.path.join(BASE_DIR, "www/assets")
 LOCALE_PATHS = (os.path.join(BASE_DIR, "locale"),)
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY", 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
+)
 
 # Google OAuth for Private Sheets Access
 GOOGLE_CLIENT_ID = "507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com"
@@ -62,6 +65,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -143,7 +147,35 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
 
+# When you log in, by default you'll be directed to the admin
+# overview page. Here, we override that and direct users to an
+# endpoint that checks to see if any data sources have been added
+# and, if not, will direct them to the wizard. If sources have been
+# created, this will direct users to the admin, as usual.
 LOGIN_REDIRECT_URL = "/setup-check/"
+
+# You can pass each row imported from a spreadsheet through a custom
+# data pipeline function.  Every row gets passed into these functions in
+# turn, modifying the data to suit your needs.  For more information,
+# please see the documentation at http://TKTKTK.
+DATA_PIPELINE = [
+    # To have the app automatically redact personally identifiable
+    # information from a spreadsheet, uncomment the line of code below,
+    # and make sure the header of the columns you want to redact end
+    # with "-PII". Also make sure to set the COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
+    # setting to the path for your DLP credentials.json file (below).
+    # 'collaborative.data_pipeline.google_redactor',
+
+    # Example data pipeline processor that uppercases everything
+    # 'collaborative.data_pipeline.uppercase',
+]
+
+# Google DLP credentials JSON file location
+# COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE = "/path/to/credentials.json"
+# Types of private information to filter out
+# COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS = [
+#     "EMAIL_ADDRESS", "FIRST_NAME", "LAST_NAME"
+# ]
 
 # Google Sign In
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
@@ -220,11 +252,8 @@ LANGUAGES = [
 ]
 
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
@@ -239,8 +268,8 @@ STATICFILES_DIRS = [
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 try:
-   from collaborative.settings_dev import *
-except:
+    from collaborative.settings_dev import *
+except ModuleNotFoundError:
     pass
 
 
@@ -268,6 +297,6 @@ LOGGING = {
 # This is a stopgap until we find a better credential
 # storage solution
 try:
-   from collaborative.settings_prod import *
-except:
+    from collaborative.settings_prod import *
+except ModuleNotFoundError:
     pass

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-04-08 15:09-0700\n"
+"POT-Creation-Date: 2019-08-07 05:52+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,33 +18,284 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/admin/login.html:23
-msgid "I want to use social sign in"
+#: collaborative/filters.py:15
+msgid "tag"
 msgstr ""
 
-#: templates/admin/login.html:27 templates/admin/login.html:100
-msgid "Or, sign in with a password"
+#: django_models_from_csv/exceptions.py:23
+#, python-format
+msgid ""
+"Duplicate header column '%s' found. Please rename the column in your source "
+"spreadsheet and continue again, below."
 msgstr ""
 
-#: templates/admin/login.html:38
+#: django_models_from_csv/exceptions.py:36
+#, python-format
+msgid ""
+"Data source '%s' already exists. Please choose another name or re-import the "
+"existing data source from the administration panel."
+msgstr ""
+
+#: django_models_from_csv/fields.py:16
+msgid "Columns in a spreadsheet"
+msgstr ""
+
+#: django_models_from_csv/models.py:115
+msgid "Successful Import"
+msgstr ""
+
+#: django_models_from_csv/models.py:116
+msgid "Successful Imports"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:48
+#, python-format
+msgid "Models in the %(name)s application"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:49
+msgid "Delete"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:49
+msgid "Delete an Import"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:61
+msgid "Add"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:68
+msgid "View Records"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:69
+#: django_models_from_csv/templates/django_models_from_csv/change_list_reimport.html:10
+msgid "Re-import"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:71
+msgid "View"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:73
+msgid "Change"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:86
+msgid "You don't have permission to view or edit anything."
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:94
+msgid "Recent actions"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:95
+msgid "My actions"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:99
+msgid "None available"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/index.html:113
+msgid "Unknown content"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:92
+msgid "Data Source Label"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:105
+msgid "Google Sheet URL"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:140
+msgid "Google Auth Code"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:147
+msgid "Paste Google code here"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:176
+msgid "API key"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:188
+msgid "Project ID"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:200
+msgid "Form ID (optional)"
+msgstr ""
+
+#: django_models_from_csv/templates/begin.html:213
+#: django_models_from_csv/templates/refine-and-import.html:37
+#: templates/setup-auth.html:127
+msgid "Continue"
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/change_list_reimport.html:11
+msgid "Export"
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/exceptions/unique_column_error.html:4
+#, python-format
+msgid ""
+"A duplicate header column, <code>%(name)s</code>, was found. Please rename "
+"the column in your source spreadsheet and continue again (below)."
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/exceptions/unique_name_error.html:4
+#, python-format
+msgid ""
+"Data source %(name)s already exists. Please choose another name or re-import "
+"the existing data source from the"
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/exceptions/unique_name_error.html:9
+msgid "administration panel"
+msgstr ""
+
+#: django_models_from_csv/templates/refine-and-import.html:21
+msgid ""
+"These are the column names and types we found in your sheet. Feel free to "
+"double check and correct any mistakes before continuing."
+msgstr ""
+
+#: django_models_from_csv/templates/refine-and-import.html:28
+msgid ""
+"The first five columns (below) will be displayed in the imported records "
+"list. The remaining columns will only be shown inside each record's full "
+"detail page. Re-order the columns by dragging them around."
+msgstr ""
+
+#: django_models_from_csv/templates/wait.html:54
+msgid "System is loading, please wait..."
+msgstr ""
+
+#: django_models_from_csv/templates/wait.html:56
+#, python-format
+msgid ""
+"You will be redirected once this is complete. If you are not redirected "
+"shortly, please <a id=\"nextPage\" href=\"%(next)s\">click here</a>."
+msgstr ""
+
+#: django_models_from_csv/utils/csv.py:23
+msgid "Invalid Google Sheets share URL"
+msgstr ""
+
+#: django_models_from_csv/validators.py:35
+#, python-format
+msgid "A column is missing required field: %s"
+msgstr ""
+
+#: django_models_from_csv/validators.py:39
+#, python-format
+msgid "A column contains invalid field: %s"
+msgstr ""
+
+#: django_models_from_csv/validators.py:45
+#, python-format
+msgid "A column has invalid type: %s"
+msgstr ""
+
+#: django_models_from_csv/validators.py:49
+msgid "Column attributes must be a dictionary"
+msgstr ""
+
+#: django_models_from_csv/views/configuration.py:90
+msgid ""
+"Invalid data source. Please make sure you linked to a valid CSV data source."
+msgstr ""
+
+#: django_models_from_csv/views/configuration.py:99
+msgid ""
+"Invalid URL. Please make sure there aren't typos in the URL, and that the "
+"data isn't protected. If you're trying to use a protected Google Sheet, you "
+"need to use the private Sheet authenticator, below."
+msgstr ""
+
+#: templates/admin/change_form.html:18
+msgid "Home"
+msgstr ""
+
+#: templates/admin/change_form.html:21
+#, python-format
+msgid "Add %(name)s"
+msgstr ""
+
+#: templates/admin/change_form.html:43 templates/admin/login.html:36
 msgid "Please correct the error below."
 msgstr ""
 
-#: templates/admin/login.html:38
+#: templates/admin/change_form.html:43 templates/admin/login.html:36
 msgid "Please correct the errors below."
 msgstr ""
 
-#: templates/admin/login.html:54
+#: templates/admin/login.html:21
+msgid "I want to use social sign in"
+msgstr ""
+
+#: templates/admin/login.html:25 templates/admin/login.html:113
+msgid "Or, sign in with a password"
+msgstr ""
+
+#: templates/admin/login.html:51
 #, python-format
 msgid ""
 "You are authenticated as %(username)s, but are not authorized to access this "
 "page. Would you like to login to a different account?"
 msgstr ""
 
-#: templates/admin/login.html:88
+#: templates/admin/login.html:60
+msgid ""
+"You are about to set up the system and add data sources. But first, please "
+"log in with the default username and password."
+msgstr ""
+
+#: templates/admin/login.html:100
 msgid "Forgotten your password or username?"
 msgstr ""
 
-#: templates/admin/login.html:94
+#: templates/admin/login.html:106
 msgid "Log in"
+msgstr ""
+
+#: templates/setup-auth.html:62
+msgid ""
+"In order to allow users to sign in with their Google account, you need to "
+"request access from Google to do this. Specifically, you need something "
+"called OAuth2 keys from Google. To get these keys, follow these steps: </p> "
+"<ol> <li> Go to the <a href=\"https://console.developers.google.com/\" "
+"target=\"_blank\">Google Developer's Console</a>. </li> <li> Create a new "
+"project. </li> <li> On the left, select \"Credentials\" </li> <li> Select "
+"the \"OAuth consent screen\" </li> <li> Give your application a name and "
+"support email. Click \"Save\" at the bottom. </li> <li> Go back to the "
+"\"Credentials\" tab. Click \"Create credentials\" &rarr; \"OAuth client ID"
+"\". </li> <li> Select \"Web application\". This will expose more options. </"
+"li> <li> Under \"Authorized JavaScript origins\" enter: <code>http://"
+"localhost/</code><br/> Under \"Authorized redirect URIs\" enter: "
+"<code>http://localhost/complete/google-oauth2/</code><br/> Click \"Save\". </"
+"li> <li> This will bring up a prompt containing the Google OAuth2 Key and "
+"Secret. Copy each to the below input boxes. </li> </ol>"
+msgstr ""
+
+#: templates/setup-auth.html:108
+msgid "Google OAuth2 Key"
+msgstr ""
+
+#: templates/setup-auth.html:117
+msgid "Google OAuth2 Secret"
+msgstr ""
+
+#: templates/setup-complete.html:12
+#, python-format
+msgid ""
+"Congratulations, you've successfully configured your collaborative tip-"
+"gathering system. Clicking below will complete the process, bringing you the "
+"login screen, where you'll log in using: </p> <p> Username: "
+"%(user.username)s<br/> Password: ••••••••<br/> </p> <p> From there, you can "
+"manage your imported data and add users. Good luck! </p>"
 msgstr ""

@@ -1,2 +1,1 @@
-#!/bin/sh
-/opt/collaborative/app/manage.py refresh_data_sources
+*/15 *  * * *    www-data    /opt/collaborative/app/venv/bin/python /opt/collaborative/app/manage.py refresh_data_sources >> /var/log/refresh_data_sources.log

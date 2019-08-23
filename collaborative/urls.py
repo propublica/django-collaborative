@@ -11,6 +11,7 @@ from collaborative import views
 urlpatterns = [
     url(r'^$', views.root),
     url('', include('social_django.urls', namespace='social')),
+    url(r'^i18n/', include('django.conf.urls.i18n')),
 
     # Authentication & Redirection to Wizard URLs
     path('admin/', admin.site.urls),

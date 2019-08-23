@@ -115,3 +115,6 @@ www/
 collaborative/settings_dev.py
 collaborative/settings_prod.py
 Makefile
+
+# CSV file uploads
+media/

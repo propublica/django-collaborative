@@ -1,6 +1,70 @@
 {% extends "admin/change_list.html" %}
-{% load i18n %}
-{% load admin_urls %}
+{% load i18n static admin_urls %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+    #inline-editable-notifier {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        z-index: 999;
+        display: block;
+        width: 100%;
+        min-height: 25px;
+        font-size: 1.2em;
+        text-align: center;
+        border: 1px solid black;
+        margin: 0 auto;
+    }
+    #inline-editable-notifier.success {
+        background-color: #87ea87;
+        color: black;
+    }
+    #inline-editable-notifier.failure{
+        background-color: #ff6161;
+        color: black;
+        font-weight: bold;
+    }
+
+    /**
+     * NOTE: these styles synced with
+     * templates/admin/actions.html .select2-selection
+     */
+    .tag-bubble {
+        border-radius: 5px;
+        border: 1px solid #555555;
+        padding: 2px;
+        margin: 2px;
+        font-size: 0.8em;
+        display: inline-block;
+    }
+    .tag-bubble .remtag {
+        font-weight: bold;
+        font-size: 0.9em;
+        margin-right: 3px;
+        margin-left: 2px;
+        cursor: pointer;
+    }
+    </style>
+    <link href="{% static 'admin/css/vendor/select2/select2.css' %}" type="text/css" media="screen" rel="stylesheet">
+    <link href="{% static 'admin/css/autocomplete.css' %}" type="text/css" media="screen" rel="stylesheet">
+    <link href="{% static 'autocomplete_light/select2.css' %}" type="text/css" media="screen" rel="stylesheet">
+
+    <script type="text/javascript" src="{% static 'autocomplete_light/jquery.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/vendor/select2/select2.full.js' %}"></script>
+    <script type="text/javascript" src="{% static 'admin/js/vendor/select2/i18n/en.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/autocomplete.init.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/forward.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/select2.js' %}"></script>
+    <script type="text/javascript" src="{% static 'autocomplete_light/jquery.post-setup.js' %}"></script>
+    <script type="text/javascript" src="{% static 'django_models_from_csv/inline-editable.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  <div id="inline-editable-notifier" style="display: none;"></div>
+  {{ block.super }}
+{% endblock %}
 
 {# taken from import_export module #}
 {% block object-tools %}

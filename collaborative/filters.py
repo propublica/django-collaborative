@@ -32,7 +32,7 @@ class TagListFilter(admin.SimpleListFilter):
         )
         tags = Tag.objects.filter(
             taggit_taggeditem_items__content_type=ct
-        ).values_list("name", "slug")
+        ).values_list("name", "slug").distinct()
         return tags
 
     def queryset(self, request, queryset):
@@ -41,8 +41,6 @@ class TagListFilter(admin.SimpleListFilter):
         provided in the query string and retrievable via
         `self.value()`.
         """
-        # Compare the requested value (either '80s' or '90s')
-        # to decide how to filter the queryset.
         value = self.value()
         if not value:
             return queryset
