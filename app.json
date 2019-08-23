@@ -19,6 +19,10 @@
     "COLLAB_ADMIN_PASSWORD": {
       "description": "Default admin account password.",
       "required": true
+    },
+    "DISABLE_COLLECTSTATIC": {
+      "description": "Don't run python manage.py collectstatic --noinput on deploy (don't edit this)",
+      "value": "1"
     }
   }
 }
