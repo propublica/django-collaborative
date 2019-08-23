@@ -28,7 +28,7 @@ except ImportError:
 import django_models_from_csv
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.permissions import (
-    hydrate_models_and_permissions,
+    hydrate_models_and_permissions, wipe_models_and_permissions,
 )
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 from django_models_from_csv.utils.common import get_setting, slugify
@@ -295,9 +295,17 @@ class DynamicModel(models.Model):
             fn(self)
 
     def delete(self, **kwargs):
+        # first drop the table, we have to do this first, else
+        # django will complain about no content type existing
         Model = apps.get_model("django_models_from_csv", self.name)
         ModelSchemaEditor().drop_table(Model)
+
+        # then remove django app and content-types/permissions
         self.unregister_model(self.name)
+        app_config = apps.get_app_config("django_models_from_csv")
+        wipe_models_and_permissions(app_config, self.name)
+
+        # finally kill the row
         super().delete(**kwargs)
 
 
