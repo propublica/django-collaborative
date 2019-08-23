@@ -36,14 +36,22 @@ CSV_MODELS_TEMP_DB = get_setting(
 
 
 @transaction.atomic(using=CSV_MODELS_TEMP_DB)
-def execute_sql(sql):
+def execute_sql(sql, params=None):
     """
-    Run a SQL query against our secondary in-memory database.
+    Run a SQL query against our secondary in-memory database. Returns
+    the table name, if this was a CREATE TABLE command, otherwise just
+    returns None.
     """
     conn = connections[CSV_MODELS_TEMP_DB]
     cursor = conn.cursor()
-    cursor.execute(sql)
-    table_name = re.findall("CREATE TABLE ([^ ]+) \\(", sql)[0]
+    if params is None:
+        cursor.execute(sql)
+    else:
+        cursor.execute(sql, params)
+    matches = re.findall("CREATE TABLE ([^ ]+) \\(", sql)
+    if not matches:
+        return None
+    table_name = matches[0]
     return table_name
 
 
@@ -51,12 +59,9 @@ def require_unique_name(f):
     @wraps(f)
     def unique_name_wrapper(*args, **kwargs):
         name = args[0]
-        try:
-            DynamicModel.objects.get(name=name)
-        except DynamicModel.DoesNotExist as e:
-            return f(*args, **kwargs)
-        # if we're here, we have an existing model, throw error w/ help
-        raise DataSourceExistsError(name)
+        if DynamicModel.objects.filter(name=name).count():
+            raise DataSourceExistsError(name)
+        return f(*args, **kwargs)
     return unique_name_wrapper
 
 
@@ -132,6 +137,9 @@ def from_csv(name, csv_data, **kwargs):
     # build models.py from this DB
     models_py = run_inspectdb(table_name=table_name)
     logger.debug("models_py: %s" % models_py)
+    # # wipe the temporary table
+    # logger.debug("Dropping temporary table '%s'" % (table_name))
+    # execute_sql("DROP TABLE %s", [table_name])
     fixed_models_py = fix_models_py(models_py)
     logger.debug("fixed_models_py: %s" % fixed_models_py)
     return from_models_py(name, fixed_models_py, **kwargs)
