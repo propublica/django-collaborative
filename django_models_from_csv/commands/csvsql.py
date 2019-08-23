@@ -2,6 +2,7 @@ import io
 import tempfile
 
 from csvkit.utilities.csvsql import CSVSQL
+from django.db import connection
 
 
 class FakeArgs():
@@ -49,7 +50,7 @@ class FakeArgs():
     no_constraints = False
     no_create = False
     no_header_row = False
-    no_inference = True
+    no_inference = False
     overwrite = False
     prefix = []
     query = None
@@ -95,7 +96,7 @@ def run_csvsql(csv):
 
         with io.StringIO() as f_out:
             csvsql = CSVSQLWrap()
-            csvsql.args.dialect = "sqlite"
+            csvsql.args.dialect = connection.vendor
             csvsql.args.skipinitialspace = True
             csvsql.args.input_paths = [f_in.name]
             csvsql.output_file = f_out
