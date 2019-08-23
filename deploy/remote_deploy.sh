@@ -52,8 +52,8 @@ fi
 
 # Python dependencies/environment
 sudo rm -rf /opt/collaborative/app/venv
-sudo find /opt/collaborative/app/venv -iname '*.py[c|o]' -delete
-sudo find /opt/collaborative/app/venv -iname '__pycache__' -delete
+sudo find /opt/collaborative/app -iname '*.py[c|o]' -delete
+sudo find /opt/collaborative/app -iname '__pycache__' -delete
 
 sudo virtualenv -p $(which python3) /opt/collaborative/app/venv \
     || die "Failure setting up Python virtualenv"
