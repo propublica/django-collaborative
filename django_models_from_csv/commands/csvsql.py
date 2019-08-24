@@ -50,7 +50,7 @@ class FakeArgs():
     no_constraints = False
     no_create = False
     no_header_row = False
-    no_inference = True
+    no_inference = False
     overwrite = False
     prefix = []
     query = None
