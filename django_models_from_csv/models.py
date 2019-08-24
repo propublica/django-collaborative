@@ -120,13 +120,6 @@ class DynamicModel(models.Model):
         verbose_name = _("Successful Import")
         verbose_name_plural = _("Successful Imports")
 
-    def __new__(cls, *args, **kwargs):
-        # app_config = apps.get_app_config("django_models_from_csv")
-        # hydrate_models_and_permissions(app_config)
-        apps.clear_cache()
-        clear_url_caches()
-        return super().__new__(cls)
-
     def __init__(self, *args, **kwargs):
         """
         Initialize the schema editor with the currently registered model and the

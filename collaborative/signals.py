@@ -143,6 +143,7 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
             instance._meta.object_name, meta_model_name
         ))
         return
+
     MetaModel = meta_model_desc.get_model()
     meta_direct_count = MetaModel.objects.filter(
         metadata__id=instance.id
@@ -171,7 +172,7 @@ def setup_dynmodel_signals():
         post_save.connect(attach_blank_meta_to_record, sender=Model)
 
 
-try:
-    setup_dynmodel_signals()
-except Exception as e:
-    logger.error("[!] Error loading signals: %s" % e)
+# try:
+#     setup_dynmodel_signals()
+# except Exception as e:
+#     logger.error("[!] Error loading signals: %s" % e)

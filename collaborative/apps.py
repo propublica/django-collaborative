@@ -12,3 +12,4 @@ class CollabConfig(AppConfig):
         models being registered.
         """
         import collaborative.signals
+        collaborative.signals.setup_dynmodel_signals()
