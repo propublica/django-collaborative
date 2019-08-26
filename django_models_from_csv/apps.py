@@ -1,5 +1,10 @@
+import logging
+
 from django.apps import apps, AppConfig
 from django.core.signals import request_started
+
+
+logger = logging.getLogger(__name__)
 
 
 def check_apps_need_reloading(sender, environ, **kwargs):
@@ -13,6 +18,10 @@ def check_apps_need_reloading(sender, environ, **kwargs):
 
     conf = apps.get_app_config("django_models_from_csv")
     n_registered = len(list(conf.get_models()))
+
+    logger.debug("Checking apps n_dynmodels=%s n_registered=%s" % (
+        n_dynmodels, n_registered
+    ))
 
     # subtract one for DynamicModel, which won't be in
     # the DynamicModels count()

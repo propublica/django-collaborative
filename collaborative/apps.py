@@ -16,8 +16,3 @@ class CollabConfig(AppConfig):
         models being registered.
         """
         import collaborative.signals
-        try:
-            collaborative.signals.setup_dynmodel_signals()
-        except Exception as e:
-            logger.error("[!] Error loading signals: %s" % e)
-
