@@ -24,7 +24,7 @@ This is a project of [ProPublica](https://www.propublica.org/),
 supported by the [Google News Initiative](https://newsinitiative.withgoogle.com/).
 
 # Deploy it
- [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/heroku)
+ [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
 
 ## Getting Started (Local Testing/Development)
 
