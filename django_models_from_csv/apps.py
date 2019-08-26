@@ -1,6 +1,7 @@
 import logging
 
 from django.apps import apps, AppConfig
+from django.contrib.admin import site
 from django.core.signals import request_started
 
 
@@ -26,7 +27,24 @@ def check_apps_need_reloading(sender, environ, **kwargs):
     # subtract one for DynamicModel, which won't be in
     # the DynamicModels count()
     if n_dynmodels != (n_registered - 1):
+        logger.debug("Re-registering django apps models...")
         DynamicModel.objects.last().model_cleanup()
+
+    # figure out how many of our admins are registered
+    n_admins = 0
+    for model, admin in site._registry.items():
+        if model._meta.app_label != "django_models_from_csv":
+            continue
+        if model._meta.object_name == "DynamicModel":
+            continue
+        n_admins += 1
+
+    logger.debug("Checking admins n_dynmodels=%s n_admins=%s" % (
+        n_dynmodels, n_admins
+    ))
+
+    if n_dynmodels != n_admins:
+        logger.debug("Re-registering django admins...")
         # re-register apps. the goal here is to get the AdminSite's
         # internal _registry to be updated with the new app.
         from collaborative.admin import AdminMetaAutoRegistration
