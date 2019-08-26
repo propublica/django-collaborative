@@ -170,9 +170,3 @@ def setup_dynmodel_signals():
             continue
         Model = getattr(models, dynmodel.name)
         post_save.connect(attach_blank_meta_to_record, sender=Model)
-
-
-# try:
-#     setup_dynmodel_signals()
-# except Exception as e:
-#     logger.error("[!] Error loading signals: %s" % e)
