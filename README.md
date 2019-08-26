@@ -1,12 +1,9 @@
-# Deploy it!!
- [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/heroku)
-
-
 # Django Collaborative
 
 ![Google News Initiative](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/Google-News-Initiative.png)
 
 ![ProPublica](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/ProPublica.png)
+
 
 This is a web application for managing and building stories based on
 tips solicited from the public. This project is meant to be easy to
@@ -25,6 +22,9 @@ The project is broken up into several components:
 
 This is a project of [ProPublica](https://www.propublica.org/),
 supported by the [Google News Initiative](https://newsinitiative.withgoogle.com/).
+
+# Deploy it
+ [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/heroku)
 
 ## Getting Started (Local Testing/Development)
 
