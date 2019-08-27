@@ -15,7 +15,14 @@ def check_apps_need_reloading(sender, environ, **kwargs):
     DynamicModel = apps.get_model(
         "django_models_from_csv", "DynamicModel"
     )
-    n_dynmodels = DynamicModel.objects.count()
+    try:
+        n_dynmodels = DynamicModel.objects.count()
+    except Exception as e:
+        # migrations not ran
+        logger.error("Not checking for data sources due to error: %s" % (
+            e
+        ))
+        return
 
     conf = apps.get_app_config("django_models_from_csv")
     n_registered = len(list(conf.get_models()))
