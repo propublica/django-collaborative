@@ -1,3 +1,4 @@
+import logging
 from django.contrib.contenttypes.management import (
     create_contenttypes
 )
@@ -7,6 +8,9 @@ from django.contrib.auth.management import (
 )
 from django.core.exceptions import AppRegistryNotReady
 from django.db.utils import OperationalError
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_permission_models():
