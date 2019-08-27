@@ -155,7 +155,7 @@ def import_records(csv, Model, dynmodel):
             for field in row.keys():
                 if field == "id" or field not in column_names:
                     continue
-                logger.debug("updating field=%s value=%s" % (field, row[field]))
+                # logger.debug("updating field=%s value=%s" % (field, row[field]))
                 setattr(obj, field, row[field])
             try:
                 obj.save()
