@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.apps import apps, AppConfig
 from django.contrib.admin import site
@@ -9,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def check_apps_need_reloading(sender, environ, **kwargs):
+    start = time.time()
     ContentType = apps.get_model(
         "contenttypes", "ContentType"
     )
@@ -16,7 +18,7 @@ def check_apps_need_reloading(sender, environ, **kwargs):
         "django_models_from_csv", "DynamicModel"
     )
     try:
-        n_dynmodels = DynamicModel.objects.count()
+        n_dynmodels = DynamicModel.objects.values("id").count()
     except Exception as e:
         # migrations not ran
         logger.error("Not checking for data sources due to error: %s" % (
@@ -25,7 +27,8 @@ def check_apps_need_reloading(sender, environ, **kwargs):
         return
 
     conf = apps.get_app_config("django_models_from_csv")
-    n_registered = len(list(conf.get_models()))
+    registered_models = list(conf.get_models())
+    n_registered = len(registered_models)
 
     logger.debug("Checking apps n_dynmodels=%s n_registered=%s" % (
         n_dynmodels, n_registered
@@ -50,7 +53,12 @@ def check_apps_need_reloading(sender, environ, **kwargs):
         n_dynmodels, n_admins
     ))
 
-    if n_dynmodels != n_admins:
+    # since each data source has three models (source data, meta and
+    # contact), but we only build admins for the main data source
+    # model. so we divide by three because we only want to count base
+    # model admins and it's quicker to do a divide than to re-query,
+    # filtering by name
+    if True or (n_dynmodels / 3) != n_admins:
         logger.debug("Re-registering django admins...")
         # re-register apps. the goal here is to get the AdminSite's
         # internal _registry to be updated with the new app.
@@ -58,6 +66,9 @@ def check_apps_need_reloading(sender, environ, **kwargs):
         AdminMetaAutoRegistration(
             include="django_models_from_csv.models"
         ).register()
+        logger.debug("Completed re-register in %s seconds." % (
+            time.time() - start
+        ))
 
 
 class DjangoDynamicModelsConfig(AppConfig):
