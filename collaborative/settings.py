@@ -36,7 +36,7 @@ GOOGLE_CLIENT_ID = "507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleuse
 GOOGLE_CLIENT_SECRET = "Uk1AHTyOgNNTXz9EUa4Ezph7"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*',]
 
