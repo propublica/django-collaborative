@@ -3,6 +3,7 @@ import time
 
 from django.apps import apps, AppConfig
 from django.contrib.admin import site
+from django.conf import settings
 from django.core.signals import request_started
 
 
@@ -10,6 +11,15 @@ logger = logging.getLogger(__name__)
 
 
 def check_apps_need_reloading(sender, environ, **kwargs):
+    # don't run this on static asset request. since we're using
+    # whitenoise, this will happen (all assets go through as a
+    # django request, triggering this signal)
+    request = sender.request_class(environ)
+    path = request.path
+    static_url = getattr(settings, "STATIC_URL", "/static/")
+    if path.startswith(static_url):
+        return
+
     start = time.time()
     ContentType = apps.get_model(
         "contenttypes", "ContentType"
