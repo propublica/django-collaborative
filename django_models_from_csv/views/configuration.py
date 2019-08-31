@@ -1,4 +1,5 @@
 import logging
+import json
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
@@ -41,17 +42,18 @@ def begin(request):
             return redirect('/admin/')
         return render(request, 'begin.html', {})
     elif  request.method == "POST":
-        # get params from request
         # For CSV URL/Google Sheets (public)
         csv_url = request.POST.get("csv_url")
-        # Private Google Sheet
-        csv_google_sheets_auth_code = request.POST.get(
-            "csv_google_sheets_auth_code"
+        # Private Google Sheet (Service Account Credentials JSON)
+        csv_google_sheets_credentials_file = request.FILES.get(
+            "csv_google_sheets_credentials"
         )
+
         # Screendoor
         sd_api_key = request.POST.get("sd_api_key")
         sd_project_id = request.POST.get("sd_project_id")
         sd_form_id = request.POST.get("sd_form_id")
+
         # CSV File Upload
         csv_file = request.FILES.get("csv_file_upload")
 
@@ -66,10 +68,11 @@ def begin(request):
             "sd_form_id": sd_form_id,
         }
         try:
-            if csv_url and csv_google_sheets_auth_code:
+            if csv_url and csv_google_sheets_credentials_file:
                 name = slugify(request.POST.get("csv_name"))
                 dynmodel = from_private_sheet(
-                    name, csv_url, auth_code=csv_google_sheets_auth_code,
+                    name, csv_url,
+                    credentials=csv_google_sheets_credentials_file,
                 )
             elif csv_url:
                 name = slugify(request.POST.get("csv_name"))

@@ -22,9 +22,7 @@ from django_models_from_csv.utils.models_py import (
     extract_field_type, extract_fields
 )
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
-from django_models_from_csv.utils.google_sheets import (
-    GoogleOAuth, PrivateSheetImporter
-)
+from django_models_from_csv.utils.google_sheets import PrivateSheetImporter
 
 
 logger = logging.getLogger(__name__)
@@ -194,22 +192,15 @@ def from_screendoor(name, api_key, project_id, form_id=None):
 
 
 @require_unique_name
-def from_private_sheet(name, sheet_url, auth_code=None, refresh_token=None):
+def from_private_sheet(name, sheet_url, credentials=None):
     """
-    Build a model from a private Google Sheet, given an OAuth auth code
-    or refresh token, private sheet URL and name. This, of course,
-    assumes the user has already gone through the Google Auth flow and
-    explicitly granted Sheets view access.
+    Build a model from a private Google Sheet. Credentials is the
+    service account secrets JSON data, provided by the google API
+    console. It should either be a JSON string or a JSON file (bytes).
     """
-    GOOGLE_CLIENT_ID = get_setting("GOOGLE_CLIENT_ID")
-    GOOGLE_CLIENT_SECRET = get_setting("GOOGLE_CLIENT_SECRET")
-    oauther = GoogleOAuth(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
-    access_data = oauther.get_access_data(
-        code=auth_code, refresh_token=refresh_token
-    )
-    token = access_data["access_token"]
-    csv = PrivateSheetImporter(token).get_csv_from_url(sheet_url)
+    csv = PrivateSheetImporter(credentials).get_csv_from_url(sheet_url)
     return from_csv(name, csv, **dict(
         csv_url=sheet_url,
-        csv_google_refresh_token=refresh_token or access_data["refresh_token"],
+        csv_google_sheet_private=True,
+        csv_google_credentials=credentials,
     ))

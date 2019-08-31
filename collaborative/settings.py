@@ -300,9 +300,6 @@ LOGGING = {
     },
 }
 
-# Setings (OAuth, etc) from configuration wizard
-# This is a stopgap until we find a better credential
-# storage solution
 try:
     from collaborative.settings_prod import *
 except ModuleNotFoundError:

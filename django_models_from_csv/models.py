@@ -33,9 +33,7 @@ from django_models_from_csv.permissions import (
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
-from django_models_from_csv.utils.google_sheets import (
-   GoogleOAuth, PrivateSheetImporter
-)
+from django_models_from_csv.utils.google_sheets import PrivateSheetImporter
 from django_models_from_csv.utils.importing import import_records
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
 
@@ -88,10 +86,18 @@ class DynamicModel(models.Model):
 
     # URL to a Google Sheet or any source CSV for building model
     csv_url = models.URLField(null=True, blank=True)
-    # For Google Sheets manual copy/paste auth. This is the only
-    # method that can work across local and deployed environments
-    csv_google_refresh_token = models.CharField(
-        max_length=255, null=True, blank=True
+    # Flag marking this as private (we will use the service account
+    # credentials to access the sheet, assuming they exist)
+    csv_google_sheet_private = models.BooleanField(
+        default=False,
+    )
+    # The actual google credentials. We only want to store one of
+    # these, and share it across all private sheet data sources.
+    # NOTE: We could store this in collaborative.models.AppSetting,
+    #       but then we're establishing a strict dependency between
+    #       the two modules, which we have avoided this far.
+    csv_google_credentials = models.TextField(
+        null=True, blank=True
     )
 
     # Screendoor-specific columns
@@ -200,15 +206,9 @@ class DynamicModel(models.Model):
 
         csv = None
         if self.csv_url and self.csv_google_refresh_token:
-            oauther = GoogleOAuth(
-                get_setting("GOOGLE_CLIENT_ID"),
-                get_setting("GOOGLE_CLIENT_SECRET")
-            )
-            access_data = oauther.get_access_data(
-                refresh_token=self.csv_google_refresh_token
-            )
-            token = access_data["access_token"]
-            csv = PrivateSheetImporter(token).get_csv_from_url(
+            csv = PrivateSheetImporter(
+                self.csv_google_credentials
+            ).get_csv_from_url(
                 self.csv_url
             )
         elif self.csv_url:

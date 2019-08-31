@@ -20,6 +20,8 @@ et-xmlfile==1.0.1
 future==0.17.1
 gunicorn==19.9.0
 google-cloud-dlp==0.12.1
+google-api-python-client==1.7.11
+google-auth-httplib2==0.0.3
 idna==2.8
 isodate==0.6.0
 jdcal==1.4
