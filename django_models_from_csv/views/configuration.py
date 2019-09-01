@@ -45,8 +45,8 @@ def begin(request):
         # For CSV URL/Google Sheets (public)
         csv_url = request.POST.get("csv_url")
         # Private Google Sheet (Service Account Credentials JSON)
-        csv_google_sheets_credentials_file = request.FILES.get(
-            "csv_google_sheets_credentials"
+        csv_google_credentials_file = request.FILES.get(
+            "csv_google_credentials"
         )
 
         # Screendoor
@@ -61,24 +61,24 @@ def begin(request):
         context = {
             "csv_name": request.POST.get("csv_name"),
             "csv_url": csv_url,
-            "csv_google_sheets_auth_code": csv_google_sheets_auth_code,
+            # "csv_google_sheets_auth_code": csv_google_sheets_auth_code,
             "sd_name": request.POST.get("sd_name"),
             "sd_api_key": sd_api_key,
             "sd_project_id": sd_project_id,
             "sd_form_id": sd_form_id,
         }
         try:
-            if csv_url and csv_google_sheets_credentials_file:
+            if csv_url and csv_google_credentials_file:
                 name = slugify(request.POST.get("csv_name"))
+                credentials = csv_google_credentials_file.read().decode("utf-8")
                 dynmodel = from_private_sheet(
                     name, csv_url,
-                    credentials=csv_google_sheets_credentials_file,
+                    credentials=credentials,
                 )
             elif csv_url:
                 name = slugify(request.POST.get("csv_name"))
                 dynmodel = from_csv_url(
                     name, csv_url,
-                    csv_google_sheets_auth_code=csv_google_sheets_auth_code
                 )
             elif sd_api_key:
                 name = slugify(request.POST.get("sd_name"))

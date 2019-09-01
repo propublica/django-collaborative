@@ -10,6 +10,7 @@ Add a Data Source | {{ block.super }}
 <link rel="stylesheet" href="{% static "ui/jquery-ui.css" %}">
 <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
 <script src="{% static "ui/jquery-ui.js" %}"></script>
+
 <script type="text/javascript">
 /**
  * Toggle displaying the dropdowns. Keyed based on
@@ -18,47 +19,46 @@ Add a Data Source | {{ block.super }}
 function showHide(cls) {
   var hide = "display: none;";
   if (!cls) return;
-
   var block = document.querySelector(`${cls}-body`);
   if (block.getAttribute("style") === hide) {
-      document.querySelectorAll(`${cls}-body`).forEach((i) => {
-          i.setAttribute("style", "");
-      });
-      document.querySelector(`${cls} .icon`).innerText = "➖";
-      document.querySelectorAll(`${cls}-body input`).forEach((i) => {
-          i.value = "";
-      });
+    document.querySelectorAll(`${cls}-body`).forEach((i) => {
+      i.setAttribute("style", "");
+    });
+    document.querySelector(`${cls} .icon`).innerText = "➖";
+    document.querySelectorAll(`${cls}-body input`).forEach((i) => {
+      i.value = "";
+    });
   } else {
-      document.querySelectorAll(`${cls}-body`).forEach((i) => {
-          i.setAttribute("style", hide);
-      });
-      document.querySelector(`${cls} .icon`).innerText = "➕";
-      document.querySelectorAll(`${cls}-body input`).forEach((i) => {
-          i.value = "";
-      });
+    document.querySelectorAll(`${cls}-body`).forEach((i) => {
+      i.setAttribute("style", hide);
+    });
+    document.querySelector(`${cls} .icon`).innerText = "➕";
+    document.querySelectorAll(`${cls}-body input`).forEach((i) => {
+      i.value = "";
+    });
   }
 }
 
 function privateSheetToggled(event) {
   const isChecked = event.target.checked;
   if (isChecked) {
-      // show the instructions
-      document.querySelectorAll(".private-sheet-instructions").forEach((el) => {
-          el.setAttribute("style", "");
-      });
+    // show the instructions
+    document.querySelectorAll(".private-sheet-instructions").forEach((el) => {
+      el.setAttribute("style", "");
+    });
   } else {
-      // show the instructions
-      document.querySelectorAll(".private-sheet-instructions").forEach((el) => {
-          el.setAttribute("style", "display: none;");
-      });
+    // show the instructions
+    document.querySelectorAll(".private-sheet-instructions").forEach((el) => {
+      el.setAttribute("style", "display: none;");
+    });
   }
 }
 
 function showHelpModal() {
-    $("#dialog").dialog({
-        width: 950,
-        maxHeight: 500,
-    });
+  $("#dialog").dialog({
+    width: 950,
+    maxHeight: 500,
+  });
 }
 
 /**
@@ -66,27 +66,29 @@ function showHelpModal() {
  * just be shown. So this gracefully fails.
  */
 function init() {
-  document.querySelectorAll(".show-hide").forEach((d) => {
-      let found = false;
-      d.querySelectorAll("input").forEach((i) => {
-          if (i.value) {
-              found = true;
-          }
-      });
-      if (!found) {
-        d.setAttribute("style", "display: none;");
-      }
-  });
-  // setup toggle on private sheet checkbox
-  document
-    .querySelector("#csv_google_sheet_private")
-    .onchange = privateSheetToggled;
   // hide the instructions by default
   document
     .querySelectorAll(".private-sheet-instructions")
     .forEach((el) => {
       el.setAttribute("style", "display: none;");
     });
+  // hide the menus secondarily so the instruction hiding
+  // doesn't pop the Sheets/CSV menu
+  document.querySelectorAll(".show-hide").forEach((d) => {
+    let found = false;
+    d.querySelectorAll("input").forEach((i) => {
+      if (i.value) {
+        found = true;
+      }
+    });
+    if (!found) {
+      d.setAttribute("style", "display: none;");
+    }
+  });
+  // setup toggle on private sheet checkbox
+  document
+    .querySelector("#csv_google_sheet_private")
+    .onchange = privateSheetToggled;
   document
     .querySelector("#show-private-sheet-instructions")
     .onclick = showHelpModal;
@@ -97,6 +99,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
   init();
 });
 </script>
+
 <style>
 .ui-dialog {
   box-shadow: rgb(0, 0, 0, 0.5) 10px 10px 15px;
@@ -323,91 +326,144 @@ document.addEventListener("DOMContentLoaded", function(event) {
   </form>
 </div>
 
-<div id="dialog" title="Google Private Sheets Instructions">
+<div id="dialog" title="Google Private Sheets Instructions" style="display: none">
 
-<h2>Initial Setup</h2>
+  <h2>Initial Setup</h2>
 
-<p>Importing private Google Sheets consists of several steps, when importing
-one for the first time. The basic steps consist of creating a Google
-<a href="https://cloud.google.com/iam/docs/understanding-service-accounts">service account</a>
-that can access Google Sheets, uploading the account credentials file to the
-collaborative web app, and sharing the sheet with the account email.</p>
+  <p>Importing private Google Sheets consists of several steps, when importing
+  one for the first time. The basic steps consist of creating a Google
+  <a href="https://cloud.google.com/iam/docs/understanding-service-accounts">service account</a>
+  that can access Google Sheets, uploading the account credentials file to the
+  collaborative web app, and sharing the sheet with the account email.</p>
 
-<p>You only need to create a service account once. Subsequent imports will re-use
-the service account credentials, granted you share the private spreadsheet
-with account.</p>
+  <p>You only need to create a service account once. Subsequent imports will re-use
+  the service account credentials, granted you share the private spreadsheet
+  with account.</p>
 
-<p>Step-by-step instructions are broken up into two steps: creating the account
-and granting access to the sheet.</p>
+  <p>Step-by-step instructions are broken up into two steps: creating the account
+  and granting access to the sheet.</p>
 
-<h3>Creating a service account and credentials file</h3>
+  <h3>Creating a service account and credentials file</h3>
 
-<ol>
-<li><p>Go to the <a href="https://console.developers.google.com/projectselector/apis/library?pli=1&amp;supportedpurview=project">Google Console</a> and create a new project.</p>
+  <ol>
+    <li>
+      <p>Go to the <a href="https://console.developers.google.com/projectselector/apis/library?pli=1&amp;supportedpurview=project">Google Console</a> and create a new project.</p>
 
-    <p><img src="{% static 'django_models_from_csv/instructions/01-create-project.png' %}" alt="Create new project" title="Create a new project" /></p></li>
-<li><p>From the 'Enable APIs and Services' screen, search for "Google Sheets" and
-click on the "Google Sheets API" box.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/01-create-project.png' %}" alt="Create new project" title="Create a new project" />
+      </p>
+    </li>
+    <li>
+      <p>From the 'Enable APIs and Services' screen, search for "Google Sheets" and
+      click on the "Google Sheets API" box.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/02-goto-enable-apis-and-services.png' %}" alt="Click 'Enable APIs and Services'" title="Click 'Enable APIs and Services'" /></p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/02-goto-enable-apis-and-services.png' %}" alt="Click 'Enable APIs and Services'" title="Click 'Enable APIs and Services'" />
+      </p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/03-enable-sheets-apis.png' %}" alt="Enable Sheets API" title="Enable Sheets API" /></p></li>
-<li><p>In the left panel, click the "Credentials" button.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/03-enable-sheets-apis.png' %}" alt="Enable Sheets API" title="Enable Sheets API" />
+      </p>
+    </li>
+    <li>
+      <p>In the left panel, click the "Credentials" button.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/04-click-credentials.png' %}" alt="Click 'Credentials'" title="Click 'Credentials'" /></p></li>
-<li><p>Then click "Create Credentials" menu towards the top of the page that loads
-and select "Service account".</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/04-click-credentials.png' %}" alt="Click 'Credentials'" title="Click 'Credentials'" />
+      </p>
+    </li>
+    <li>
+      <p>Then click "Create Credentials" menu towards the top of the page that loads
+      and select "Service account".</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/05-create-service-account.png' %}" alt="Create Service Account" title="Create Service Account credentials" /></p></li>
-<li><p>In the wizard that loads, name your service account. I chose
-"private sheet reader". Then click "Create".</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/05-create-service-account.png' %}" alt="Create Service Account" title="Create Service Account credentials" />
+      </p>
+    </li>
+    <li>
+      <p>In the wizard that loads, name your service account. I chose
+      "private sheet reader". Then click "Create".</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/06-name-service-account.png' %}" alt="Name Service Account" title="Name your service account" /></p></li>
-<li><p>In the next page, add the "Viewer" role to your service account and
-then click "Continue"</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/06-name-service-account.png' %}" alt="Name Service Account" title="Name your service account" />
+      </p>
+    </li>
+    <li>
+      <p>In the next page, add the "Viewer" role to your service account and
+      then click "Continue"</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/07-add-viewer-role.png' %}" alt="Add 'Viewer' role" title="Add the 'Viewer' role" /></p></li>
-<li><p>Towards the bottom of the next page, click "Create Key". A right tab will
-appear.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/07-add-viewer-role.png' %}" alt="Add 'Viewer' role" title="Add the 'Viewer' role" />
+      </p>
+    </li>
+    <li>
+      <p>Towards the bottom of the next page, click "Create Key". A right tab will
+      appear.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/08-create-key.png' %}" alt="Click 'Create Key'" title="Click 'Create Key'" /></p></li>
-<li><p>Select the "JSON" option (should be default) and click "Done". Save the file
-that it gives you.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/08-create-key.png' %}" alt="Click 'Create Key'" title="Click 'Create Key'" />
+      </p>
+    </li>
+    <li>
+      <p>Select the "JSON" option (should be default) and click "Done". Save the file
+      that it gives you.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/09-create-json-key.png' %}" alt="Create a JSON key" title="Create a JSON key" /></p></li>
-<li><p>Copy the service account email address in the "Service Accounts" list.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/09-create-json-key.png' %}" alt="Create a JSON key" title="Create a JSON key" />
+      </p>
+    </li>
+    <li>
+      <p>Copy the service account email address in the "Service Accounts" list.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/10-copy-service-account-email.png' %}" alt="Copy account email" title="Copy the service account email" /></p></li>
-</ol>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/10-copy-service-account-email.png' %}" alt="Copy account email" title="Copy the service account email" />
+      </p>
+    </li>
+  </ol>
 
-<h3>Giving collaborative the permission to view your sheet</h3>
+  <h3>Giving collaborative the permission to view your sheet</h3>
 
-<ol>
-<li><p>Go back to your private google sheet and share it with the service account's email address. Click "Send".</p>
+  <ol>
+    <li>
+      <p>Go back to your private google sheet and share it with the service account's email address. Click "Send".</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/11-share-with-service-account-email.png' %}" alt="Share your sheets with this account" title="Share your private sheets with this account" /></p></li>
-<li><p>Finally, upload the credentials JSON file below. Done! All future private
-sheets can be imported by simply sharing it with the service account email
-and checking the "private sheet" checkbox during the import.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/11-share-with-service-account-email.png' %}" alt="Share your sheets with this account" title="Share your private sheets with this account" />
+      </p>
+    </li>
+    <li>
+      <p>Finally, upload the credentials JSON file below. Done! All future private
+      sheets can be imported by simply sharing it with the service account email
+      and checking the "private sheet" checkbox during the import.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/12-uploading-credentials.png' %}" alt="Uploading credentials" title="Uploading credentials" /></p></li>
-</ol>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/12-uploading-credentials.png' %}" alt="Uploading credentials" title="Uploading credentials" />
+      </p>
+    </li>
+  </ol>
 
-<h2>Subsequent imports of private sheets</h2>
+  <h2>Subsequent imports of private sheets</h2>
 
-<p>Once the above instructions have been successfully followed, and your private
-sheet has been imported successfully, you can import new private sheets in two
-steps:</p>
+  <p>Once the above instructions have been successfully followed, and your private
+  sheet has been imported successfully, you can import new private sheets in two
+  steps:</p>
 
-<ol>
-<li><p>Share your private spreadsheet with the service account.</p>
+  <ol>
+    <li>
+      <p>Share your private spreadsheet with the service account.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/11-share-with-service-account-email.png' %}" alt="Share your sheets with this account" title="Share your private sheets with this account" /></p></li>
-<li><p>Select the "This is a private Google spreadsheet" option in the
-import screen.</p>
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/11-share-with-service-account-email.png' %}" alt="Share your sheets with this account" title="Share your private sheets with this account" />
+      </p>
+    </li>
+    <li>
+      <p>Select the "This is a private Google spreadsheet" option in the
+      import screen.</p>
 
-<p><img src="{% static 'django_models_from_csv/instructions/13-check-private-sheet.png' %}" alt="Click the private sheet checkbox" title="Click the private sheet checkbox" /></p></li>
-</ol>
-
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/13-check-private-sheet.png' %}" alt="Click the private sheet checkbox" title="Click the private sheet checkbox" />
+      </p>
+    </li>
+  </ol>
 </div>
 {% endblock %}

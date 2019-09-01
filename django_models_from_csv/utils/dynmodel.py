@@ -163,7 +163,7 @@ def from_csv_file(filename, file):
 
 
 @require_unique_name
-def from_csv_url(name, csv_url, csv_google_sheets_auth_code=None):
+def from_csv_url(name, csv_url):
     """
     Build a dynamic model from a CSV URL. This supports Google
     Sheets share URLs and normal remote CSVs.

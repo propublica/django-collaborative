@@ -7,6 +7,7 @@ from tablib import Dataset
 
 from apiclient import discovery
 from google.oauth2 import service_account
+from django.core.files.base import File
 
 from django_models_from_csv.utils.csv import extract_key_from_csv_url
 
@@ -24,15 +25,17 @@ class PrivateSheetImporter:
         be a dict, JSON string or file (bytes). This routine will do
         all the proper conversions for internal use.
         """
-        # file upload
+        # file upload, parsed
         if type(credentials) == bytes:
             credentials = json.loads(credentials.decode("utf-8"))
+        elif isinstance(credentials, File):
+            credentials = json.loads(credentials.read().decode("utf-8"))
         # JSON string, as stored in the DB
         elif type(credentials) == str:
             credentials = json.loads(credentials)
         # we need to have a decoded credentials dict by here
         creds = service_account.Credentials.from_service_account_info(
-            credentials, scopes=scopes
+            credentials, scopes=self.SCOPES
         )
         # TODO: catch authentication error, return friendly msg. (we
         #       might we need to do this above as well)

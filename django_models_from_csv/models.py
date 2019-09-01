@@ -205,7 +205,7 @@ class DynamicModel(models.Model):
             ]
 
         csv = None
-        if self.csv_url and self.csv_google_refresh_token:
+        if self.csv_url and self.csv_google_credentials:
             csv = PrivateSheetImporter(
                 self.csv_google_credentials
             ).get_csv_from_url(
@@ -286,9 +286,24 @@ class DynamicModel(models.Model):
         apps.clear_cache()
         clear_url_caches()
 
+    def create(self, **kwargs):
+        csv_google_credentials = kwargs.get("csv_google_credentials")
+        if csv_google_credentials:
+            clean_creds = self.clean_csv_google_credentials(
+                csv_google_credentials
+            )
+            kwargs["csv_google_credentials"] = clean_creds
+        return super().create(**kwargs)
+
     def save(self, **kwargs):
         self.name = slugify(self.name)
         super().save(**kwargs)
+        csv_google_credentials = kwargs.get("csv_google_credentials")
+        if csv_google_credentials:
+            clean_creds = self.clean_csv_google_credentials(
+                csv_google_credentials
+            )
+            kwargs["csv_google_credentials"] = clean_creds
         self.do_migrations()
         self.model_cleanup()
         for fn in self._POST_SAVE_SIGNALS:
@@ -307,6 +322,14 @@ class DynamicModel(models.Model):
 
         # finally kill the row
         super().delete(**kwargs)
+
+    def clean_csv_google_credentials(self, credentials):
+        # file upload => string
+        if type(credentials) == bytes:
+            return credentials.decode("utf-8")
+        elif type(credentials) == dict:
+            return json.dumps(credentials)
+        return credentials
 
 
 def verbose_namer(name, make_friendly=False):
