@@ -24,6 +24,12 @@ from django_models_from_csv.utils.dynmodel import (
 logger = logging.getLogger(__name__)
 
 
+def get_service_acct_dynmodel():
+    return models.DynamicModel.objects.filter(
+        csv_google_credentials__isnull=False
+    ).first()
+
+
 @login_required
 def begin(request):
     """
@@ -40,20 +46,23 @@ def begin(request):
             return redirect('/admin/')
 
         context = {}
-        dynmodel_w_creds = models.DynamicModel.objects.filter(
-            csv_google_credentials__isnull=False
-        ).first()
-        if dynmodel_w_creds:
-            email = dynmodel_w_creds.service_account_email
-            context["service_account_email"] = email
+        creds_model = get_service_acct_dynmodel()
+        if creds_model:
+            context["service_account_email"] = creds_model.service_account_email
         return render(request, 'begin.html', context)
-    elif  request.method == "POST":
+    elif request.method == "POST":
         # For CSV URL/Google Sheets (public)
         csv_url = request.POST.get("csv_url")
         # Private Google Sheet (Service Account Credentials JSON)
         csv_google_credentials_file = request.FILES.get(
             "csv_google_credentials"
         )
+        # See if we've already saved a dynamic model, we will use the
+        # credentials from this file and the email for the UI
+        creds_model = get_service_acct_dynmodel()
+        service_account_email = None
+        if creds_model:
+            service_account_email = creds_model.service_account_email
 
         # Screendoor
         sd_api_key = request.POST.get("sd_api_key")
@@ -72,11 +81,19 @@ def begin(request):
             "sd_api_key": sd_api_key,
             "sd_project_id": sd_project_id,
             "sd_form_id": sd_form_id,
+            "service_account_email": service_account_email,
         }
         try:
-            if csv_url and csv_google_credentials_file:
+            if csv_url and (csv_google_credentials_file or creds_model):
                 name = slugify(request.POST.get("csv_name"))
-                credentials = csv_google_credentials_file.read().decode("utf-8")
+                # pull the credentials from FILE or saved model
+                credentials = None
+                if csv_google_credentials_file:
+                    credentials = csv_google_credentials_file.read(
+                    ).decode("utf-8")
+                elif creds_model:
+                    credentials = creds_model.csv_google_credentials
+
                 dynmodel = from_private_sheet(
                     name, csv_url,
                     credentials=credentials,
