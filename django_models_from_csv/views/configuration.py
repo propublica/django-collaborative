@@ -53,12 +53,17 @@ def begin(request):
     elif request.method == "POST":
         # For CSV URL/Google Sheets (public)
         csv_url = request.POST.get("csv_url")
-        # Private Google Sheet (Service Account Credentials JSON)
+
+        # Private Sheet toggle (all other private sheet stuff will
+        # be ignored if this wasn't checked in the form
+        csv_sheets_private = request.POST.get("csv_google_sheet_private")
+        # Private Google Sheet (Service Account Credentials JSON) ...
+        # this only gets displayed when there are no other creds uploaded
         csv_google_credentials_file = request.FILES.get(
             "csv_google_credentials"
         )
-        # See if we've already saved a dynamic model, we will use the
-        # credentials from this file and the email for the UI
+        # Also see if we've already saved a dynamic model, we will use
+        # the credentials from this file and the email for the UI
         creds_model = get_service_acct_dynmodel()
         service_account_email = None
         if creds_model:
@@ -84,7 +89,7 @@ def begin(request):
             "service_account_email": service_account_email,
         }
         try:
-            if csv_url and (csv_google_credentials_file or creds_model):
+            if csv_url and csv_sheets_private:
                 name = slugify(request.POST.get("csv_name"))
                 # pull the credentials from FILE or saved model
                 credentials = None
