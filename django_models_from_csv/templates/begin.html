@@ -206,6 +206,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       This is a private Google spreadsheet
                   </td>
               </tr>
+              {% if not service_account_email %}
               <tr class="private-sheet-instructions">
                   <td>&nbsp;</td>
                   <td>
@@ -215,7 +216,19 @@ document.addEventListener("DOMContentLoaded", function(event) {
                       </h4>
                   </td>
               </tr>
+              {% endif %}
               <tr class="private-sheet-instructions">
+                  {% if service_account_email %}
+                  <td>
+                      &nbsp;
+                  </td>
+                  <td>
+                  Share your spreadsheet with:
+                  <span class="svc_acct_email">
+                      {{ service_account_email}}
+                  </span>
+                  </td>
+                  {% else %}
                   <td>
                       <label for="csv_google_credentials">
                           {% trans 'Credentials File' %}
@@ -227,6 +240,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                              accept=".json"
                              type="file" />
                   </td>
+                  {% endif %}
               </tr>
           </table>
       </div>

@@ -331,6 +331,13 @@ class DynamicModel(models.Model):
             return json.dumps(credentials)
         return credentials
 
+    @property
+    def service_account_email(self):
+        if not self.csv_google_credentials:
+            return None
+        credentials = json.loads(self.csv_google_credentials)
+        return credentials.get("client_email")
+
 
 def verbose_namer(name, make_friendly=False):
     """

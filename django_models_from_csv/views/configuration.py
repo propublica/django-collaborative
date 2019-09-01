@@ -36,11 +36,17 @@ def begin(request):
         # Don't go back into this flow if we've already done it
         addnew = request.GET.get("addnew")
         models_count = models.DynamicModel.objects.count()
-        if addnew:
-            return render(request, 'begin.html', {})
-        elif models_count:
+        if not addnew and models_count:
             return redirect('/admin/')
-        return render(request, 'begin.html', {})
+
+        context = {}
+        dynmodel_w_creds = models.DynamicModel.objects.filter(
+            csv_google_credentials__isnull=False
+        ).first()
+        if dynmodel_w_creds:
+            email = dynmodel_w_creds.service_account_email
+            context["service_account_email"] = email
+        return render(request, 'begin.html', context)
     elif  request.method == "POST":
         # For CSV URL/Google Sheets (public)
         csv_url = request.POST.get("csv_url")
