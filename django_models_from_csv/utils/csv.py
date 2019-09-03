@@ -6,6 +6,9 @@ from django.utils.translation import gettext_lazy as _
 import requests
 from tablib import Dataset
 
+from django_models_from_csv.exceptions import BadCSVError
+
+
 
 SHEETS_BASE = "https://docs.google.com/spreadsheet"
 
@@ -57,4 +60,8 @@ def fetch_csv(csv_url):
         )
     r = requests.get(url)
     data = r.text
+    with open("/tmp/tmp-csv.csv", "w") as f:
+        f.write(data)
+    if re.match(r"^\s*<!DOCTYPE html>", data, re.M|re.I):
+        raise BadCSVError(_("Error importing from CSV URL."))
     return clean_csv_headers(data)

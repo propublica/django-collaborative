@@ -38,3 +38,21 @@ class DataSourceExistsError(RenderableErrorBase):
         "from the administration panel."
     )
     TEMPLATE = "django_models_from_csv/exceptions/unique_name_error.html"
+
+
+class GenericCSVError(Exception):
+    def render(self):
+        return render_to_string(self.TEMPLATE, {
+            "message": self.MESSAGE,
+        })
+
+
+class BadCSVError(GenericCSVError):
+    MESSAGE = _(
+        "We can't find a valid CSV from the URL provided. "
+        "If this is a Google Sheet, make sure you copied the share "
+        "link. If it's a private sheet, use the private spreadsheet "
+        "checkbox, below."
+    )
+    TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
+

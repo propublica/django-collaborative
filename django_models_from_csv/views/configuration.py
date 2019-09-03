@@ -10,7 +10,7 @@ from requests.exceptions import ConnectionError
 
 from django_models_from_csv import models
 from django_models_from_csv.exceptions import (
-    UniqueColumnError, DataSourceExistsError
+    UniqueColumnError, DataSourceExistsError, BadCSVError
 )
 from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting, slugify
@@ -126,7 +126,7 @@ def begin(request):
                     **context
                 })
 
-        except (UniqueColumnError, DataSourceExistsError) as e:
+        except (UniqueColumnError, DataSourceExistsError, BadCSVError) as e:
             return render(request, 'begin.html', {
                 "errors": e.render(),
                 **context
