@@ -9,7 +9,6 @@ from import_export.resources import (
 from tablib import Dataset
 
 from django_models_from_csv import models
-from django_models_from_csv.utils.csv import fetch_csv
 
 
 logger = logging.getLogger(__name__)
@@ -39,6 +38,7 @@ def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None)
     return metaclass(class_name, (resource_class,), class_attrs)
 
 
+# TODO: handle invaliddimensions from dataset.load
 def import_records_list(csv, dynmodel):
     """
     Take a fetched CSV and turn it into a tablib Dataset, with
@@ -109,6 +109,8 @@ def import_records_list(csv, dynmodel):
     return newdata
 
 
+# TODO: handle errors here. this happens on refine import
+#       and also during refresh data sources command
 def import_records(csv, Model, dynmodel):
     """
     Take a fetched CSV, parse it into user rows for
@@ -133,11 +135,13 @@ def import_records(csv, Model, dynmodel):
     # Do headers check
     errors = []
     for row in dataset.dict:
+        # This runs the data pipeline. Assumes each step is passed
+        # a data row (dict), optionally modifies it, returns nothing
         for pipeline in getattr(settings, "DATA_PIPELINE", []):
             module = importlib.import_module(pipeline)
             module.run(row)
 
-        logger.debug("Importing: %s" % str(row))
+        # logger.debug("Importing: %s" % str(row))
         # 1. check fields, any extra fields are thrown out?
         #    or is this done above?
         # 2. get or create by ID
@@ -147,7 +151,7 @@ def import_records(csv, Model, dynmodel):
         except Model.DoesNotExist:
             pass
 
-        logger.debug("Found object? %s" % obj)
+        # logger.debug("Found object? %s" % obj)
 
         # update all fieds found in our model columns, but
         # leave out the id field (already attached to obj above)

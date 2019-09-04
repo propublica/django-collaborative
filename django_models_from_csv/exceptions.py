@@ -2,7 +2,14 @@ from django.template.loader import render_to_string, get_template
 from django.utils.translation import gettext_lazy as _
 
 
-class RenderableErrorBase(Exception):
+class GenericCSVError(Exception):
+    def render(self):
+        return render_to_string(self.TEMPLATE, {
+            "message": self.MESSAGE,
+        })
+
+
+class RenderableErrorBase(GenericCSVError):
     def __init__(self, name):
         self.name = name
         self.msg = self.MESSAGE % (self.name)
@@ -38,13 +45,6 @@ class DataSourceExistsError(RenderableErrorBase):
         "from the administration panel."
     )
     TEMPLATE = "django_models_from_csv/exceptions/unique_name_error.html"
-
-
-class GenericCSVError(Exception):
-    def render(self):
-        return render_to_string(self.TEMPLATE, {
-            "message": self.MESSAGE,
-        })
 
 
 class BadCSVError(GenericCSVError):

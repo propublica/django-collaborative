@@ -48,7 +48,14 @@ class Command(BaseCommand):
         for model in models:
             if model.attrs.get("type") != MODEL_TYPES.CSV:
                 continue
+            # model import has been failing, skip
+            if model.attrs.get("dead")
+                logger.info("Skipping failing import %s..." % (
+                    model.name
+                ))
+                continue
             logger.info("Refreshing %s" % model)
+            try:
             errors = model.import_data()
             if not errors:
                 logger.info("Success!")

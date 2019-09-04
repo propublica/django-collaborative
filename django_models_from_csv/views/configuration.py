@@ -9,9 +9,7 @@ from tablib.core import UnsupportedFormat
 from requests.exceptions import ConnectionError
 
 from django_models_from_csv import models
-from django_models_from_csv.exceptions import (
-    UniqueColumnError, DataSourceExistsError, BadCSVError
-)
+from django_models_from_csv.exceptions import GenericCSVError
 from django_models_from_csv.forms import SchemaRefineForm
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
@@ -98,7 +96,6 @@ def begin(request):
                     ).decode("utf-8")
                 elif creds_model:
                     credentials = creds_model.csv_google_credentials
-
                 dynmodel = from_private_sheet(
                     name, csv_url,
                     credentials=credentials,
@@ -126,7 +123,9 @@ def begin(request):
                     **context
                 })
 
-        except (UniqueColumnError, DataSourceExistsError, BadCSVError) as e:
+        except Exception as e:
+            if not isinstance(e, GenericCSVError):
+                raise e
             return render(request, 'begin.html', {
                 "errors": e.render(),
                 **context

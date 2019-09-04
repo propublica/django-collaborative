@@ -112,6 +112,12 @@ class DynamicModel(models.Model):
 
     # some attributes (as dict) to distinguish dynamic models from
     # eachother, to drive some business logic, etc. not used internally.
+    # Currently used attributes:
+    # Key   Type   Description
+    # ======================================================================
+    # type  int    Model type (1=Base model, 2=Metadata, 3=Contact log)
+    # dead  bool   If True, this model has been failing auto update and
+    #              will be skipped until a manual successful import succeeds
     attrs = JSONField(max_length=255, editable=True)
 
     # This is a bit of a hack, but since Django calls post_save
@@ -212,6 +218,7 @@ class DynamicModel(models.Model):
                 self.csv_url
             )
         elif self.csv_url:
+            # NOTE: InvalidDimensions
             csv = fetch_csv(self.csv_url)
         elif self.sd_api_key:
             importer = ScreendoorImporter(api_key=self.sd_api_key)

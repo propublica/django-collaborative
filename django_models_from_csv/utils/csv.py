@@ -27,6 +27,7 @@ def extract_key_from_csv_url(url):
     return matches[0]
 
 
+# NOTE: InvalidDimensions
 def clean_csv_headers(csv):
     """
     Remove commas, line breaks, etc, anything that will screw
@@ -42,6 +43,7 @@ def clean_csv_headers(csv):
     return new_data.export("csv")
 
 
+# NOTE: InvalidDimensions
 def fetch_csv(csv_url):
     """
     Take a wither a Google Sheet share link like this ...
