@@ -2,6 +2,7 @@ agate==1.6.1
 agate-dbf==0.2.1
 agate-excel==0.2.3
 agate-sql==0.5.4
+apscheduler==3.6.1
 Babel==2.6.0
 backports.csv==1.0.7
 certifi==2019.3.9

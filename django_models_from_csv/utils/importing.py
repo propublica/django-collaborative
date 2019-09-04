@@ -130,7 +130,7 @@ def import_records(csv, Model, dynmodel):
     dataset = import_records_list(csv, dynmodel)
     column_names = [c.get("name") for c in dynmodel.columns]
     logger.debug("Column names: %s" % str(column_names))
-    logger.debug("Dataset: %s" % dataset)
+    # logger.debug("Dataset: %s" % dataset)
 
     # Do headers check
     errors = []
