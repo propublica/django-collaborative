@@ -23,7 +23,7 @@ def extract_key_from_csv_url(url):
         url
     )
     if not matches:
-        raise ValueError(_("Invalid Google Sheets share URL"))
+        raise BadCSVError(_("Invalid Google Sheets share URL"))
     return matches[0]
 
 

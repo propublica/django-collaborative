@@ -51,8 +51,9 @@ class BadCSVError(GenericCSVError):
     MESSAGE = _(
         "We can't find a valid CSV from the URL provided. "
         "If this is a Google Sheet, make sure you copied the share "
-        "link. If it's a private sheet, use the private spreadsheet "
-        "checkbox, below."
+        "link. If it's a private sheet, make sure you used the private "
+        "sheet checkbox. Otherwise, make sure there are no typos or "
+        "errors in your URL."
     )
     TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
 
