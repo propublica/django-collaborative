@@ -20,7 +20,7 @@
   "env": {
     "COLLAB_ADMIN_USERNAME": {
       "description": "Default admin account username.",
-      "value": "admin"
+      "required": true
     },
     "COLLAB_ADMIN_EMAIL": {
       "description": "Default admin account email for recovery.",
