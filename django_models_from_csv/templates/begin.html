@@ -72,12 +72,13 @@ function init() {
     .forEach((el) => {
       el.setAttribute("style", "display: none;");
     });
+
   // hide the menus secondarily so the instruction hiding
   // doesn't pop the Sheets/CSV menu
   document.querySelectorAll(".show-hide").forEach((d) => {
     let found = false;
     d.querySelectorAll("input").forEach((i) => {
-      if (i.value) {
+      if (i.value && i.type != "checkbox") {
         found = true;
       }
     });
@@ -85,6 +86,7 @@ function init() {
       d.setAttribute("style", "display: none;");
     }
   });
+
   // setup toggle on private sheet checkbox
   document
     .querySelector("#csv_google_sheet_private")
