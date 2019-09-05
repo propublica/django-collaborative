@@ -23,7 +23,8 @@ urlpatterns = [
          include('django_models_from_csv.urls', namespace="db-config")),
 
     # Setup password and OAuth
-    path('setup-auth/', views.setup_auth, name='setup-auth'),
+    path('setup-credentials/',
+         views.setup_credentials, name='setup-credentials'),
     # Success page
     path('setup-complete/', views.setup_complete, name='setup-complete'),
 ]

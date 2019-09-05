@@ -1,12 +1,10 @@
 import io
-import os
 import re
 import sqlite3
 import tempfile
 import time
 
 from csvkit.utilities.csvsql import CSVSQL
-from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.management.commands import makemigrations, migrate, inspectdb
@@ -36,36 +34,38 @@ def setup_complete(request):
 
 
 @login_required
-def setup_auth(request):
+def setup_credentials(request):
     """
-    Force the user to change the password and let them setup
-    OAuth social login.
+    Let the user setup Google credentials.
     """
+    # flag indicating we just saved a model, not visited this
+    # page directly. this lets us avoid showing this after every
+    # import a user does
+    is_postsave = request.GET.get("postsave")
+    current_host = request.META.get('HTTP_HOST', "http://localhost/")
+
     # Don't show the password change screen if we've already
     # added models or setup an initial password.
     try:
         AppSetting.objects.get(
             name="initial_setup_completed"
         )
-        return redirect('/admin/')
+        if is_postsave:
+            return redirect('/admin/')
     except AppSetting.DoesNotExist as e:
         pass
     # if we have more than three models, we've gone through
     # at least once. this is probably unnecessary unless
     # models got imported in some weird way w/o appsettings
-    if models.DynamicModel.objects.count() > 3:
+    if models.DynamicModel.objects.count() > 3 and is_postsave:
         return redirect('/admin/')
     if request.method == "GET":
-        return render(request, 'setup-auth.html', {})
+        return render(request, 'setup-credentials.html', {
+            "hostname": current_host
+        })
     elif request.method == "POST":
-        password = request.POST.get("password")
-        password_confirm = request.POST.get("password_confirm")
         google_oauth_key = request.POST.get("google_oauth_key")
         google_oauth_secret = request.POST.get("google_oauth_secret")
-        if password != password_confirm:
-            raise ValueError("Passwords do not match!")
-        request.user.set_password(password)
-        request.user.save()
         # set an appsetting that will prevent the configure auth
         # screen from showing up again
         AppSetting.objects.create(
