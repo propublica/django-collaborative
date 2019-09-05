@@ -103,7 +103,7 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 WSGI_APPLICATION = 'collaborative.wsgi.application'
 
 CSV_MODELS_TEMP_DB = "schemabuilding"
-CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-credentials/"
+CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-credentials?postsave=True"
 CSV_MODELS_AUTO_REGISTER_ADMIN = False
 
 # Database

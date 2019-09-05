@@ -32,7 +32,7 @@ def get_credentials_model():
     ).first()
 
 
-def service_account_email(credential_model):
+def get_service_account_email(credential_model):
     """
     Get the service account email from the stored Google creds JSON.
     """
