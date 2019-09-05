@@ -103,7 +103,7 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 WSGI_APPLICATION = 'collaborative.wsgi.application'
 
 CSV_MODELS_TEMP_DB = "schemabuilding"
-CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-auth/"
+CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-credentials/"
 CSV_MODELS_AUTO_REGISTER_ADMIN = False
 
 # Database
@@ -153,6 +153,7 @@ AUTHENTICATION_BACKENDS = (
 # and, if not, will direct them to the wizard. If sources have been
 # created, this will direct users to the admin, as usual.
 LOGIN_REDIRECT_URL = "/setup-check/"
+LOGIN_URL = "/admin"
 
 # You can pass each row imported from a spreadsheet through a custom
 # data pipeline function.  Every row gets passed into these functions in

@@ -20,6 +20,7 @@ import requests
 from collaborative.models import AppSetting
 from collaborative.settings import BASE_DIR
 from django_models_from_csv import models
+from django_models_from_csv.models import CredentialStore
 
 
 def setup_complete(request):
@@ -54,32 +55,75 @@ def setup_credentials(request):
             return redirect('/admin/')
     except AppSetting.DoesNotExist as e:
         pass
-    # if we have more than three models, we've gone through
-    # at least once. this is probably unnecessary unless
-    # models got imported in some weird way w/o appsettings
-    if models.DynamicModel.objects.count() > 3 and is_postsave:
-        return redirect('/admin/')
+
+    sheets_cred = CredentialStore.objects.filter(
+        name="csv_google_credentials"
+    ).first()
+    dlp_cred = CredentialStore.objects.filter(
+        name="google_dlp_credentials"
+    ).first()
+    oauth_cred = CredentialStore.objects.filter(
+        name="google_oauth_credentials"
+    ).first()
+
+    # this is what we show the user
+    oauth_json_creds = None
+    if oauth_cred.credentials_json:
+        oauth_json_creds = oauth_cred.credentials_json
+        # re-stringify whitelist
+        whitelist = oauth_json_creds.get("google_oauth_whitelist")
+        if whitelist:
+            oauth_json_creds["google_oauth_whitelist"] = ",".join(whitelist)
+
     if request.method == "GET":
         return render(request, 'setup-credentials.html', {
-            "hostname": current_host
+            "hostname": current_host,
+            "sheets_cred": sheets_cred,
+            "dlp_cred": dlp_cred,
+            "oauth_cred": oauth_json_creds,
         })
+
     elif request.method == "POST":
+        sheets_credentials_file = request.FILES.get("csv_google_credentials")
+        dlp_credentials = request.FILES.get("google_redaction_credentials")
         google_oauth_key = request.POST.get("google_oauth_key")
         google_oauth_secret = request.POST.get("google_oauth_secret")
+        google_oauth_whitelist = request.POST.get("google_oauth_whitelist")
+
         # set an appsetting that will prevent the configure auth
         # screen from showing up again
-        AppSetting.objects.create(
+        AppSetting.objects.get_or_create(
             name="initial_setup_completed",
         )
 
-        setting, created =  AppSetting.objects.get_or_create(
-            name="google_oauth_credentials"
-        )
-        data = {
-            "google_oauth_key": google_oauth_key,
-            "google_oauth_secret": google_oauth_secret,
-        }
-        setting.data = data
-        setting.save()
-        return redirect("setup-complete")
+        if dlp_credentials:
+            dlp, _ = CredentialStore.objects.get_or_create(
+                name="google_dlp_credentials"
+            )
+            dlp.credentials = dlp_credentials.read().decode("utf-8")
+            dlp.save()
+
+        if google_oauth_key:
+            setting, created = CredentialStore.objects.get_or_create(
+                name="google_oauth_credentials"
+            )
+            parsed_whitelist = [
+                w.strip() for w in google_oauth_whitelist.strip().split(",")
+            ]
+            data = {
+                "google_oauth_key": google_oauth_key,
+                "google_oauth_secret": google_oauth_secret,
+                "google_oauth_whitelist": parsed_whitelist,
+            }
+            setting.credentials = data
+            setting.save()
+
+        if sheets_credentials_file:
+            cred, _ = CredentialStore.objects.get_or_create(
+                name="csv_google_credentials"
+            )
+            cred.credentials = sheets_credentials_file.read().decode("utf-8")
+            cred.save()
+
+        return redirect('/admin/')
 

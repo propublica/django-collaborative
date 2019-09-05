@@ -48,7 +48,9 @@ def check_apps_need_reloading(sender, environ, **kwargs):
     # the DynamicModels count()
     if n_dynmodels != (n_registered - 1):
         logger.debug("Re-registering django apps models...")
-        DynamicModel.objects.last().model_cleanup()
+        last_model = DynamicModel.objects.last()
+        if last_model:
+            last_model.model_cleanup()
 
     # figure out how many of our admins are registered
     n_admins = 0

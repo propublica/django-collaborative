@@ -10,6 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError, FieldDoesNotExist
 from django.db import connection
 from django.db.models.functions import Lower
+from django.db.utils import OperationalError
 from django.forms import modelform_factory
 from django.urls import reverse
 from django.utils.html import mark_safe, format_html
@@ -274,8 +275,8 @@ class DynamicModelAdmin(admin.ModelAdmin):
 
 class AdminMetaAutoRegistration(AdminAutoRegistration):
     def should_register_admin(self, Model):
-        name = Model._meta.object_name
         # metadata models get admin created along with the base model
+        name = Model._meta.object_name
         if name.endswith("metadata"):
             return False
         return super(
@@ -331,6 +332,8 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         # TODO: order by something? number of results?
         try:
             model_desc = DynamicModel.objects.get(name=name)
+        except OperationalError:
+            return None
         except DynamicModel.DoesNotExist:
             logger.warning("Model with name: %s doesn't exist. Skipping" % name)
             return super().create_admin(Model)

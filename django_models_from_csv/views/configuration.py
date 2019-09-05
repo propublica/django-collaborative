@@ -17,15 +17,29 @@ from django_models_from_csv.utils.dynmodel import (
     from_csv_url, from_screendoor, from_private_sheet,
     from_csv_file,
 )
+from django_models_from_csv.models import CredentialStore
 
 
 logger = logging.getLogger(__name__)
 
 
-def get_service_acct_dynmodel():
-    return models.DynamicModel.objects.filter(
-        csv_google_credentials__isnull=False
+def get_credentials_model():
+    """
+    Find the stored Google creds JSON model.
+    """
+    return CredentialStore.objects.filter(
+        name="csv_google_credentials"
     ).first()
+
+
+def service_account_email(credential_model):
+    """
+    Get the service account email from the stored Google creds JSON.
+    """
+    if not credential_model.credentials:
+        return None
+    credentials = json.loads(credential_model.credentials)
+    return credentials.get("client_email")
 
 
 @login_required
@@ -44,9 +58,11 @@ def begin(request):
             return redirect('/admin/')
 
         context = {}
-        creds_model = get_service_acct_dynmodel()
+        creds_model = get_credentials_model()
         if creds_model:
-            context["service_account_email"] = creds_model.service_account_email
+            context["service_account_email"] = get_service_account_email(
+                creds_model
+            )
         return render(request, 'begin.html', context)
     elif request.method == "POST":
         # For CSV URL/Google Sheets (public)
@@ -62,10 +78,10 @@ def begin(request):
         )
         # Also see if we've already saved a dynamic model, we will use
         # the credentials from this file and the email for the UI
-        creds_model = get_service_acct_dynmodel()
+        creds_model = get_credentials_model()
         service_account_email = None
         if creds_model:
-            service_account_email = creds_model.service_account_email
+            service_account_email = get_service_account_email(creds_model)
 
         # Screendoor
         sd_api_key = request.POST.get("sd_api_key")
@@ -79,7 +95,6 @@ def begin(request):
         context = {
             "csv_name": request.POST.get("csv_name"),
             "csv_url": csv_url,
-            # "csv_google_sheets_auth_code": csv_google_sheets_auth_code,
             "sd_name": request.POST.get("sd_name"),
             "sd_api_key": sd_api_key,
             "sd_project_id": sd_project_id,
@@ -94,8 +109,18 @@ def begin(request):
                 if csv_google_credentials_file:
                     credentials = csv_google_credentials_file.read(
                     ).decode("utf-8")
+                    cr, _ = CredentialStore.objects.get_or_create(
+                        name="csv_google_credentials",
+                    )
+                    cr.credentials = credentials
+                    cr.save()
                 elif creds_model:
-                    credentials = creds_model.csv_google_credentials
+                    credentials = creds_model.credentials
+                else:
+                    # TODO: raise if we got a check marked private,
+                    # but couldn't find the credential and none uploaded
+                    # here. we should direct them to the google page
+                    pass
                 dynmodel = from_private_sheet(
                     name, csv_url,
                     credentials=credentials,

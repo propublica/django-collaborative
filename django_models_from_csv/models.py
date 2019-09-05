@@ -72,6 +72,59 @@ def random_token(length=16):
     return User.objects.make_random_password(length=length)
 
 
+class CredentialStore(models.Model):
+    """
+    A place to store data source related credentials.
+    """
+    CREDENTIAL_TYPES = {
+        "google_oauth_credentials": "JSON",
+        "google_dlp_credentials": "JSON",
+        "google_oauth_credentials": "JSON",
+    }
+    # Currently used keyspaces:
+    # Key                       Type         Descripion
+    # ========================= ============ ================================
+    # google_oauth_credentials  json string  Google OAuth credentials (JSON)
+    # google_dlp_credentials    json string  Google DLP credentials (JSON)
+    # google_oauth_credentials  json string  Google OAuth client secrets
+    name = models.CharField(max_length=1024)
+    credentials = models.TextField(null=True, blank=True)
+
+    @property
+    def credentials_json(self):
+        if not self.credentials:
+            return self.credentials
+        try:
+            return json.loads(self.credentials)
+        except JSONDecodeError as e:
+            logger.error("Bad Google OAuth credential found!")
+            return None
+
+    def clean_json(self, credentials):
+        """
+        Turn json of various types into a UTF-8 string for storage.
+        """
+        # file upload => string
+        if type(credentials) == bytes:
+            return credentials.decode("utf-8")
+        elif type(credentials) == dict:
+            return json.dumps(credentials)
+        return credentials
+
+    def create(self, **kwargs):
+        if "credentials" in kwargs:
+            kwargs["credentials"] = self.clean_json(kwargs.get("credentials"))
+        return super().create(**kwargs)
+
+    def save(self, **kwargs):
+        if self.credentials:
+            cleaned = self.clean_json(self.credentials)
+            self.credentials = cleaned
+        if "credentials" in kwargs:
+            kwargs["credentials"] = self.clean_json(kwargs.get("credentials"))
+        return super().save(**kwargs)
+
+
 class DynamicModel(models.Model):
     """
     The managed database model representing the data in a CSV file.
@@ -90,14 +143,6 @@ class DynamicModel(models.Model):
     # credentials to access the sheet, assuming they exist)
     csv_google_sheet_private = models.BooleanField(
         default=False,
-    )
-    # The actual google credentials. We only want to store one of
-    # these, and share it across all private sheet data sources.
-    # NOTE: We could store this in collaborative.models.AppSetting,
-    #       but then we're establishing a strict dependency between
-    #       the two modules, which we have avoided this far.
-    csv_google_credentials = models.TextField(
-        null=True, blank=True
     )
 
     # Screendoor-specific columns
@@ -210,10 +255,14 @@ class DynamicModel(models.Model):
                 "using the confiruation wizard."
             ]
 
+        creds_model = CredentialStore.objects.filter(
+            name="csv_google_credentials"
+        ).first()
+
         csv = None
-        if self.csv_url and self.csv_google_credentials:
+        if self.csv_url and creds_model:
             csv = PrivateSheetImporter(
-                self.csv_google_credentials
+                creds_model.credentials
             ).get_csv_from_url(
                 self.csv_url
             )
@@ -293,24 +342,9 @@ class DynamicModel(models.Model):
         apps.clear_cache()
         clear_url_caches()
 
-    def create(self, **kwargs):
-        csv_google_credentials = kwargs.get("csv_google_credentials")
-        if csv_google_credentials:
-            clean_creds = self.clean_csv_google_credentials(
-                csv_google_credentials
-            )
-            kwargs["csv_google_credentials"] = clean_creds
-        return super().create(**kwargs)
-
     def save(self, **kwargs):
         self.name = slugify(self.name)
         super().save(**kwargs)
-        csv_google_credentials = kwargs.get("csv_google_credentials")
-        if csv_google_credentials:
-            clean_creds = self.clean_csv_google_credentials(
-                csv_google_credentials
-            )
-            kwargs["csv_google_credentials"] = clean_creds
         self.do_migrations()
         self.model_cleanup()
         for fn in self._POST_SAVE_SIGNALS:
@@ -329,21 +363,6 @@ class DynamicModel(models.Model):
 
         # finally kill the row
         super().delete(**kwargs)
-
-    def clean_csv_google_credentials(self, credentials):
-        # file upload => string
-        if type(credentials) == bytes:
-            return credentials.decode("utf-8")
-        elif type(credentials) == dict:
-            return json.dumps(credentials)
-        return credentials
-
-    @property
-    def service_account_email(self):
-        if not self.csv_google_credentials:
-            return None
-        credentials = json.loads(self.csv_google_credentials)
-        return credentials.get("client_email")
 
 
 def verbose_namer(name, make_friendly=False):

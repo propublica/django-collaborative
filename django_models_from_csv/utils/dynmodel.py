@@ -202,5 +202,4 @@ def from_private_sheet(name, sheet_url, credentials=None):
     return from_csv(name, csv, **dict(
         csv_url=sheet_url,
         csv_google_sheet_private=True,
-        csv_google_credentials=credentials,
     ))

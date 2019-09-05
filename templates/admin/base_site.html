@@ -58,8 +58,8 @@
   background-color: #405670;
 }
 
-#csv-models-config h4,
-#csv-models-config h3 {
+#csv-models-config h4.hideable,
+#csv-models-config h3.hideable {
     cursor: pointer;
 }
 
@@ -88,7 +88,7 @@
 
 
 {% block userlinks %}
-/ <a href="/db-config/begin?addnew=true">Add new data source</a> /
+/ <a href="{% url 'csv_models:begin' %}?addnew=true">{% trans 'Add new data source' %}</a> / <a href="{% url 'setup-credentials' %}">{% trans 'Configure Google Services' %}</a> /
 {{ block.super }}
 {% endblock %}
 

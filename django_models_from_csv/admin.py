@@ -94,6 +94,9 @@ class AdminAutoRegistration:
         })
 
     def should_register_admin(self, Model):
+        name = Model._meta.object_name
+        if name.lower() == "credentialstore":
+            return False
         return self.include in str(Model)
 
     def register(self):

@@ -17,7 +17,8 @@ def set_staff_status(user, *args, **kwargs):
 
 
 @partial
-def associate_by_email_or_pause(strategy, details, user=None, backend=None, is_new=False, *args, **kwargs):
+def associate_by_email_or_pause(strategy, details, user=None, backend=None,
+                                is_new=False, *args, **kwargs):
     """
     Associate current auth with a user with the same email address in the DB.
 
