@@ -22,7 +22,6 @@ import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
 from collaborative.filters import TagListFilter
-from collaborative.models import AppSetting
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.forms import create_taggable_form
 from django_models_from_csv.models import DynamicModel
@@ -373,7 +372,6 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
 
 admin.site.register(LogEntry)
-admin.site.register(AppSetting)
 
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
