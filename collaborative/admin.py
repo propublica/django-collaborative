@@ -378,7 +378,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             "list_display": list_display,
             "search_fields": searchable,
             "list_filter": filterable,
-            "resource_class": modelresource_factory(model=Model)(),
+            "resource_class": modelresource_factory(model=Model),
         })
 
 
