@@ -385,6 +385,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"
+admin.site.site_url = None
 
 # unregister django social auth from admin
 admin.site.unregister(Association)
