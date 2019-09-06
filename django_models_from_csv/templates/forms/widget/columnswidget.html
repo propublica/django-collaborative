@@ -49,6 +49,11 @@
     .redactor-disabled{
       cursor: not-allowed;
     }
+    .first-column td {
+      white-space: nowrap;
+      display: inline;
+    }
+1
   </style>
 
 
@@ -199,15 +204,25 @@
       <th>
           Filterable
       </th>
-      <th>
-          Redact?
+      <th class="nowrap">
+        Redact
+        {% if not dlp_credentials_exist  %}
+        <a href="{% url 'setup-credentials' %}"
+           rel="noopener noreferrer" target="_blank">
+          <img src="{% static "admin/img/icon-unknown.svg" %}"
+               class="help help-tooltip"
+               width="10" height="10"
+                          alt="{% trans 'Google redactions credentials missing.' %}"
+                          title="{% trans 'In order to use Google redaction, you need to set it up from the Configure Google Credentials page. Click here to open the page in a new tab' %}">
+        </a>
+        {% endif %}
       </th>
     </tr>
     {% for column in widget.value_obj %}
     {# this check ensures only CSV-backed fields appear #}
     {% if column.original_name %}
     <tr class="column-selector">
-      <td class="option">
+      <td class="option first-column">
         <span class="grippy"></span>
         <input type="text"
                name="name"
@@ -243,18 +258,6 @@
                disabled="disabled" class="redactor-disabled"
                {% endif %}
                {% if column.redact %}checked{% endif %} />
-
-        {% if  not dlp_credentials_exist  %}
-        <a href="{% url 'setup-credentials' %}"
-           target="_new">
-          <img src="{% static "admin/img/icon-unknown.svg" %}"
-               class="help help-tooltip"
-               width="10" height="10"
-               alt="{% trans 'Google redactions credentials missing.' %}"
-               title="{% trans 'In order to use Google redaction, you need to set it up from the Configure Google Credentials page. Click here to open the page in a new tab' %}">
-        </a>
-        {% endif %}
-
         <!-- hidden fields, positional index -->
         <input type="hidden"
                name="ix"

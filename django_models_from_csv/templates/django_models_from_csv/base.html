@@ -9,6 +9,9 @@
  * #405670 // Lighter version of Propublica bluw -- subheaders
  * #557395 // Accent blue, for hover, etc, brief/small things
  */
+div#csv-models-config p {
+    padding: 0px 0px;
+}
 div#csv-models-config {
     max-width: 900px;
     font-size: 18px;
@@ -16,7 +19,8 @@ div#csv-models-config {
 }
 #csv-models-config h2 {
     font-size: 25px;
-    padding: 15px 0;
+    padding: 10px 0;
+    margin: 5px 0px;
 }
 #csv-models-config h3 {
     font-size: 20px;
@@ -54,6 +58,11 @@ div#csv-models-config {
 #csv-models-config table {
   padding-left: 10px;
 }
+div#csv-models-config #first-run {
+    background-color: #eeeeee;
+    padding: 15px;
+    margin: 15px;
+}
 #csv-models-config .set-password input,
 #csv-models-config .google-oauth input {
   min-width: 300px;
@@ -74,11 +83,7 @@ div#csv-models-config {
   font-size: 1.1em;
   margin-bottom: 5px;
 }
-#csv-models-config li,
-#csv-models-config ol {
-  padding-top: 5px;
-  margin-top: 10px;
-}
+
 #csv-models-config .private-sheet-instructions .svc_acct_email {
   font-family: monospace;
   font-weight: bold;
@@ -111,6 +116,12 @@ div#csv-models-config {
 #csv-models-config .error a:hover {
   font-weight: bold;
   color: #440000;
+}
+
+#csv-models-config .instructions-list li,
+#csv-models-config ol.instructions-list {
+  padding-top: 5px;
+  margin-top: 10px;
 }
 .instructions-list img {
   border: 1px solid black;

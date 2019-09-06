@@ -58,7 +58,6 @@ function init() {
     .querySelector(".instructions-modal-button")
     .onclick = showHelpModal;
 }
-
 // No IE8
 document.addEventListener("DOMContentLoaded", function(event) {
   init();
@@ -68,9 +67,20 @@ document.addEventListener("DOMContentLoaded", function(event) {
 
 {% block content %}
 <div id="csv-models-config" class="begin-data-source">
+  {% if first_run %}
+  <div id="first-run">
+      <h2>Welcome to Collaborate!</h2>
+      <p>
+      Collaborate is a tool that newsrooms can use to work on with multiple reporters using a shared data set. Let's get started.
+      </p>
+      <p>
+      You can read the full documentation <a href="/">here</a>.
+      </p>
+  </div>
+  {% endif %}
   <h2>Add a Data Source</h2>
   <p>
-  This step will not import any data, but will read the source data and give you a chance to double check and modify the column types. Importing will happen on the next screen. Select a data source to get started.
+  Select a data source to get started. This step will not import any data, but will read the source data and give you a chance to double check and modify the column types. Importing will happen on the next screen.
   </p>
   <p class="note">
   NOTE: Your data source must have uniquely named column headers.
@@ -92,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
       </h3>
       <div class="show-hide from-csv-body">
           <p>
-          Add a Google Sheets share link below to import it into the system. Make sure the link is an "Anyone with link can view" link, found in the Share menu.
+          If your spreadsheet doesn't contain private or sensitive information, you can add a Google Sheet set to public. Make sure the link is set to "Anyone can view," which is found in the Share menu on Google Sheets. Be sure that your data is in the first tab of the workbook.
           </p>
           <table>
               <tr>

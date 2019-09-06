@@ -1,6 +1,7 @@
 import logging
 import json
 
+from django.apps import apps
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -57,12 +58,30 @@ def begin(request):
         if not addnew and models_count:
             return redirect('/admin/')
 
-        context = {}
+        context = {
+            "first_run": True,
+        }
         creds_model = get_credentials_model()
         if creds_model:
             context["service_account_email"] = get_service_account_email(
                 creds_model
             )
+
+        if CredentialStore.objects.count():
+            context["first_run"] = False
+
+        # NOTE: this leaves this module separated from collaborate, but
+        # still compatable in its presence
+        try:
+            AppSetting = apps.get_model("collaborative", "appsetting")
+            app_setting = AppSetting.objects.filter(
+                name="initial_setup_completed"
+            ).count()
+            if app_setting:
+                context["first_run"] = False
+        except LookupError:
+            pass
+
         return render(request, 'begin.html', context)
     elif request.method == "POST":
         # For CSV URL/Google Sheets (public)

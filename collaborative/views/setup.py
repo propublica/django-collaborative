@@ -47,10 +47,12 @@ def setup_credentials(request):
 
     # Don't show the password change screen if we've already
     # added models or setup an initial password.
+    first_run = True
     try:
         AppSetting.objects.get(
             name="initial_setup_completed"
         )
+        first_run = False
         if is_postsave:
             return redirect('/admin/')
     except AppSetting.DoesNotExist as e:
@@ -68,7 +70,7 @@ def setup_credentials(request):
 
     # this is what we show the user
     oauth_json_creds = None
-    if oauth_cred.credentials_json:
+    if oauth_cred and oauth_cred.credentials and oauth_cred.credentials_json:
         oauth_json_creds = oauth_cred.credentials_json
         # re-stringify whitelist
         whitelist = oauth_json_creds.get("google_oauth_whitelist")
@@ -77,6 +79,7 @@ def setup_credentials(request):
 
     if request.method == "GET":
         return render(request, 'setup-credentials.html', {
+            "first_run": first_run,
             "hostname": current_host,
             "sheets_cred": sheets_cred,
             "dlp_cred": dlp_cred,
