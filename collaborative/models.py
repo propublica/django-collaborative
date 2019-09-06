@@ -23,7 +23,7 @@ DEFAULT_STATUSES = (
     (0, "Available"),
     (1, "In Progress"),
     (2, "Verified"),
-    (3, "Troll"),
+    (3, "Spam"),
     (4, "Duplicate"),
     (5, "Not Applicable"),
     (6, "Inconclusive"),
