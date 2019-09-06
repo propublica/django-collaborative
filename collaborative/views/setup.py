@@ -109,6 +109,7 @@ def setup_credentials(request):
             )
             parsed_whitelist = [
                 w.strip() for w in google_oauth_whitelist.strip().split(",")
+                if w and w.strip()
             ]
             data = {
                 "google_oauth_key": google_oauth_key,
