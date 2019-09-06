@@ -214,9 +214,16 @@ SOCIAL_AUTH_PIPELINE = (
     # Checks if the current social-account is already associated in the site.
     'social_core.pipeline.social_auth.social_user',
 
+    # Create the user account if they're in a domain (assuming one is defined)
+    # If a domains whitelist isn't defined or the user trying to authenticate
+    # isn't within the domain, we *do not* create the user. They will be
+    # rejected by the subsequent step.
+    'collaborative.user.create_user_in_domain_whitelist',
+
     # Associates the current social details with another user account with
-    # a similar email address. Disabled by default.
-    # Pause the pipeline if user isn't granted access
+    # the same email address. Otherwise, pause the pipeline if user
+    # isn't granted access and tell them to request a user be created by
+    # an admin.
     # 'social_core.pipeline.social_auth.associate_by_email',
     'collaborative.user.associate_by_email_or_pause',
 
