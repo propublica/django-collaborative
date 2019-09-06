@@ -161,21 +161,14 @@ LOGIN_URL = "/admin"
 # please see the documentation at http://TKTKTK.
 DATA_PIPELINE = [
     # To have the app automatically redact personally identifiable
-    # information from a spreadsheet, uncomment the line of code below,
-    # and make sure the header of the columns you want to redact end
-    # with "-PII". Also make sure to set the COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
-    # setting to the path for your DLP credentials.json file (below).
-    # 'collaborative.data_pipeline.google_redactor',
+    # information from a spreadsheet, setup the credentials in the
+    # google credentials page and then select columns using the
+    # redact checkbox.
+    'collaborative.data_pipeline.google_redactor',
 
     # Example data pipeline processor that uppercases everything
     # 'collaborative.data_pipeline.uppercase',
 ]
-
-# Google DLP credentials JSON file location (if you're deploying the
-# file, you may want to follow the TEMPLATES_DIR example at the top
-# of this file and use relative directories). Just make sure your
-# credentials file isn't available to the web!
-# COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE = "/path/to/credentials.json"
 
 # Types of private information to filter out, here are some example
 # options. A full list can be found here:
