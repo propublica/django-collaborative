@@ -195,7 +195,9 @@ class ReverseFKAdmin(admin.ModelAdmin):
 
 
                 getter_name = "%s_%s" % (rel_name, attr_name)
-                short_desc = re.sub(r"[\-_]+", " ", attr_name)
+                short_desc = re.sub(r"[\-_]+", " ", attr_name).replace(
+                    "assignee", "assigned to"
+                )
 
                 getter = make_getter(
                     rel_name, attr_name, getter_name, field=rel_field
