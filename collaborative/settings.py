@@ -178,6 +178,10 @@ DATA_PIPELINE = [
 #     "STREET_ADDRESS",
 # ]
 
+# Eliminate social auth trailing slashes because Google OAuth
+# explodes if you tell it to call back to a slash-ending URL
+SOCIAL_AUTH_TRAILING_SLASH = False
+
 # Google Sign In
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ""
