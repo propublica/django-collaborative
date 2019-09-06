@@ -4,6 +4,7 @@ import re
 from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
@@ -27,16 +28,24 @@ from django_models_from_csv.forms import create_taggable_form
 from django_models_from_csv.models import DynamicModel
 
 
-UserAdmin.list_display = ("username","email","first_name","last_name")
-# UserAdmin.list_editable = ("first_name", "last_name")
-
-UserAdmin.add_fieldsets = ((None, {
-    'fields': ('username', 'email', 'password1', 'password2'),
-    'classes': ('wide',)
-}),)
-
-
 logger = logging.getLogger(__name__)
+
+
+class NewUserAdmin(UserAdmin):
+    list_display = ("username","email","first_name","last_name")
+
+    def add_view(self, request, *args, **kwargs):
+        if request.method != "POST":
+            return super().add_view(request, *args, **kwargs)
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+        if not password1 and not password2:
+            newpass = User.objects.make_random_password(length=32)
+            request.POST._mutable = True
+            request.POST["password1"] = newpass
+            request.POST["password2"] = newpass
+            request.POST._mutable = False
+        return super().add_view(request, *args, **kwargs)
 
 
 def widget_for_object_field(obj, field_name):
@@ -373,8 +382,6 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         })
 
 
-admin.site.register(LogEntry)
-
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"
@@ -383,6 +390,10 @@ admin.site.site_title = "Collaborate"
 admin.site.unregister(Association)
 admin.site.unregister(UserSocialAuth)
 admin.site.unregister(Nonce)
+admin.site.unregister(User)
+
+admin.site.register(LogEntry)
+admin.site.register(User, NewUserAdmin)
 
 def register_dynamic_admins(*args, **kwargs):
     AdminMetaAutoRegistration(include="django_models_from_csv.models").register()
