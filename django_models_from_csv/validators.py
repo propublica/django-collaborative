@@ -20,6 +20,7 @@ REQUIRED_FIELDS = (
 ALL_FIELDS = REQUIRED_FIELDS + (
     "attrs", "original_name", "args",
     "searchable", "filterable",
+    "redact",
 )
 
 

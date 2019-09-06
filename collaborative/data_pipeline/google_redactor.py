@@ -80,7 +80,7 @@ def deidentify_with_mask(project, string, info_types, masking_character=None,
     return response.item.value
 
 
-def run(row):
+def run(row, columns=None):
     if not COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE:
         return
 

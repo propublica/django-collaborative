@@ -139,7 +139,7 @@ def import_records(csv, Model, dynmodel):
         # a data row (dict), optionally modifies it, returns nothing
         for pipeline in getattr(settings, "DATA_PIPELINE", []):
             module = importlib.import_module(pipeline)
-            module.run(row)
+            module.run(row, columns=dynmodel.columns)
 
         # logger.debug("Importing: %s" % str(row))
         # 1. check fields, any extra fields are thrown out?

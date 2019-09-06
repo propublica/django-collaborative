@@ -32,6 +32,18 @@ Database Columns | {{ block.super }}
           Re-order the columns by dragging them around.
       {% endblocktrans %}
       </p>
+      <p>
+      {% blocktrans trimmed %}
+      In order to use Google Cloud Data Loss Prevention redaction on
+      your columns, you need to
+      {% endblocktrans %}
+      <a href="{% url 'setup-credentials' %}">{% trans 'setup the credentials here.' %}</a>
+      {% blocktrans trimmed %}
+      Then select the columns you want to have names, phone numbers,
+      and emails removed from. Note that this will not modify the original
+      data source, but will prevent the data from being imported here.
+      {% endblocktrans %}
+      </p>
       {{ form.columns }}
       <div class="continue">
           <input type="submit" value="{% trans "Continue" %}" />
