@@ -95,8 +95,13 @@ def run(row, columns=None):
 
     project = account_json.get("project_id")
 
+    redact_column_names = []
+    for column in columns:
+        if not column.get("redact"):
+            continue
+        redact_column_names.append(column.get("name"))
     for header in row:
-        if not header.lower().endswith("_pii"):
+        if header not in redact_column_names:
             continue
         try:
             row[header] = deidentify_with_mask(
