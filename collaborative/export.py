@@ -45,8 +45,6 @@ class CollaborativeModelResource(ModelResource):
                 export_resource.append("")
                 continue
 
-            # import IPython; IPython.embed(); import time; time.sleep(2)
-
             related_obj = related_manager.first()
 
             if rel_field.name == "tags":
