@@ -16,12 +16,12 @@ from django.forms import modelform_factory
 from django.urls import reverse
 from django.utils.html import mark_safe, format_html
 from import_export.admin import ExportMixin
-from import_export.resources import modelresource_factory
 
 from dal import autocomplete
 import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
+from collaborative.export import collaborative_modelresource_factory
 from collaborative.filters import TagListFilter
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.forms import create_taggable_form
@@ -67,6 +67,8 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
             return None
 
         rel = getattr(self, rel_name).first()
+        if not rel:
+            return None
         fieldname = "%s__%s" % (rel_name, attr_name)
         content_type_id = ContentType.objects.get_for_model(self).id
 
@@ -359,16 +361,20 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         associated_fields = ["get_view_label"]
         if name != "DynamicModel":
             test_item = Model.objects.first()
-            if hasattr(test_item, "metadata"):
+            if test_item and hasattr(test_item, "metadata"):
                 associated_fields.append("metadata_status")
                 filterable.append("metadata__status")
                 associated_fields.append("metadata_assignee")
                 filterable.append("metadata__assignee")
                 test_metadata = test_item.metadata.first()
-                if hasattr(test_metadata, "tags"):
+                if test_metadata and hasattr(test_metadata, "tags"):
                     associated_fields.append("metadata_tags")
                     filterable.append(TagListFilter)
         list_display = associated_fields + fields[:5]
+
+        exporter = collaborative_modelresource_factory(
+                model=Model,
+        )
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin
         inheritance = (NoEditMixin, ReimportMixin, ReverseFKAdmin,)
@@ -378,7 +384,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             "list_display": list_display,
             "search_fields": searchable,
             "list_filter": filterable,
-            "resource_class": modelresource_factory(model=Model),
+            "resource_class": exporter,
         })
 
 
