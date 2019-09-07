@@ -54,9 +54,10 @@ function init() {
   document
     .querySelector("#csv_google_sheet_private")
     .onchange = privateSheetToggled;
-  document
-    .querySelector(".instructions-modal-button")
-    .onclick = showHelpModal;
+  const modalBtn = document.querySelector(".instructions-modal-button");
+  if (modalBtn) {
+    modalBtn.onclick = showHelpModal;
+  }
 }
 // No IE8
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -138,6 +139,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                   <td>
                       <input id="csv_google_sheet_private"
                              name="csv_google_sheet_private"
+                             value="private"
                              type="checkbox" />
                       This is a private Google spreadsheet
                   </td>

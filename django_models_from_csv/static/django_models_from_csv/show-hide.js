@@ -32,12 +32,10 @@ function initShowHide() {
   hideables.forEach((d) => {
     let found = false;
     d.querySelectorAll("input").forEach((i) => {
-      console.log("i", i);
       if (i.value && i.type != "checkbox" && i.type != "hidden") {
         found = true;
       }
     });
-    console.log("found?", found);
     if (!found) {
       d.setAttribute("style", "display: none;");
     }

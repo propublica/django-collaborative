@@ -89,7 +89,12 @@ def begin(request):
 
         # Private Sheet toggle (all other private sheet stuff will
         # be ignored if this wasn't checked in the form
-        csv_sheets_private = request.POST.get("csv_google_sheet_private")
+        # NOTE: Why getlist? Well, django POST with checkboxes only
+        # returns blank strings as checkbox values. So we check the
+        # list to see if it has any length (not not) and go with that.
+        # (A list like this [''] is truthy, this [] is not!)
+        # Unsolved SO issue: https://stackoverflow.com/questions/47374647
+        csv_sheets_private = request.POST.getlist("csv_google_sheet_private")
         # Private Google Sheet (Service Account Credentials JSON) ...
         # this only gets displayed when there are no other creds uploaded
         csv_google_credentials_file = request.FILES.get(
