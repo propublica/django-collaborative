@@ -66,6 +66,10 @@ class CollaborativeModelResource(ModelResource):
                     rel_value = txt
                     break
 
+            # Prevent "None" from ending up in the spreadsheet
+            if not rel_value:
+                rel_value = ""
+
             export_resource.append(rel_value)
 
     def export(self, queryset=None, *args, **kwargs):
