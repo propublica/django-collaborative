@@ -48,6 +48,10 @@ class Command(BaseCommand):
         for model in models:
             if model.attrs.get("type") != MODEL_TYPES.CSV:
                 continue
+            # Don't auto-update files, makes no sense as only
+            # user-requests can create the upload
+            if model.csv_file:
+                continue
             # model import has been failing, skip
             if model.attrs.get("dead"):
                 logger.info("Skipping failing import %s..." % (
