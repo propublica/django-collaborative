@@ -82,20 +82,25 @@ class ScreendoorImporter:
                     row.append(links)
                 elif value.get("checked"):
                     row.append(", ".join(value.get("checked")))
-                elif value.get("other_checked"):
-                    # TODO: figure out that's up with these ...
-                    logger.debug("Other? Here's the row: %s\nvalue: %s" % (
-                        row, value
-                    ))
-                    pass
                 elif value.get("other_text"):
                     row.append(value.get("other_text"))
+                # this handles other_checked w/ blank response
+                elif value.get("other_checked"):
+                    row.append("(Other)")
                 # Screendoor dates come across like this:
                 # {'day': '01', 'year': '2019', 'month': '01'}
                 elif value.get("day") and value.get("year") \
                         and value.get("month"):
                     row.append("{year}-{month}-{day}".format(
                         **value
+                    ))
+                # location, sometimes it's w/o state
+                elif value.get("city") and value.get("country"):
+                    state = value.get("state")
+                    row.append("%s,%s%s" % (
+                        value.get("city"),
+                        " %s, " % state if state else " ",
+                        value.get("country")
                     ))
                 else:
                     logger.error("Unhandled value type: %s (%s)." % (
