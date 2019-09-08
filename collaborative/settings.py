@@ -104,6 +104,16 @@ CSV_MODELS_TEMP_DB = "schemabuilding"
 CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-credentials?postsave=True"
 CSV_MODELS_AUTO_REGISTER_ADMIN = False
 
+# Put model names here that you want to show up first
+# note that these need to be the app_label, not display name
+APP_ORDER = [
+    # imported data sources
+    'django_models_from_csv',
+    # django Users
+    'auth',
+    'taggit',
+]
+
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
