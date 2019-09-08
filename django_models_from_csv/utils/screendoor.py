@@ -84,7 +84,7 @@ class ScreendoorImporter:
                     row.append(", ".join(value.get("checked")))
                 elif value.get("other_checked"):
                     # TODO: figure out that's up with these ...
-                    logger.debug("Other? Here's the row:", row)
+                    logger.debug("Other? Here's the row: %s" % (row))
                     pass
                 elif value.get("other_text"):
                     row.append(value.get("other_text"))
