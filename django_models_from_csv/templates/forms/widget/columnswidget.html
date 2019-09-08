@@ -49,13 +49,11 @@
     .redactor-disabled{
       cursor: not-allowed;
     }
-    .first-column td {
-      white-space: nowrap;
-      display: inline;
+    .grabber-column {
+      padding: 0;
+      margin: 0;
     }
-1
   </style>
-
 
   <script>
     $(function() {
@@ -190,8 +188,10 @@
   {% if widget.value_obj %}
   <table id="csv-models-columns" class="columns-selector-wrapper sortable">
     <tr>
+      <th>&nbsp;</th>
       <th>
           Column name
+      </th>
       <th>
           Data type
       </th>
@@ -222,8 +222,10 @@
     {# this check ensures only CSV-backed fields appear #}
     {% if column.original_name %}
     <tr class="column-selector">
-      <td class="option first-column">
+      <td class="grabber-column">
         <span class="grippy"></span>
+      </td>
+      <td class="option">
         <input type="text"
                name="name"
                value="{{ column.name }}" />
