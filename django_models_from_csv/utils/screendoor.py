@@ -86,7 +86,7 @@ class ScreendoorImporter:
                     row.append(value.get("other_text"))
                 # this handles other_checked w/ blank response
                 elif value.get("other_checked"):
-                    row.append("(Other)")
+                    row.append("(Other, blank)")
                 # Screendoor dates come across like this:
                 # {'day': '01', 'year': '2019', 'month': '01'}
                 elif value.get("day") and value.get("year") \
