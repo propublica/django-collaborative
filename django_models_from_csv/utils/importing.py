@@ -124,18 +124,11 @@ def import_records(csv, Model, dynmodel):
     tell the user more errors have been supressed and to
     fix the ones listed before continuing. We don't want
     to overwhelm the user with error messages.
-
-    TODO: Possible performance updates:
-        1. Are certain data sources non-updatable (only insert)? If
-          so, then ignore things that exist in the DB.
     """
     dataset = import_records_list(csv, dynmodel)
     column_names = [c.get("name") for c in dynmodel.columns]
     logger.debug("Column names: %s" % str(column_names))
-
-    # Skip file uploads, they will never change, behind the scenes
-    if dynmodel.csv_file:
-        return
+    # logger.debug("Dataset: %s" % dataset)
 
     # Do headers check
     errors = []
