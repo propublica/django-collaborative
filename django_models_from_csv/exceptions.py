@@ -52,8 +52,20 @@ class BadCSVError(GenericCSVError):
         "We can't find a valid CSV from the URL provided. "
         "If this is a Google Sheet, make sure you copied the share "
         "link. If it's a private sheet, make sure you used the private "
-        "sheet checkbox. Otherwise, make sure there are no typos or "
-        "errors in your URL."
+        "sheet checkbox and have uploaded a credential file. Otherwise, "
+        "make sure there are no typos or errors in your URL."
+    )
+    TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
+
+class NoPrivateSheetCredentialsError(GenericCSVError):
+    MESSAGE = _(
+        "We couldn't find any private Google sheet credentials saved. "
+        "If you intended to import a private sheet, please make sure you "
+        "went through the instructions for getting credentials and upload "
+        "them upon import. If you need to re-upload credentials, you "
+        "can do so via the 'Configure Google Credentials' link at the "
+        "top of the Collaborate dashboard."
+
     )
     TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
 

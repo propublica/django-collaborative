@@ -2,13 +2,15 @@ import json
 import logging
 import re
 
+from apiclient import discovery
+from google.oauth2 import service_account
+from googleapiclient.errors import HttpError
+from django.core.files.base import File
+from django.utils.translation import gettext_lazy as _
 import requests
 from tablib import Dataset
 
-from apiclient import discovery
-from google.oauth2 import service_account
-from django.core.files.base import File
-
+from django_models_from_csv.exceptions import BadCSVError
 from django_models_from_csv.utils.csv import extract_key_from_csv_url
 
 
@@ -95,12 +97,12 @@ class PrivateSheetImporter:
                 'spreadsheetUrl': 'SHEET BROWSER URL HERE'
             }
         """
-        # TODO: catch 403 here. if raised, this most likely means the
-        #       user didn't set up the service account properly or didn't
-        #       share the sheet with the service account
-        return self.service.spreadsheets().get(
-            spreadsheetId=sheet_id
-        ).execute()
+        try:
+            return self.service.spreadsheets().get(
+                spreadsheetId=sheet_id
+            ).execute()
+        except HttpError as e:
+            raise BadCSVError(_("Bad URL or permission denied to sheet."))
 
     def get_sheet_values(self, sheet_id, worksheet_index=0):
         """
@@ -132,10 +134,12 @@ class PrivateSheetImporter:
         # spreadsheet
         title = sheet["properties"]["title"]
 
-        # TODO: catch error. see note in self.get_sheet_information (above)
-        return self.service.spreadsheets().values().get(
-            spreadsheetId=sheet_id, range=title
-        ).execute()["values"]
+        try:
+            return self.service.spreadsheets().values().get(
+                spreadsheetId=sheet_id, range=title
+            ).execute()["values"]
+        except HttpError as e:
+            raise BadCSVError(_("Bad URL or permission denied to sheet."))
 
     def get_csv_from_url(self, sheet_url):
         """

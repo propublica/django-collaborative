@@ -11,7 +11,7 @@ from tablib import Dataset
 from django_models_from_csv.commands.csvsql import run_csvsql
 from django_models_from_csv.commands.manage_py import run_inspectdb
 from django_models_from_csv.exceptions import (
-    UniqueColumnError, DataSourceExistsError
+    UniqueColumnError, DataSourceExistsError, NoPrivateSheetCredentialsError,
 )
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting, slugify
@@ -198,6 +198,10 @@ def from_private_sheet(name, sheet_url, credentials=None):
     service account secrets JSON data, provided by the google API
     console. It should either be a JSON string or a JSON file (bytes).
     """
+    if not credentials:
+        raise NoPrivateSheetCredentialsError(
+            "No private sheet credentials found."
+        )
     csv = PrivateSheetImporter(credentials).get_csv_from_url(sheet_url)
     return from_csv(name, csv, **dict(
         csv_url=sheet_url,

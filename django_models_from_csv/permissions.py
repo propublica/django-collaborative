@@ -120,9 +120,9 @@ def wipe_models_and_permissions(app_config, name):
     Group.objects.filter(
         name=name
     ).delete()
-    Permission.objects.filter(content_type=[
-        content_type,
-    ]).delete()
+    Permission.objects.filter(
+        content_type=content_type
+    ).delete()
 
     ContentType.objects.filter(
         app_label=app_label,
