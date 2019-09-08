@@ -152,11 +152,11 @@ def from_csv_file(filename, file):
     if no_ext:
         name = no_ext[0]
     dynmodel = from_csv(slugify(name), csv)
-    fio = StringIO()
-    fio.write(csv)
-    dynmodel.csv_file.save(name, fio)
-    dynmodel.save()
-    return dynmodel
+    with StringIO() as fio:
+        fio.write(csv)
+        dynmodel.csv_file.save(name, fio)
+        dynmodel.save()
+        return dynmodel
 
 
 @require_unique_name
