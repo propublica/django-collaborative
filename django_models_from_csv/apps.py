@@ -70,7 +70,7 @@ def check_apps_need_reloading(sender, environ, **kwargs):
     # model. so we divide by three because we only want to count base
     # model admins and it's quicker to do a divide than to re-query,
     # filtering by name
-    if True or (n_dynmodels / 3) != n_admins:
+    if (n_dynmodels / 3) > n_admins:
         logger.debug("Re-registering django admins...")
         # re-register apps. the goal here is to get the AdminSite's
         # internal _registry to be updated with the new app.

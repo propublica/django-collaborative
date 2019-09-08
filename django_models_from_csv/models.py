@@ -314,16 +314,6 @@ class DynamicModel(models.Model):
             if old_field:
                 FieldSchemaEditor(old_field).update_column(NewModel, new_field)
 
-    def unregister_model(self, name):
-        try:
-            admin.site.unregister(self.get_model())
-        except admin.sites.NotRegistered:
-            pass
-        try:
-            del apps.all_models["django_models_from_csv"][name]
-        except KeyError as err:
-            raise LookupError("'{}' not found.".format(name))
-
     def model_cleanup(self):
         create_models()
         importlib.reload(import_module(settings.ROOT_URLCONF))
@@ -347,12 +337,23 @@ class DynamicModel(models.Model):
         ModelSchemaEditor().drop_table(Model)
 
         # then remove django app and content-types/permissions
-        self.unregister_model(self.name)
         app_config = apps.get_app_config("django_models_from_csv")
         wipe_models_and_permissions(app_config, self.name)
 
         # finally kill the row
         super().delete(**kwargs)
+
+        # delete it from the django app registry
+        try:
+            del apps.all_models["django_models_from_csv"][self.name]
+        except KeyError as err:
+            raise LookupError("'{}' not found.".format(self.name))
+
+        # Unregister the model from the admin, before we wipe it out
+        try:
+            admin.site.unregister(Model)
+        except admin.sites.NotRegistered:
+            pass
 
 
 def verbose_namer(name, make_friendly=False):

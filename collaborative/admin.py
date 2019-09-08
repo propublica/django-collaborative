@@ -243,7 +243,7 @@ class DynamicModelAdmin(admin.ModelAdmin):
         # models first to avoid a cascade
         return DynamicModel.objects.filter(
             pk__in=pks
-        )#.order_by("-id")
+        ).order_by("-id")
 
     def get_deleted_objects(self, queryset, request):
         extended_queryset = self.get_full_deletion_set(queryset)
@@ -329,7 +329,8 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             return None
         except DynamicModel.DoesNotExist:
             logger.warning("Model with name: %s doesn't exist. Skipping" % name)
-            return super().create_admin(Model)
+            # return super().create_admin(Model)
+            return None
 
         cols = list(reversed(model_desc.columns))
         searchable = [c.get("name") for c in cols if c.get("searchable")]
