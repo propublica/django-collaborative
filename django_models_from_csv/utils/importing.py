@@ -8,8 +8,6 @@ from import_export.resources import (
 )
 from tablib import Dataset
 
-from django_models_from_csv import models
-
 
 logger = logging.getLogger(__name__)
 

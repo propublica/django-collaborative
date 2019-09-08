@@ -13,12 +13,9 @@ from django.db import connection
 from django.db.models.functions import Lower
 from django.db.utils import OperationalError
 from django.forms import modelform_factory
-from django.urls import reverse
 from django.utils.html import mark_safe, format_html
 from import_export.admin import ExportMixin
 
-from dal import autocomplete
-import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
 
 from collaborative.export import collaborative_modelresource_factory
@@ -32,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 class NewUserAdmin(UserAdmin):
-    list_display = ("username","email","first_name","last_name")
+    list_display = ("username", "email", "first_name", "last_name")
 
     def add_view(self, request, *args, **kwargs):
         if request.method != "POST":
@@ -125,22 +122,6 @@ class ReimportMixin(ExportMixin):
     export button (from import_export module).
     """
     change_list_template = 'django_models_from_csv/change_list_dynmodel.html'
-
-
-# # TODO: if we find the performance of the make_getter for retrieving tags,
-# # metadata_tags, is really bad, we need to do something like this to prefetch
-# # all the tags and then use them in the tags metadata getter
-# class TagListMixin:
-#     """
-#     Provides a method for including tags via admin list_display. Once you
-#     include this, you'll be able to include 'tag_list' in your list_display.
-#     """
-#
-#     def get_queryset(self, request):
-#         return super().get_queryset(request).prefetch_related('tags')
-#
-#     def tag_list(self, obj):
-#         return u", ".join(o.name for o in obj.tags.all())
 
 
 class CaseInsensitiveChangeList(ChangeList):
@@ -291,9 +272,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         name = Model._meta.object_name
         if name.endswith("metadata"):
             return False
-        return super(
-            AdminMetaAutoRegistration, self
-        ).should_register_admin(Model)
+        return super().should_register_admin(Model)
 
     def create_dynmodel_admin(self, Model):
         name = Model._meta.object_name
@@ -341,7 +320,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             meta.append(MetaModelInline)
 
         # get searchable and filterable (from column attributes)
-        # TODO: order by something? number of results?
+        # should we order by something? number of results?
         try:
             model_desc = DynamicModel.objects.get(name=name)
         except OperationalError:
@@ -355,7 +334,6 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         filterable = [c.get("name") for c in cols if c.get("filterable")]
 
         # Build our CSV-backed admin, attaching inline meta model
-        ro_fields = self.get_readonly_fields(Model)
         dynmodel = Model.source_dynmodel(Model)
         fields = self.get_fields(Model, dynmodel=dynmodel)
         associated_fields = ["get_view_label"]
@@ -373,7 +351,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         list_display = associated_fields + fields[:5]
 
         exporter = collaborative_modelresource_factory(
-                model=Model,
+            model=Model,
         )
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin

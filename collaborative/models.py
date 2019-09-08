@@ -1,7 +1,6 @@
 from copy import copy
 
 from django.db import models
-from django.utils.timezone import now
 from jsonfield.fields import JSONField
 
 

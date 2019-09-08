@@ -80,8 +80,6 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             TEMPLATES_DIR,
-            # TODO: figure out a way to auto import admin template overrides
-            # from within the csv models module
             'django_models_from_csv/templates'
         ],
         'APP_DIRS': True,
@@ -121,7 +119,6 @@ DATABASES = {
     }
 }
 DATABASES['default'].update(db_from_env)
-#DATABASES[CSV_MODELS_TEMP_DB].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -142,7 +139,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'collaborative.auth.GoogleOAuth2',
+    'collaborative.auth.WhitelistedGoogleOAuth2',
     'social_core.backends.slack.SlackOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )

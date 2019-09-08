@@ -4,14 +4,10 @@ import logging
 import re
 import sys
 
-from django import forms
 from django.apps import apps
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError, AppRegistryNotReady
-from django.utils.functional import cached_property
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.urls.base import clear_url_caches
@@ -20,19 +16,13 @@ from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
 from taggit.managers import TaggableManager
 
-try:
-    from django.utils import six
-except ImportError:
-    import six
-
-import django_models_from_csv
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.permissions import (
     hydrate_models_and_permissions, wipe_models_and_permissions,
 )
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
-from django_models_from_csv.utils.common import get_setting, slugify
-from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
+from django_models_from_csv.utils.common import slugify
+from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.google_sheets import PrivateSheetImporter
 from django_models_from_csv.utils.importing import import_records
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
@@ -79,14 +69,14 @@ class CredentialStore(models.Model):
     CREDENTIAL_TYPES = {
         "google_oauth_credentials": "JSON",
         "google_dlp_credentials": "JSON",
-        "google_oauth_credentials": "JSON",
+        "csv_google_credentials": "JSON",
     }
     # Currently used keyspaces:
     # Key                       Type         Descripion
     # ========================= ============ ================================
-    # google_oauth_credentials  json string  Google OAuth credentials (JSON)
-    # google_dlp_credentials    json string  Google DLP credentials (JSON)
     # google_oauth_credentials  json string  Google OAuth client secrets
+    # google_dlp_credentials    json string  Google DLP credentials
+    # csv_google_credentials    json string  Google Sheets credentials
     name = models.CharField(max_length=1024)
     credentials = models.TextField(null=True, blank=True)
 
@@ -96,7 +86,7 @@ class CredentialStore(models.Model):
             return self.credentials
         try:
             return json.loads(self.credentials)
-        except JSONDecodeError as e:
+        except json.JSONDecodeError as e:
             logger.error("Bad Google OAuth credential found!")
             return None
 
@@ -105,9 +95,9 @@ class CredentialStore(models.Model):
         Turn json of various types into a UTF-8 string for storage.
         """
         # file upload => string
-        if type(credentials) == bytes:
+        if isinstance(credentials, bytes):
             return credentials.decode("utf-8")
-        elif type(credentials) == dict:
+        elif isinstance(credentials, dict):
             return json.dumps(credentials)
         return credentials
 
@@ -332,7 +322,7 @@ class DynamicModel(models.Model):
         try:
             del apps.all_models["django_models_from_csv"][name]
         except KeyError as err:
-            raise LookupError("'{}' not found.".format(model_name)) from err
+            raise LookupError("'{}' not found.".format(name))
 
     def model_cleanup(self):
         create_models()
@@ -383,7 +373,6 @@ def get_source_dynmodel(self):
         return DynamicModel.objects.get(name=name)
     except DynamicModel.DoesNotExist as e:
         logger.warning("Couldn't find DynamicModel with name=%s" % name)
-        pass
 
 
 def create_model_attrs(dynmodel):
@@ -393,9 +382,9 @@ def create_model_attrs(dynmodel):
     """
     model_name = dynmodel.name
     Meta = type("Meta", (), dict(
-        managed = False,
-        verbose_name = verbose_namer(model_name, make_friendly=True),
-        verbose_name_plural = verbose_namer(model_name, make_friendly=True),
+        managed=False,
+        verbose_name=verbose_namer(model_name, make_friendly=True),
+        verbose_name_plural=verbose_namer(model_name, make_friendly=True),
     ))
 
     attrs = {
@@ -405,7 +394,7 @@ def create_model_attrs(dynmodel):
         # "tags": TaggableManager(blank=True),
     }
 
-    if type(dynmodel.columns) != list:
+    if not isinstance(dynmodel.columns, list):
         return None
 
     original_to_model_headers = {}
@@ -498,4 +487,3 @@ try:
     create_models()
 except Exception as e:
     logger.error("[!] Exception creating models: %s" % e)
-    pass

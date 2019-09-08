@@ -2,12 +2,12 @@ from copy import copy
 import logging
 
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save
 from django.db.utils import OperationalError
 from django.dispatch import receiver
 
 from collaborative.models import (
-    get_metamodel_name, MODEL_TYPES, DEFAULT_META_COLUMNS,
+    MODEL_TYPES, DEFAULT_META_COLUMNS,
     default_contact_model_columns
 )
 from collaborative.user import set_staff_status
@@ -44,9 +44,6 @@ def tag_csv_dynmodel(dynmodel):
             return
 
 
-# TODO: do this on Model.__new__
-# @receiver(pre_save, sender=models.DynamicModel)
-# def build_and_link_metadata_fk(sender, **kwargs):
 def build_and_link_metadata_fk(dynmodel):
     """
     This signal listens for the creation of a new dynamically-generated
@@ -92,11 +89,11 @@ def build_and_link_metadata_fk(dynmodel):
         })
 
         dyn_metamodel = models.DynamicModel.objects.create(
-            name = metamodel_name,
-            attrs = {
+            name=metamodel_name,
+            attrs={
                 "type": MODEL_TYPES.META,
             },
-            columns = columns,
+            columns=columns,
         )
         dyn_metamodel.save()
 
@@ -108,12 +105,12 @@ def build_and_link_metadata_fk(dynmodel):
         contact_model_name = "%scontactmetadata" % dynmodel.name
         contact_columns = default_contact_model_columns(dynmodel)
         dyn_contactmodel = models.DynamicModel.objects.create(
-            name = contact_model_name,
-            attrs = {
+            name=contact_model_name,
+            attrs={
                 "type": MODEL_TYPES.META,
                 "related_name": "contactmetadata"
             },
-            columns = contact_columns,
+            columns=contact_columns,
         )
         dyn_contactmodel.save()
 
@@ -157,7 +154,6 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
     )
 
 
-# TODO: do this on Model.__new__ ?
 def setup_dynmodel_signals():
     """
     Attach signals to our dynamically generated models. Here, we

@@ -173,6 +173,7 @@ def begin(request):
                 })
 
         except Exception as e:
+            # TODO: roll back
             if not isinstance(e, GenericCSVError):
                 raise e
             return render(request, 'begin.html', {
@@ -181,6 +182,7 @@ def begin(request):
             })
         # handles valid URLs to non-CSV data and also just bad URLs
         except UnsupportedFormat as e:
+            # TODO: roll back
             err_msg = _(
                 "Invalid data source. Please make sure you "
                 "linked to a valid CSV data source."
@@ -190,6 +192,7 @@ def begin(request):
                 **context
             })
         except ConnectionError as e:
+            # TODO: roll back
             err_msg = _(
                 "Invalid URL. Please make sure there aren't "
                 "typos in the URL, and that the data isn't "

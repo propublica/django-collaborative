@@ -3,7 +3,7 @@ from social_core.backends.google import GoogleOAuth2
 from django_models_from_csv.models import CredentialStore
 
 
-class GoogleOAuth2(GoogleOAuth2):
+class WhitelistedGoogleOAuth2(GoogleOAuth2):
     def setting(self, name, default=None):
         """
         Get a list of whitelisted domains from our credential store,

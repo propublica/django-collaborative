@@ -7,7 +7,6 @@ from google.oauth2 import service_account
 from googleapiclient.errors import HttpError
 from django.core.files.base import File
 from django.utils.translation import gettext_lazy as _
-import requests
 from tablib import Dataset
 
 from django_models_from_csv.exceptions import BadCSVError
@@ -28,12 +27,12 @@ class PrivateSheetImporter:
         all the proper conversions for internal use.
         """
         # file upload, parsed
-        if type(credentials) == bytes:
+        if isinstance(credentials, bytes):
             credentials = json.loads(credentials.decode("utf-8"))
         elif isinstance(credentials, File):
             credentials = json.loads(credentials.read().decode("utf-8"))
         # JSON string, as stored in the DB
-        elif type(credentials) == str:
+        elif isinstance(credentials, str):
             credentials = json.loads(credentials)
         # we need to have a decoded credentials dict by here
         creds = service_account.Credentials.from_service_account_info(
@@ -133,7 +132,6 @@ class PrivateSheetImporter:
         # to the sheets API, it will give us all values on this
         # spreadsheet
         title = sheet["properties"]["title"]
-
         try:
             return self.service.spreadsheets().values().get(
                 spreadsheetId=sheet_id, range=title

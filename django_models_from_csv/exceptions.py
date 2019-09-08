@@ -1,8 +1,11 @@
-from django.template.loader import render_to_string, get_template
+from django.template.loader import render_to_string
 from django.utils.translation import gettext_lazy as _
 
 
 class GenericCSVError(Exception):
+    TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
+    MESSAGE = "An error ocurred"
+
     def render(self):
         return render_to_string(self.TEMPLATE, {
             "message": self.MESSAGE,
@@ -52,10 +55,11 @@ class BadCSVError(GenericCSVError):
         "We can't find a valid CSV from the URL provided. "
         "If this is a Google Sheet, make sure you copied the share "
         "link. If it's a private sheet, make sure you used the private "
-        "sheet checkbox and have uploaded a credential file. Otherwise, "
+        "sheet checkbox, have uploaded a credential file, and shared the "
+        "sheet with the service account email. Otherwise, "
         "make sure there are no typos or errors in your URL."
     )
-    TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
+
 
 class NoPrivateSheetCredentialsError(GenericCSVError):
     MESSAGE = _(
@@ -67,5 +71,3 @@ class NoPrivateSheetCredentialsError(GenericCSVError):
         "top of the Collaborate dashboard."
 
     )
-    TEMPLATE = "django_models_from_csv/exceptions/generic_error.html"
-

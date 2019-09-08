@@ -40,10 +40,10 @@ def validate_columns(value):
                     _("A column contains invalid field: %s" % field_name)
                 )
 
-        type = col.get("type")
+        col_type = col.get("type")
         valid_type_names = [v[0] for v in COLUMN_TYPES]
-        if type not in valid_type_names:
-            raise ValidationError(_("A column has invalid type: %s" % type))
+        if col_type not in valid_type_names:
+            raise ValidationError(_("A column has invalid type: %s" % col_type))
 
         attrs = col.get("attrs", {})
         if attrs and not isinstance(attrs, dict):

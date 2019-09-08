@@ -1,10 +1,7 @@
 from django.contrib import admin
-from django.conf import settings
 from django.conf.urls import include, url
 from django.urls import path
 
-
-from collaborative.views import redirect_wizard_or_admin, root
 from collaborative import views
 
 

@@ -45,7 +45,7 @@ class ScreendoorImporter:
             url = response.links.get('next', {}).get('url', None)
 
         # filter down responses to correct form
-        return [ d for d in all_data if d.get("form_id") == form_id ]
+        return [d for d in all_data if d.get("form_id") == form_id]
 
     def get_header_maps(self, form_data):
         header_map = {}
@@ -65,7 +65,7 @@ class ScreendoorImporter:
         id_to_label = self.get_header_maps(form_data)
         headers = ["id"]
         for c in id_to_label.values():
-            headers.append(re.sub("[\,\n\r]+", "", c))
+            headers.append(re.sub(r"[\,\n\r]+", "", c))
 
         data = Dataset(headers=headers)
         for response_info in response_data:
@@ -78,7 +78,7 @@ class ScreendoorImporter:
                     row.append(value)
                 # attachment
                 elif isinstance(value, list) and value[0].get("filename"):
-                    links = " ".join([ self.attachment_link(rec) for rec in value])
+                    links = " ".join([self.attachment_link(rec) for rec in value])
                     row.append(links)
                 elif value.get("checked"):
                     row.append(", ".join(value.get("checked")))

@@ -2,7 +2,7 @@ import io
 import tempfile
 
 from csvkit.utilities.csvsql import CSVSQL
-from django.db import connection
+# from django.db import connection
 
 
 class FakeArgs():

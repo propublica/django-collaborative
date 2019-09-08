@@ -102,7 +102,7 @@ class CollaborativeModelResource(ModelResource):
 
 
 def collaborative_modelresource_factory(
-    model, resource_class=CollaborativeModelResource, meta_attrs=None
+        model, resource_class=CollaborativeModelResource, meta_attrs=None
 ):
     """
     Factory for creating ``ModelResource`` class for given Django model.
@@ -122,6 +122,3 @@ def collaborative_modelresource_factory(
 
     metaclass = ModelDeclarativeMetaclass
     return metaclass(class_name, (resource_class,), class_attrs)
-
-
-

@@ -1,10 +1,8 @@
 from functools import wraps
 import logging
 import re
-import string
 from io import StringIO
 
-from django.contrib.auth.models import User
 from django.db import connections, transaction
 from tablib import Dataset
 
@@ -17,8 +15,7 @@ from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
 from django_models_from_csv.utils.models_py import (
-    fix_models_py, extract_field_declaration_args,
-    extract_field_declaration_args_eval,
+    fix_models_py, extract_field_declaration_args_eval,
     extract_field_type, extract_fields
 )
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
@@ -111,8 +108,8 @@ def from_models_py(name, models_py, **model_attrs):
         columns.append(column)
         logger.info("from_models_py Columns: %s" % column)
     dynmodel = DynamicModel.objects.create(
-        name = name,
-        columns = columns,
+        name=name,
+        columns=columns,
         **model_attrs
     )
     return dynmodel

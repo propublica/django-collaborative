@@ -1,6 +1,5 @@
 import logging
 import json
-import sys
 import tempfile
 
 from django.conf import settings

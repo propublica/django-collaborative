@@ -1,6 +1,5 @@
 import importlib
 import logging
-import sys
 
 from django.apps import apps
 from django.conf import settings

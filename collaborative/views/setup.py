@@ -1,25 +1,7 @@
-import io
-import re
-import sqlite3
-import tempfile
-import time
-
-from csvkit.utilities.csvsql import CSVSQL
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.core.management.commands import makemigrations, migrate, inspectdb
-from django.db import DEFAULT_DB_ALIAS, connections, transaction
-from django.http import HttpResponseBadRequest, HttpResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
-from django.utils.translation import gettext_lazy as _
-from django.views.decorators.csrf import csrf_exempt
-from django_models_from_csv.forms import SchemaRefineForm
-import requests
+from django.shortcuts import render, redirect
 
 from collaborative.models import AppSetting
-from collaborative.settings import BASE_DIR
-from django_models_from_csv import models
 from django_models_from_csv.models import CredentialStore
 
 
@@ -130,4 +112,3 @@ def setup_credentials(request):
             cred.save()
 
         return redirect('/admin/')
-

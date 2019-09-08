@@ -2,9 +2,8 @@ import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from social_core.exceptions import AuthForbidden
+from social_core.exceptions import AuthForbidden, AuthException
 from social_core.pipeline.partial import partial
-from social_core.pipeline.social_auth import social_user
 
 from django_models_from_csv.models import CredentialStore
 

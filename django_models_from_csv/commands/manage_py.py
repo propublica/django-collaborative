@@ -39,7 +39,7 @@ def run_makemigrations(module):
     """
     mkmigrate_cmd = makemigrations.Command()
     args = (module,)
-    options =  {
+    options = {
         'verbosity': 1,
         'settings': None,
         'pythonpath': None,
@@ -81,6 +81,5 @@ def make_and_apply_migrations():
     Runs the equivalent of makemigrations on our dynamic
     models.py and then applies the migrations via migrate.
     """
-    # TODO: replace with migration-less DB management
     run_makemigrations("django_models_from_csv")
     run_migrate()
