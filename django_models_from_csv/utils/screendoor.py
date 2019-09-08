@@ -95,9 +95,9 @@ class ScreendoorImporter:
                     logger.error("Unhandled value type: %s (%s)." % (
                         value, type(value)
                     ))
-                    logger.error("Response data structure: %s" % (
-                        response
-                    ))
+                    # logger.error("Response data structure: %s" % (
+                    #     response
+                    # ))
                     row.append(None)
             data.append(row)
         return data.export("csv")
