@@ -15,8 +15,9 @@ from django.db.utils import OperationalError
 from django.forms import modelform_factory
 from django.utils.html import mark_safe, format_html
 from import_export.admin import ExportMixin
-
 from social_django.models import Association, Nonce, UserSocialAuth
+from taggit.models import Tag
+from taggit.apps import TaggitAppConfig
 
 from collaborative.export import collaborative_modelresource_factory
 from collaborative.filters import TagListFilter
@@ -366,9 +367,26 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         })
 
 
+# Hide "taggit" name
+TaggitAppConfig.verbose_name = "Tagging"
+
+# Remove tagged item inline
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug"]
+    ordering = ["name", "slug"]
+    search_fields = ["name"]
+    prepopulated_fields = {"slug": ["name"]}
+
+    class Meta:
+        verbose_name = "Tags"
+        verbose_name_plural = "Tags"
+        app_label = "Tags"
+
+
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"
+# Remove the "view site" link from the admin header
 admin.site.site_url = None
 
 # unregister django social auth from admin
@@ -376,7 +394,9 @@ admin.site.unregister(Association)
 admin.site.unregister(UserSocialAuth)
 admin.site.unregister(Nonce)
 admin.site.unregister(User)
+admin.site.unregister(Tag)
 
+admin.site.register(Tag, TagAdmin)
 admin.site.register(LogEntry)
 admin.site.register(User, NewUserAdmin)
 
