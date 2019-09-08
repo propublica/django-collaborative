@@ -84,6 +84,13 @@ class ScreendoorImporter:
                     row.append(", ".join(value.get("checked")))
                 elif value.get("other_text"):
                     row.append(value.get("other_text"))
+                # Screendoor dates come across like this:
+                # {'day': '01', 'year': '2019', 'month': '01'}
+                elif value.get("day") and value.get("year") \
+                        and value.get("month"):
+                    row.append("{year}-{month}-{day}".format(
+                        **value
+                    ))
                 else:
                     logger.error("Unhandled value type: %s (%s)." % (
                         value, type(value)
