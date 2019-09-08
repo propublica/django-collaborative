@@ -82,6 +82,10 @@ class ScreendoorImporter:
                     row.append(links)
                 elif value.get("checked"):
                     row.append(", ".join(value.get("checked")))
+                elif value.get("other_checked"):
+                    # TODO: figure out that's up with these ...
+                    logger.debug("Other? Here's the row:", row)
+                    pass
                 elif value.get("other_text"):
                     row.append(value.get("other_text"))
                 # Screendoor dates come across like this:

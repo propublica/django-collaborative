@@ -61,8 +61,6 @@ def fetch_csv(csv_url):
         )
     r = requests.get(url)
     data = r.text
-    with open("/tmp/tmp-csv.csv", "w") as f:
-        f.write(data)
     if re.match(r"^\s*<!DOCTYPE html>", data, re.M|re.I):
         raise BadCSVError(_("Error importing from CSV URL."))
     return clean_csv_headers(data)
