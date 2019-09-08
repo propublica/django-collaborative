@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class NewUserAdmin(UserAdmin):
     list_display = ("username", "email", "first_name", "last_name")
+    add_form_template = 'admin/auth/user/add_form.html'
 
     def add_view(self, request, *args, **kwargs):
         if request.method != "POST":
