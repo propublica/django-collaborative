@@ -362,6 +362,10 @@ def verbose_namer(name, make_friendly=False):
     this will make the column name friendly by removing dashes/underscore
     with spaces.
     """
+    if name.endswith("contactmetadata"):
+        return "Contact MetaData"
+    elif name.endswith("metadata"):
+        return "MetaData"
     no_sd_id = re.sub(r"\s*\(ID:\s*[a-z0-9]+\)$", "", name)
     if not make_friendly:
         return no_sd_id
