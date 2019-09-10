@@ -28,15 +28,7 @@ SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY", 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
 )
 
-# Google OAuth for Private Sheets Access
-GOOGLE_CLIENT_ID = "507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com"
-# Not secret! We're using public client security model. This
-# puts the burden on the user to explicitly grant access (via
-# copy and paste into the application)
-GOOGLE_CLIENT_SECRET = "Uk1AHTyOgNNTXz9EUa4Ezph7"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*',]
 
@@ -301,14 +293,15 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django_models_from_csv': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-        },
-        'collaborative': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-        },
+    # # Uncomment these lines (below) to get verbose logging
+    #     'django_models_from_csv': {
+    #         'handlers': ['console'],
+    #         'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+    #     },
+    #     'collaborative': {
+    #         'handlers': ['console'],
+    #         'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
+    #     },
     },
 }
 
