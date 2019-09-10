@@ -380,6 +380,10 @@ def get_source_dynmodel(self):
         logger.warning("Couldn't find DynamicModel with name=%s" % name)
 
 
+def dynmodel__str__(self):
+    return "Row from data source '%s'" % (self.name)
+
+
 def create_model_attrs(dynmodel):
     """
     Build an individual model's attributes, specified by the
@@ -398,6 +402,12 @@ def create_model_attrs(dynmodel):
         "source_dynmodel": get_source_dynmodel,
         # "tags": TaggableManager(blank=True),
     }
+
+    if not model_name.endswith("metadata"):
+        attrs["__str__"] = dynmodel__str__
+    else:
+        attrs["__str__"] = lambda s: model_name
+
 
     if not isinstance(dynmodel.columns, list):
         return None
