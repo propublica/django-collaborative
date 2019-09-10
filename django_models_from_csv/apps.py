@@ -44,9 +44,9 @@ def check_apps_need_reloading(sender, environ, **kwargs):
         n_dynmodels, n_registered
     ))
 
-    # subtract one for DynamicModel, which won't be in
-    # the DynamicModels count()
-    if n_dynmodels != (n_registered - 1):
+    # subtract one for DynamicModel, one for CredentialStore which won't
+    # be in the DynamicModels count()
+    if n_dynmodels != (n_registered - 2):
         logger.debug("Re-registering django apps models...")
         last_model = DynamicModel.objects.last()
         if last_model:
@@ -70,7 +70,7 @@ def check_apps_need_reloading(sender, environ, **kwargs):
     # model. so we divide by three because we only want to count base
     # model admins and it's quicker to do a divide than to re-query,
     # filtering by name
-    if (n_dynmodels / 3) > n_admins:
+    if True or (n_dynmodels / 3) > n_admins:
         logger.debug("Re-registering django admins...")
         # re-register apps. the goal here is to get the AdminSite's
         # internal _registry to be updated with the new app.
