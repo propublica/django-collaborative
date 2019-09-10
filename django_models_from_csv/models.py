@@ -403,11 +403,13 @@ def create_model_attrs(dynmodel):
         # "tags": TaggableManager(blank=True),
     }
 
+    # make the objects displayed in the admin easy to understant. the
+    # default of '[Model name] (ID)' doesn't provide any useful information
+    # to the end user, so hide it here.
     if not model_name.endswith("metadata"):
         attrs["__str__"] = dynmodel__str__
     else:
         attrs["__str__"] = lambda s: model_name
-
 
     if not isinstance(dynmodel.columns, list):
         return None
