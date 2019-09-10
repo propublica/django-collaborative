@@ -17,6 +17,13 @@ Database Columns | {{ block.super }}
           </p>
       {% endfor %}
       {% endif %}
+
+      {% if error_message %}
+      <h3>Import Error</h3>
+      <p>
+          {{error_message}}
+      </p>
+      {% endif %}
       <p>
       {% blocktrans trimmed %}
           These are the columns we found in your sheet. Feel free

@@ -238,11 +238,25 @@ def refine_and_import(request, id):
 
         columns = refine_form.cleaned_data["columns"]
         dynmodel.columns = columns
-        # Alter the DB
-        dynmodel.save()
-        dynmodel.refresh_from_db()
 
-        errors = dynmodel.import_data()
+        errors = None
+        try:
+            # Alter the DB
+            dynmodel.save()
+            dynmodel.refresh_from_db()
+            errors = dynmodel.import_data()
+        except Exception as e:
+            if not isinstance(e, GenericCSVError):
+                raise e
+            # if we have one of these errors, it's most likely
+            # due to a change in the data source (credentials
+            # revoked, URL unshared, etc)
+            return render(request, 'refine-and-import.html', {
+                "error_message": e.render(),
+                "form": refine_form,
+                "dynmodel": dynmodel,
+            })
+
         if errors:
             logger.error("Import errors: %s" % errors)
             return render(request, 'refine-and-import.html', {
