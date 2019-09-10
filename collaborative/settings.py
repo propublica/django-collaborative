@@ -28,8 +28,7 @@ SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY", 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
 )
 
-DEBUG = True
-
+DEBUG = False
 ALLOWED_HOSTS = ['*',]
 
 # Application definition
@@ -278,6 +277,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 try:
     from collaborative.settings_dev import *
 except ModuleNotFoundError:
