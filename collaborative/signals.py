@@ -56,7 +56,9 @@ def build_and_link_metadata_fk(dynmodel):
     admin detail page, without messing with the CSV-backed records at all.
     (Since the FK is on the metadata side.)
     """
+    logger.debug("build_and_link_metadata_fk dynmodel: %s" % (dynmodel))
     if not dynmodel:
+        logger.warning("No dynmodel! Not attaching.")
         return
 
     tag_csv_dynmodel(dynmodel)
@@ -70,6 +72,7 @@ def build_and_link_metadata_fk(dynmodel):
         dyn_metamodel_count = models.DynamicModel.objects.filter(
             name=metamodel_name
         ).count()
+        logger.debug("dyn_metamodel_count: %s" % (dyn_metamodel_count))
 
         # 2. a) Does exist: return
         if dyn_metamodel_count > 0:
@@ -116,6 +119,9 @@ def build_and_link_metadata_fk(dynmodel):
 
         # connect a signal to attach blank FK relationships upon
         # record create for this new table
+        logger.debug("Attaching blank meta creator to model: %s" % (
+            str(Model)
+        ))
         post_save.connect(attach_blank_meta_to_record, sender=Model)
 
 
@@ -129,6 +135,7 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
     its only provided Models that are backed by a CSV (not manually
     managed).
     """
+    logger.debug("attach_blank_meta_to_record: %s" % (instance))
     if not instance:
         return
 
@@ -142,13 +149,17 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
         return
 
     MetaModel = meta_model_desc.get_model()
-    meta_direct_count = MetaModel.objects.filter(
+    meta_direct = MetaModel.objects.filter(
         metadata__id=instance.id
-    ).count()
-    if meta_direct_count:
+    ).first()
+    if meta_direct:
+        logger.debug("Already attached meta (%s) to %s" % (
+            meta_direct, instance
+        ))
         return
 
     # create a blank metadata record
+    logger.debug("Creating meta for instance...")
     metadata = MetaModel.objects.create(
         metadata=instance
     )
@@ -170,5 +181,7 @@ def setup_dynmodel_signals():
 
 try:
     setup_dynmodel_signals()
+except OperationalError as e:
+    logger.debug("[!] Skipping operational error: %s" % (e))
 except Exception as e:
-    logger.error("[!] Error loading signals: %s" % e)
+    logger.error("[!] Error loading signals: %s" % (e))
