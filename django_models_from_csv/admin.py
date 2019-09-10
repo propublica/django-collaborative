@@ -10,7 +10,7 @@ from import_export.admin import ExportMixin
 from import_export.resources import modelresource_factory
 
 # from django_models_from_csv.forms import create_taggable_form
-from django_models_from_csv.models import create_models
+from django_models_from_csv.models import create_models, DynamicModel
 from django_models_from_csv.utils.common import get_setting
 
 
@@ -95,6 +95,17 @@ class AdminAutoRegistration:
     def should_register_admin(self, Model):
         name = Model._meta.object_name
         if name.lower() == "credentialstore":
+            return False
+        if name == "DynamicModel":
+            return True
+        try:
+            DynamicModel.objects.get(name=name)
+        except DynamicModel.DoesNotExist:
+            return False
+        except Exception as e:
+            logger.error("[!] Not registering admin %s, (%s) error: %s" % (
+                name, type(e), e
+            ))
             return False
         return self.include in str(Model)
 
