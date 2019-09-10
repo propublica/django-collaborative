@@ -107,7 +107,8 @@ class AdminAutoRegistration:
         try:
             DynamicModel.objects.get(name=name)
         except DynamicModel.DoesNotExist:
-            self.unregister_model(Model)
+            if Model._meta.app_label == "django_models_from_csv":
+                self.unregister_model(Model)
             return False
         except Exception as e:
             logger.error("[!] Not registering admin %s, (%s) error: %s" % (
