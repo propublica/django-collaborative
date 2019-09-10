@@ -38,7 +38,7 @@ DEFAULT_META_COLUMNS = [{
     },
 },{
     "name": "status",
-    "type": "number",
+    "type": "integer",
     "attrs": {
         "choices": DEFAULT_STATUSES,
         "default": DEFAULT_STATUSES[0][0],
@@ -74,7 +74,7 @@ DEFAULT_CONTACT_COLUMNS = [{
     }
 },{
     "name": "method",
-    "type": "number",
+    "type": "integer",
     "attrs": {
         "choices": DEFAULT_CONTACT_METHODS,
         "default": DEFAULT_CONTACT_METHODS[0][0],

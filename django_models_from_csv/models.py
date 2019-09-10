@@ -38,9 +38,11 @@ TYPE_TO_FIELDNAME = {
     "models.DateField": "date",
     "models.TimeField": "time",
     "models.DateTimeField": "datetime",
-    "models.IntegerField": "number",
+    "models.FloatField": "number",
+    "models.IntegerField": "integer",
     "models.ForeignKey": "foreignkey",
 }
+
 # configurable field types for dynamic models.
 # any that aren't above, but are below will be
 # possible to create in the code/by modifying
@@ -52,7 +54,8 @@ FIELD_TYPES = {
     "date": models.DateField,
     "time": models.TimeField,
     "datetime": models.DateTimeField,
-    "number": models.IntegerField,
+    "number": models.FloatField,
+    "integer": models.IntegerField,
     "foreignkey": models.ForeignKey,
     "tagging": TaggableManager,
 }

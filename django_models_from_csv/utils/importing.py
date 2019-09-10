@@ -59,6 +59,7 @@ def import_records_list(csv, dynmodel):
 
     datetime_ixs = []
     date_ixs = []
+    number_ixs = []
     for c in dynmodel.columns:
         c_type = c.get("type")
         type_ixs = None
@@ -66,6 +67,8 @@ def import_records_list(csv, dynmodel):
             type_ixs = datetime_ixs
         elif c_type and c_type == "date":
             type_ixs = date_ixs
+        elif c_type and c_type == "number":
+            type_ixs = number_ixs
         else:
             continue
 
@@ -102,6 +105,8 @@ def import_records_list(csv, dynmodel):
                     logger.error("Error parsing date: %s" % e)
                     newrow.append(None)
                     continue
+            elif i in number_ixs:
+                val = val.replace("$", "").replace(",", "")
             newrow.append(val)
         newdata.append(newrow)
     return newdata
