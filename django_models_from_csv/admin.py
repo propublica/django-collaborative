@@ -92,6 +92,12 @@ class AdminAutoRegistration:
             # "readonly_fields": ro_fields,
         })
 
+    def unregister_model(self, Model):
+        try:
+            admin.site.unregister(Model)
+        except admin.sites.NotRegistered:
+            pass
+
     def should_register_admin(self, Model):
         name = Model._meta.object_name
         if name.lower() == "credentialstore":
@@ -101,6 +107,7 @@ class AdminAutoRegistration:
         try:
             DynamicModel.objects.get(name=name)
         except DynamicModel.DoesNotExist:
+            self.unregister_model(Model)
             return False
         except Exception as e:
             logger.error("[!] Not registering admin %s, (%s) error: %s" % (
