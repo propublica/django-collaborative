@@ -384,7 +384,9 @@ def get_source_dynmodel(self):
 
 
 def dynmodel__str__(self):
-    return "Row from data source '%s'" % (self.name)
+    if hasattr(self, "name"):
+        return "Row from data source '%s'" % (self.name)
+    return "Row from data source"
 
 
 def create_model_attrs(dynmodel):
