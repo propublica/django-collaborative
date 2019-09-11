@@ -1,7 +1,6 @@
 # Table of contents
 
-* [Collaborate User Manual](README.md)
-* [About Collaborate](about-collaborate.md)
+* [About Collaborate](README.md)
 * [How to Launch Collaborate \(using Heroku\)](how-to-launch-collaborate-using-heroku.md)
 * [How to Upload Your Data](how-to-upload-your-data/README.md)
   * [Using a CSV File](how-to-upload-your-data/using-a-csv-file.md)
