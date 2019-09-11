@@ -345,9 +345,13 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             if test_item and hasattr(test_item, "metadata"):
                 associated_fields.append("metadata_status")
                 filterable.append("metadata__status")
-                associated_fields.append("metadata_assignee")
-                filterable.append("metadata__assignee")
                 test_metadata = test_item.metadata.first()
+                if hasattr(test_metadata, "assigned_to"):
+                    associated_fields.append("metadata_assigned_to")
+                    filterable.append("metadata__assigned_to")
+                elif hasattr(test_metadata, "assignee"):
+                    associated_fields.append("metadata_assignee")
+                    filterable.append("metadata__assignee")
                 if test_metadata and hasattr(test_metadata, "tags"):
                     associated_fields.append("metadata_tags")
                     filterable.append(TagListFilter)

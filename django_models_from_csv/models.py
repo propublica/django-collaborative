@@ -445,8 +445,10 @@ def create_model_attrs(dynmodel):
                 verbose = re.sub(
                     r"\s*\(ID:\s*[a-z0-9]+\)$", "", og_column_name
                 )
+                verbose = re.sub(r"[_\-]+", " ", verbose)
+            if "verbose_name" not in column_attrs:
+                column_attrs["verbose_name"] = verbose
             attrs[column_name] = Field(
-                verbose_name=verbose,
                 *column_args, **column_attrs
             )
 

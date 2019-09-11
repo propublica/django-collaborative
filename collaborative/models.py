@@ -44,12 +44,13 @@ DEFAULT_META_COLUMNS = [{
         "default": DEFAULT_STATUSES[0][0],
     },
 },{
-    "name": "assignee",
+    "name": "assigned_to",
     "type": "short-text",
     "attrs": {
         "max_length": 120,
         "blank": True,
-        "null": True
+        "null": True,
+        "verbose_name": "Assigned to",
     },
 },{
     "name": "notes",
