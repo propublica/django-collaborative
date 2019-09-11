@@ -1,0 +1,32 @@
+# Table of contents
+
+* [Collaborate User Manual](README.md)
+* [About Collaborate](about-collaborate.md)
+* [How to Launch Collaborate \(using Heroku\)](how-to-launch-collaborate-using-heroku.md)
+* [How to Upload Your Data](how-to-upload-your-data/README.md)
+  * [Using a CSV File](how-to-upload-your-data/using-a-csv-file.md)
+  * [Using Google Sheets](how-to-upload-your-data/using-google-sheets/README.md)
+    * [Using a Public Google Spreadsheet](how-to-upload-your-data/using-google-sheets/using-a-public-google-spreadsheet.md)
+    * [Using Google Forms](how-to-upload-your-data/using-google-sheets/using-google-forms.md)
+    * [Using a Private Google Spreadsheet](how-to-upload-your-data/using-google-sheets/using-a-private-google-spreadsheet.md)
+  * [Using Screendoor](how-to-upload-your-data/using-screendoor.md)
+* [Organizing Your Data](organizing-your-data.md)
+* [Using Collaborate](using-collaborate/README.md)
+  * [Adding Metadata](using-collaborate/adding-metadata/README.md)
+    * [Status](using-collaborate/adding-metadata/status.md)
+    * [Assigned-to](using-collaborate/adding-metadata/assigned-to.md)
+    * [Notes](using-collaborate/adding-metadata/notes.md)
+    * [Contact Log](using-collaborate/adding-metadata/contact-log.md)
+    * [Creating Tags](using-collaborate/adding-metadata/creating-tags.md)
+  * [Updating Your Data](using-collaborate/updating-your-data.md)
+  * [Exporting Your Data](using-collaborate/exporting-your-data.md)
+  * [Redacting Data With Cloud Data Loss Prevention](using-collaborate/redacting-data-with-cloud-data-loss-prevention.md)
+  * [Creating Users](using-collaborate/creating-users.md)
+  * [Adding Users to Projects](using-collaborate/adding-users-to-projects.md)
+  * [Technical Users: Letting Users Log in With Their Google Account](using-collaborate/technical-users-letting-users-log-in-with-their-google-account.md)
+  * [Deleting a Project or Entry](using-collaborate/deleting-a-project-or-entry.md)
+  * [Changing Your Password](using-collaborate/changing-your-password.md)
+  * [Language Support](using-collaborate/language-support.md)
+
+## How to launch
+
