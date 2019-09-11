@@ -1,4 +1,4 @@
-# Django Collaborative
+# Collaborate
 
 ![ProPublica](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/ProPublica.png) ![Google News Initiative](https://raw.githubusercontent.com/propublica/django-collaborative/master/docs/images/Google-News-Initiative.png)
 
