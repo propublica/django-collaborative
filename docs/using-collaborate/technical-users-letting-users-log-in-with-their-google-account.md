@@ -7,7 +7,7 @@ In order to allow users to sign in with their Google account, you need to reques
 3. On the left, select "Credentials."
 4. Select the "OAuth consent screen."
 5. Give your application a name and support email. Click "Save" at the bottom.
-6. Go back to the "Credentials" tab. Click "Create credentials" &gt; "OAuth client ID"
+6. Go back to the "Credentials" tab. Click "Create credentials" &gt; "OAuth client ID."
 7. Select "Web application." This will expose more options.
 8. Under "Authorized JavaScript origins" enter: http://\[HOSTNAME\]
 

@@ -28,7 +28,7 @@ A service account is a special kind of account you create with which you can lat
 
 ![Click &apos;Credentials&apos;](https://raw.githubusercontent.com/propublica/django-collaborative/master/django_models_from_csv/static/django_models_from_csv/instructions/04-click-credentials.png)
 
-4. On the next page, click "Create Credentials" menu toward the top of the page and select "Service account."
+4. On the next page, click the "Create Credentials" menu toward the top of the page and select "Service account."
 
 ![Create Service Account](https://raw.githubusercontent.com/propublica/django-collaborative/master/django_models_from_csv/static/django_models_from_csv/instructions/05-create-service-account.png)
 

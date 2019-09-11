@@ -1,4 +1,4 @@
-# Assigned-to
+# Assigned-To
 
 This helps you track which reporter is working on each data point. You can add these in the list view or while you're in an individual data point.
 

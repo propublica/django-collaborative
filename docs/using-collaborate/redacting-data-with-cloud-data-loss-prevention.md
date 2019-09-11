@@ -44,7 +44,7 @@ Note: This will not remove the information from the source data \(e.g., your ori
 ![Enable billing, if you haven&apos;t](../.gitbook/assets/08-enable-billing.png)
 
   
-9. Once you have those credentials, upload them to Collaborate by clicking on "Configure Google Services" on the main screen. Click on "Google Redaction \(Data Loss Prevention\)." Scroll down to "Credentials file," upload the file, and click "Continue." You are now ready to select fields for redaction by clicking the “Redact” checkbox on the Import and Refine screen.
+9. Once you have those credentials, upload them to Collaborate by clicking on "Configure Google Services" on the main screen. Click on "Google Redaction \(Data Loss Prevention\)." Scroll down to "Credentials file," upload the file and click "Continue." You are now ready to select fields for redaction by clicking the “Redact” checkbox on the Import and Refine screen.
 
 ![Upload credentials file](../.gitbook/assets/09-upload-credentials.png)
 

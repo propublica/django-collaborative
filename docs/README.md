@@ -14,7 +14,7 @@ Collaborate is still in beta, which means we're still fixing bugs. It also means
 
 The code for Collaborate is [available on Github](https://github.com/propublica/django-collaborative/issues) and can be forked and altered to suit your organization’s needs.
 
-Collaborate is being provided as a hopefully useful tool, but it is being provided as is and all users should take necessary precautions, including backing up their data, before using it. ProPublica disclaims any responsibility for its use, makes no warranties about it, and makes no promises to keep it updated in any way.
+Collaborate is being provided as a hopefully useful tool, but it is being provided as is and all users should take necessary precautions, including backing up their data, before using it. ProPublica disclaims any responsibility for its use, makes no warranties about it and makes no promises to keep it updated in any way.
 
 ## 
 

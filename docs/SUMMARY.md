@@ -13,7 +13,7 @@
 * [Using Collaborate](using-collaborate/README.md)
   * [Adding Metadata](using-collaborate/adding-metadata/README.md)
     * [Status](using-collaborate/adding-metadata/status.md)
-    * [Assigned-to](using-collaborate/adding-metadata/assigned-to.md)
+    * [Assigned-To](using-collaborate/adding-metadata/assigned-to.md)
     * [Notes](using-collaborate/adding-metadata/notes.md)
     * [Contact Log](using-collaborate/adding-metadata/contact-log.md)
     * [Creating Tags](using-collaborate/adding-metadata/creating-tags.md)
