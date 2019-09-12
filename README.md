@@ -37,8 +37,13 @@ Assuming everything worked, let's bootstrap and then start the local server:
 
     # get the database ready
     python manage.py migrate
+
     # create a default admin account
     python manage.py createsuperuser
+
+    # gather up django and collaborate assets
+    python manage.py collectstatic --noinput
+
     # start the local application
     python manage.py runserver
 
