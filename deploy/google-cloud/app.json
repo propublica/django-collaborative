@@ -1,0 +1,20 @@
+{
+  "name": "django-collaborative",
+  "description": "ProPublica's collaborative tip-gathering framework. Import and manage CSV, Google Sheets and Screendoor data with ease.",
+  "repository": "https://github.com/propublica/django-collaborative",
+  "logo": "https://media.glassdoor.com/sqll/420393/propublica-squarelogo-1496908234360.png",
+  "env": {
+    "COLLAB_ADMIN_USERNAME": {
+      "description": "Default admin account username.",
+      "required": true
+    },
+    "COLLAB_ADMIN_EMAIL": {
+      "description": "Default admin account email for recovery.",
+      "required": true
+    },
+    "COLLAB_ADMIN_PASSWORD": {
+      "description": "Default admin account password.",
+      "required": true
+    }
+  }
+}

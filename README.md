@@ -25,7 +25,10 @@ supported by the [Google News Initiative](https://newsinitiative.withgoogle.com/
 We have a GitBook with a full user guide that covers running Collaborate, importing and refining data, and setting up Google services. [You can read the documentation here.](https://propublica.gitbook.io/collaborative/)
 
 # Deploy it
- [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
+
+[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=cloud-run&cloudshell_working_dir=deploy/google-cloud)
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
 
 ## Getting Started (Local Testing/Development)
 
