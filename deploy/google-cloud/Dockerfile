@@ -129,6 +129,7 @@ RUN apt-get update -qqy \
 ENV COLLABORATE_SRC=app
 ENV COLLABORATE_SRVHOME=/srv
 ENV COLLABORATE_SRVPROJ=$COLLABORATE_SRVHOME/$COLLABORATE_SRC
+ENV PORT=8080
 
 # Create base application subdirectories for dynamic data
 WORKDIR $COLLABORATE_SRVHOME
@@ -159,9 +160,8 @@ COPY django_nginx.conf /etc/nginx/sites-available/
 RUN ln -s /etc/nginx/sites-available/django_nginx.conf /etc/nginx/sites-enabled
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
-# Port to expose (nginx handles port 80->8000->gunicorn)
-ENV PORT=80
-EXPOSE 80
+# Port to expose (nginx handles port 8080->8000->gunicorn)
+EXPOSE 8080
 
 ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 
