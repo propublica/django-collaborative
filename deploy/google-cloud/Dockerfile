@@ -129,7 +129,7 @@ RUN apt-get update -qqy \
 ENV COLLABORATE_SRC=app
 ENV COLLABORATE_SRVHOME=/srv
 ENV COLLABORATE_SRVPROJ=$COLLABORATE_SRVHOME/$COLLABORATE_SRC
-ENV PORT=8080
+#ENV PORT=8080
 
 # Create base application subdirectories for dynamic data
 WORKDIR $COLLABORATE_SRVHOME
@@ -161,12 +161,14 @@ RUN ln -s /etc/nginx/sites-available/django_nginx.conf /etc/nginx/sites-enabled
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 # # Port to expose (nginx handles port 8080->8000->gunicorn)
-EXPOSE 8080
+#EXPOSE 8080
 
 ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 
+RUN echo "PORT: $PORT"
 # intend gunicorn-start to be the entrypoint command for this image
 #CMD ["/gunicorn-start.sh"]
-CMD exec python manage.py migrate --noinput \
+CMD echo "CMD:PORT=$PORT" \
+    && python manage.py migrate --noinput \
     && python manage.py collectstatic --noinput\
-    && gunicorn --bind 0.0.0.0:8080 --workers 1 --threads 8 collaborative.wsgi
+    && exec gunicorn --bind 0.0.0.0:$PORT--workers 1 --threads 8 collaborative.wsgi
