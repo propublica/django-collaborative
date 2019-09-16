@@ -1,6 +1,6 @@
 *.sqlite3
-__pycache__/
-*.py[cod]
-*$py.class
-media
-www
+Dockerfile
+*.pyc
+*.pyo
+*.pyd
+__pycache__
