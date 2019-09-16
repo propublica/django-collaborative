@@ -26,6 +26,11 @@ We have a GitBook with a full user guide that covers running Collaborate, import
 
 # Deploy it
 
+Collaborate has builtin support for one-click installs in both Google Cloud and
+Heroku. Deploy Collaborate to your cloud provider of choice by clicking one of
+the below. Make sure to fill in the email, username and password fields during
+the setup process so you can log in.
+
 [![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=cloud-run&cloudshell_working_dir=deploy/google-cloud)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
