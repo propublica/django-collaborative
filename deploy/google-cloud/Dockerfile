@@ -135,22 +135,20 @@ ENV COLLABORATE_SRVPROJ=$COLLABORATE_SRVHOME/$COLLABORATE_SRC
 # RUN mkdir media static logs
 # VOLUME ["$DOCKYARD_SRVHOME/media/", "$DOCKYARD_SRVHOME/logs/"]
 
-RUN echo 'PRE-INSTALL'
-RUN pwd
+RUN mkdir -p $COLLABORATE_SRVPROJ
+WORKDIR $COLLABORATE_SRVPROJ
 
 # Install Python dependencies
-RUN git clone -b cloud-run https://github.com/propublica/django-collaborative .
+RUN git clone -b cloud-run \
+      https://github.com/propublica/django-collaborative \
+      $COLLABORATE_SRVPROJ
 
 RUN pip install -r requirements.txt && rm requirements.txt
 
 # Port to expose
 EXPOSE 8000
 
-# Copy entrypoint script into the image
-WORKDIR $COLLABORATE_SRVPROJ
 # COPY ./gunicorn-start.sh /
-
-RUN echo 'POST-INSTALL' && pwd && ls -alh
 
 # # Copy server block for nginx
 # COPY ./django_nginx.conf /etc/nginx/sites-available/
@@ -162,4 +160,7 @@ ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 # # intend gunicorn-start to be the entrypoint command for this image
 # CMD ["/gunicorn-start.sh"]
 
-CMD ["python", "manage.py", "runserver"]
+RUN python manage.py migrate --noinput \
+      && python manage.py collectstatic --noinput
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
