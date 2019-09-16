@@ -129,6 +129,7 @@ RUN apt-get update -qqy \
 ENV COLLABORATE_SRC=app
 ENV COLLABORATE_SRVHOME=/srv
 ENV COLLABORATE_SRVPROJ=$COLLABORATE_SRVHOME/$COLLABORATE_SRC
+ENV PORT=80
 
 # # Create application subdirectories
 # WORKDIR $DOCKYARD_SRVHOME
@@ -146,7 +147,7 @@ RUN git clone -b cloud-run \
 RUN pip install -r requirements.txt && rm requirements.txt
 
 # Port to expose
-EXPOSE 8000
+EXPOSE 80
 
 # COPY ./gunicorn-start.sh /
 
@@ -163,4 +164,4 @@ ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 RUN python manage.py migrate --noinput \
       && python manage.py collectstatic --noinput
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
