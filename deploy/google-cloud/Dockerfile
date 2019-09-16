@@ -168,5 +168,5 @@ ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 # intend gunicorn-start to be the entrypoint command for this image
 #CMD ["/gunicorn-start.sh"]
 CMD exec python manage.py migrate --noinput \
-            && python manage.py collectstatic --noinput\
-            && gunicorn --bind :$PORT --workers 1 --threads 8 collaborative.wsgi
+    && python manage.py collectstatic --noinput\
+    && gunicorn --bind 0.0.0.0:8080 --workers 1 --threads 8 collaborative.wsgi
