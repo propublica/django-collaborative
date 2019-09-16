@@ -20,6 +20,10 @@ The project is broken up into several components:
 This is a project of [ProPublica](https://www.propublica.org/),
 supported by the [Google News Initiative](https://newsinitiative.withgoogle.com/).
 
+# Documentation
+
+We have a GitBook with a full user guide that covers running Collaborate, importing and refining data, and setting up Google services. [You can read the documentation here.](https://propublica.gitbook.io/collaborative/)
+
 # Deploy it
  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
 
