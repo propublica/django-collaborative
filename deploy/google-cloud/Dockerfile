@@ -129,39 +129,41 @@ RUN apt-get update -qqy \
 ENV COLLABORATE_SRC=app
 ENV COLLABORATE_SRVHOME=/srv
 ENV COLLABORATE_SRVPROJ=$COLLABORATE_SRVHOME/$COLLABORATE_SRC
-ENV PORT=80
 
-# # Create application subdirectories
-# WORKDIR $DOCKYARD_SRVHOME
-# RUN mkdir media static logs
-# VOLUME ["$DOCKYARD_SRVHOME/media/", "$DOCKYARD_SRVHOME/logs/"]
+# Create base application subdirectories for dynamic data
+WORKDIR $COLLABORATE_SRVHOME
+RUN mkdir -p media logs www/assets
+VOLUME ["$COLLABORATE_SRVHOME/media/", "$COLLABORATE_SRVHOME/logs/"]
 
-RUN mkdir -p $COLLABORATE_SRVPROJ
-WORKDIR $COLLABORATE_SRVPROJ
-
-# Install Python dependencies
+# Get the Collaborate repository. We would normally grab the
+# local code, but since we have to run this in a sub-directory
+# (Google Run collides with Heroku files) and Docker won't let you pull
+# things from an upper level directory, we pull from the repo.
+# Eventually we'll want to either add a specific commit or find a
+# way to reconcile between Google app.json and Heroku app.json.
 RUN git clone -b cloud-run \
       https://github.com/propublica/django-collaborative \
       $COLLABORATE_SRVPROJ
 
+# Build our web application
+WORKDIR $COLLABORATE_SRVPROJ
+
+# Python dependencies
 RUN pip install -r requirements.txt && rm requirements.txt
 
-# Port to expose
+# Daemon configs
+RUN pwd
+RUN ls -alh
+COPY gunicorn-start.sh /
+COPY django_nginx.conf /etc/nginx/sites-available/
+RUN ln -s /etc/nginx/sites-available/django_nginx.conf /etc/nginx/sites-enabled
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+
+# Port to expose (nginx handles port 80->8000->gunicorn)
 EXPOSE 80
-
-# COPY ./gunicorn-start.sh /
-
-# # Copy server block for nginx
-# COPY ./django_nginx.conf /etc/nginx/sites-available/
-# RUN ln -s /etc/nginx/sites-available/django_nginx.conf /etc/nginx/sites-enabled
-# RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 
-# # intend gunicorn-start to be the entrypoint command for this image
-# CMD ["/gunicorn-start.sh"]
-
-RUN python manage.py migrate --noinput \
-      && python manage.py collectstatic --noinput
-
-CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+# intend gunicorn-start to be the entrypoint command for this image
+#CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
+CMD ["/gunicorn-start.sh"]
