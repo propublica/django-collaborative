@@ -160,10 +160,10 @@ RUN ln -s /etc/nginx/sites-available/django_nginx.conf /etc/nginx/sites-enabled
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 # Port to expose (nginx handles port 80->8000->gunicorn)
+ENV PORT=80
 EXPOSE 80
 
 ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
 
 # intend gunicorn-start to be the entrypoint command for this image
-#CMD ["python", "manage.py", "runserver", "0.0.0.0:80"]
 CMD ["/gunicorn-start.sh"]
