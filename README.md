@@ -27,13 +27,30 @@ We have a GitBook with a full user guide that covers running Collaborate, import
 # Deploy it
 
 Collaborate has builtin support for one-click installs in both Google Cloud and
-Heroku. Deploy Collaborate to your cloud provider of choice by clicking one of
-the below. Make sure to fill in the email, username and password fields during
-the setup process so you can log in.
+Heroku. During the setup process for both deployments, *make sure to
+fill in the email, username and password fields so you can log in.*
+
+## Heroku
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
+
+The Heroku deploy button will create a small, "free-tier" Collaborate
+system. This consists of a small web server, a database which
+supports between 10k-10M records (depending on data size) and
+automatically configures scheduled data re-importing. Click below to get
+started.
+
+## Google Cloud
 
 [![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=cloud-run&cloudshell_working_dir=deploy/google-cloud)
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/propublica/django-collaborative/tree/master)
+The Google Cloud Run button launches Collaborate into the Google Cloud
+environment. This deploy requires you to [setup a Google Project][gc-proj],
+enable [Google Cloud billing][gc-bill] and enable the [Cloud Run API](gc-run).
+[Full set up instructions are here][gc-docs].
+
+This deploy does not automatically configure scheduled re-importing, but
+you can add it via Cloud Scheduler by [following these instructions][gc-sched].
 
 ## Getting Started (Local Testing/Development)
 
@@ -63,3 +80,18 @@ You can then access the application `http://localhost:8000` and log
 in with the credentials you selected in the `createsuperuser` step
 (above). Logging in will bring you to a configuration wizard where
 you will import your first Google Sheet and import its contents.
+
+[gc-proj]: https://console.cloud.google.com/projectselector2/home/dashboard
+    "Google Cloud Project Selector"
+
+[gc-bill]: https://cloud.google.com/billing/docs/how-to/modify-project
+    "Google Cloud Billing set up"
+
+[gc-run]: https://console.cloud.google.com/flows/enableapi?apiid=cloudbuild.googleapis.com,run.googleapis.com&redirect=https://console.cloud.google.com
+    "Enable Google Cloud Run API"
+
+[gc-docs]: https://cloud.google.com/run/docs/quickstarts/build-and-deploy
+    "Google Cloud Run quickstart"
+
+[gc-sched]: https://cloud.google.com/run/docs/events/using-scheduler
+    "Google Cloud Scheduler"
