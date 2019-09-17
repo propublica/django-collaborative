@@ -37,8 +37,7 @@ fill in the email, username and password fields so you can log in.*
 The Heroku deploy button will create a small, "free-tier" Collaborate
 system. This consists of a small web server, a database which
 supports between 10k-10M records (depending on data size) and
-automatically configures scheduled data re-importing. Click below to get
-started.
+automatically configures scheduled data re-importing.
 
 ## Google Cloud
 
