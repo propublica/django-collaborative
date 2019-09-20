@@ -108,6 +108,9 @@ APP_ORDER = [
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# Set up the database connection dynamically from the DATABASE_URL
+# environment variable. Don't change the second database as it's a
+# critical part of data source importing.
 db_from_env = dj_database_url.config()
 DATABASES = {
     'default': {

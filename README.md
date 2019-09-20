@@ -51,6 +51,9 @@ enable [Google Cloud billing][gc-bill] and enable the [Cloud Run API](gc-run).
 This deploy does not automatically configure scheduled re-importing, but
 you can add it via Cloud Scheduler by [following these instructions][gc-sched].
 
+Once you've deployed your Cloud Run instance, you can manage your running
+instance from the [Google Developer's Console][run-dashboard].
+
 ## Getting Started (Local Testing/Development)
 
 Getting the system set up and running locally begins with cloning this
@@ -80,6 +83,28 @@ in with the credentials you selected in the `createsuperuser` step
 (above). Logging in will bring you to a configuration wizard where
 you will import your first Google Sheet and import its contents.
 
+## Production Deploy (Nginx/Docker)
+
+If you want to deploy this to a production environment, we've included
+configuration templates and scripts for [Docker][docker] and [Nginx][nginx].
+
+A Collaborate `Dockerfile` (the same one used by the Google Cloud Run
+deploy) can be found here:
+
+    deploy/google-cloud/Dockerfile
+
+This creates a basic production environment with nginx and gunicorn. By
+default, it uses SQLite3, but you can configure the database by adding a
+`DATABASE_URL` environment variable. You can read more about the format
+for this variable [here][dj-database-url].
+
+We also included a configuration script for plain Nginx deploys here:
+
+    deploy/google-cloud/django_nginx.conf
+
+This can be copied to your main Nginx sites configuration directory (e.g.,
+`/etc/nginx/sites-available/`).
+
 [gc-proj]: https://console.cloud.google.com/projectselector2/home/dashboard
     "Google Cloud Project Selector"
 
@@ -94,3 +119,15 @@ you will import your first Google Sheet and import its contents.
 
 [gc-sched]: https://cloud.google.com/run/docs/events/using-scheduler
     "Google Cloud Scheduler"
+
+[run-dashboard]: https://console.cloud.google.com/run
+    "Google Cloud Run console"
+
+[docker]: https://www.docker.com/get-started
+    "Docker website"
+
+[nginx]: https://nginx.org/
+    "Nginx website"
+
+[dj-database-url]: https://github.com/jacobian/dj-database-url
+    "Django database environment variable instructions"
