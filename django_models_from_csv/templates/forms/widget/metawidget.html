@@ -1,0 +1,174 @@
+{% load static i18n %}
+
+{% block extrahead %}
+  <style>
+    #content div.meta-widget {
+        padding: 5px 15px;
+    }
+    #content .meta-widget p {
+      margin: 0;
+    }
+    .columns-selector-wrapper {
+    }
+    .columns-selector-wrapper input[type=text] {
+        min-width: 200px;
+        margin-right: 20px;
+    }
+    .meta_columns .sortable tbody tr:nth-child(1) th {
+        border-bottom: 2px solid #cccccc;
+    }
+    .meta_columns .sortable tbody tr:nth-child(3) td {
+        border-bottom: 2px solid #cccccc;
+    }
+    .redactor-disabled{
+      cursor: not-allowed;
+    }
+    .meta-widget .add-record {
+      text-align: center;
+      font-size: 0.8em;
+      text-decoration: underline;
+      padding: 0;
+      cursor: pointer;
+      color: #304154;
+    }
+    #csv-models-config table.meta-models-columns {
+      padding-bottom: 0;
+    }
+  </style>
+
+  <script type="text/template">
+    <tr class="column-selector">
+      <td class="grabber-column">
+        <span class="grippy"></span>
+      </td>
+      <td class="option">
+        <input type="text"
+               name="name"
+               value="{% verbatim %}{column.name}{% endverbatim %}" />
+      </td>
+      <td class="option">
+        {% verbatim %}
+        { column.type }
+        {% endverbatim %}
+      </td>
+      <td class="fourth-column option">
+        <!-- column type options selector -->
+        <input type="text"
+               name="name"
+               placeholder="Comma separated (e.g., option-1, option-2)"
+               value="{% verbatim %}{column.name}{% endverbatim %}" />
+        </input>
+      </td>
+      <td class="option">
+        <input type="checkbox"
+               name="searchable"
+               selected="{% verbatim %}{column.searchable}{% endverbatim %}" />
+      </td>
+      <td class="option">
+        <input type="checkbox"
+               name="filterable"
+               checked="{% verbatim %}{column.filterable}{% endverbatim %}" />
+        <!-- hidden fields, positional index -->
+        <input type="hidden"
+               name="ix"
+               value="{% verbatim %}{column.ix}{% endverbatim %}" />
+      </td>
+      <td class="option">
+        <img src="{% static 'admin/img/icon-deletelink.svg' %}" alt="Delete" />
+      </td>
+    </tr>
+  </script>
+
+{% endblock %}
+
+<div class="meta-widget {{ widget.name }}">
+  {% comment %}
+  we need the json.dumps version here, by default, in case the
+  user saves this before editing. the JS of this widget will
+  overwrite this with proper JSON as users modify it
+  {% endcomment %}
+  <textarea style="display:none;"
+     name="{{ widget.name }}"
+     {% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.value %}{{ widget.value }}{% endif %}
+  </textarea>
+
+  <table id="render-{{ widget.name }}"
+         class="columns-selector-wrapper sortable meta-models-columns">
+    <thead>
+      <tr>
+        <th>&nbsp;</th>
+        <th>
+          Column name
+        </th>
+        <th>
+          Data type
+        </th>
+        <th>
+          Field Options
+        </th>
+        <th>
+          Searchable
+        </th>
+        <th>
+          Filterable
+        </th>
+        <th>
+          Delete
+        </th>
+      </tr>
+    </thead>
+    <tbody rv-each-column="columns">
+      <tr class="column-selector">
+        <td class="grabber-column">
+          <span class="grippy"></span>
+        </td>
+        <td class="option">
+          <input type="text"
+                 name="name"
+                 rv-value="column.name" />
+        </td>
+        <td class="option">
+          <select name="type" rv-value="column.type">
+            {% for column_value, column_name in widget.column_types %}
+            <option value="{{ column_value }}">
+            {{ column_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="fourth-column option">
+          <!-- column type options selector -->
+          {% comment %}
+          <input type="text"
+                 name="name"
+                 placeholder="E.g., option-1, option-2"
+                 rv-value="column.name" />
+          </input>
+          {% endcomment %}
+        </td>
+        <td class="option">
+          <input type="checkbox"
+                 name="searchable"
+                 rv-checked="column.searchable" />
+        </td>
+        <td class="option">
+          <input type="checkbox"
+                 name="filterable"
+                 rv-checked="column.filterable" />
+          <!-- hidden fields, positional index -->
+          <input type="hidden"
+                 name="ix"
+                 rv-value="column.ix" />
+        </td>
+        <td class="option">
+          <img src="{% static 'admin/img/icon-deletelink.svg' %}" alt="Delete" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-record">
+    <span onClick="addField('#render-{{ widget.name }}')">+ Add Field</span>
+  </div>
+
+</div>

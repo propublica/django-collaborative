@@ -33,7 +33,7 @@ Database Columns | {{ block.super }}
       </p>
       <p>
       {% blocktrans trimmed %}
-          The first five columns (below) will be displayed in the
+          The first five fields (below) will be displayed in the
           imported records list. The remaining columns will
           only be shown inside each record's full detail page.
           Re-order the columns by dragging them around.
@@ -49,6 +49,28 @@ Database Columns | {{ block.super }}
       {% endblocktrans %}
       </p>
       {{ form.columns }}
+      <div id="meta-models">
+        <h4>{% trans 'Metadata' %}</h4>
+        <p>
+        {% blocktrans trimmed %}
+            Metadata fields allow you to annotate, tag and enhance your
+            imported data. The first two fields will be displayed in
+            imported records list, before all other fields.
+        {% endblocktrans %}
+        </p>
+        {{ form.meta_columns }}
+        <h4>{% trans 'Contact Log/History' %}</h4>
+        <p>
+        {% blocktrans trimmed %}
+            The contact log lets you maintain an ordered record of information
+            related to your imported rows. This can be used for keeping
+            track of contact with sources or investigation progress. These
+            fields will not be shown in the imported records list, but will
+            be available on the individual record page.
+        {% endblocktrans %}
+        </p>
+        {{ form.contactmeta_columns }}
+      </div>
       <div class="continue">
           <input type="submit" value="{% trans "Continue" %}" />
       </div>

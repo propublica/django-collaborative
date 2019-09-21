@@ -5,6 +5,8 @@
   {{ widget.media }}
   <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
   <script src="{% static "html5sortable/html5sortable.min.js" %}"></script>
+  <script src="{% static "django_models_from_csv/rivets.bundled.min.js" %}"></script>
+  <script src="{% static "django_models_from_csv/columnswidget.js" %}"></script>
 
   <style>
     #content div.columns-widget {
@@ -19,10 +21,10 @@
     .sortable tr:hover {
         background-color: #eeeeee;
     }
-    .sortable tbody tr:nth-child(1) th {
+    .columns-widget .sortable tbody tr:nth-child(1) th {
         border-bottom: 2px solid #cccccc;
     }
-    .sortable tbody tr:nth-child(6) td {
+    .columns-widget .sortable tbody tr:nth-child(6) td {
         border-bottom: 2px solid #cccccc;
     }
     .sortable .grippy {
@@ -55,7 +57,7 @@
     }
   </style>
 
-  <script>
+  <script type="text/javascript">
     $(function() {
       const sortCSS = '.sortable tbody';
       const options = {
@@ -161,6 +163,10 @@
         });
       }
 
+      function watchAddField(widget) {
+        $(widget).find("select.column-type-selector").show();
+      }
+
       function main() {
         const widgets = $(".columns-widget");
         widgets.each((_, widget) => {
@@ -211,9 +217,10 @@
            rel="noopener noreferrer" target="_blank">
           <img src="{% static "admin/img/icon-unknown.svg" %}"
                class="help help-tooltip"
-               width="10" height="10"
-                          alt="{% trans 'Google redactions credentials missing.' %}"
-                          title="{% trans 'In order to use Google redaction, you need to set it up from the Configure Google Credentials page. Click here to open the page in a new tab' %}">
+               width="10"
+               height="10"
+               alt="{% trans 'Google redactions credentials missing.' %}"
+               title="{% trans 'In order to use Google redaction, you need to set it up from the Configure Google Credentials page. Click here to open the page in a new tab' %}">
         </a>
         {% endif %}
       </th>
@@ -240,7 +247,7 @@
           {% endfor %}
         </select>
       </td>
-      <td style="max-width: 200px">
+      <td class="fourth-column">
           {{ column.original_name|verbose_name }}<br/>
       </td>
       <td class="option">

@@ -12,8 +12,21 @@ COLUMN_TYPES = (
     ("datetime", "Date and time field"),
     ("number", "Number field"),
     # ("foreignkey", "Associated Table"),
-    ("tagging", "Tags field"),
+    # ("tagging", "Tags field"),
 )
+META_COLUMN_TYPES = (
+    ("text", "Textbox field"),
+    ("short-text", "Text field"),
+    ("date", "Only date field"),
+    ("time", "Only time field"),
+    ("datetime", "Date and time field"),
+    ("number", "Number field"),
+    # ("foreignkey", "Associated Table"),
+    # ("tagging", "Tags field"),
+    # ("created-at", "Create time (readonly)"),
+    ("choice", "Choice selection field"),
+)
+
 REQUIRED_FIELDS = (
     "name", "type",
 )

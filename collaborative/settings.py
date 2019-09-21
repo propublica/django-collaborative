@@ -110,7 +110,8 @@ APP_ORDER = [
 
 # Set up the database connection dynamically from the DATABASE_URL
 # environment variable. Don't change the second database as it's a
-# critical part of data source importing.
+# critical part of data source importing. You can read more about
+# the DATABASE_URL field here: https://github.com/jacobian/dj-database-url
 db_from_env = dj_database_url.config()
 DATABASES = {
     'default': {
@@ -285,7 +286,6 @@ try:
     from collaborative.settings_dev import *
 except ModuleNotFoundError:
     pass
-
 
 try:
     from collaborative.settings_prod import *

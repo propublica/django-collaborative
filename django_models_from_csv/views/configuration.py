@@ -18,7 +18,7 @@ from django_models_from_csv.utils.dynmodel import (
     from_csv_url, from_screendoor, from_private_sheet,
     from_csv_file,
 )
-from django_models_from_csv.models import CredentialStore
+from django_models_from_csv.models import DynamicModel, CredentialStore
 
 
 logger = logging.getLogger(__name__)
@@ -220,9 +220,15 @@ def refine_and_import(request, id):
     it exists.
     """
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
+    meta_name = "%smetadata" % (dynmodel.name)
+    meta_dynmodel = DynamicModel.objects.get(name=meta_name)
+    contactmeta_name = "%scontactmetadata" % (dynmodel.name)
+    contactmeta_dynmodel = DynamicModel.objects.get(name=contactmeta_name)
     if request.method == "GET":
         refine_form = SchemaRefineForm({
-            "columns": dynmodel.columns
+            "columns": dynmodel.columns,
+            "meta_columns": meta_dynmodel.columns,
+            "contactmeta_columns": contactmeta_dynmodel.columns,
         })
         return render(request, 'refine-and-import.html', {
             "form": refine_form,
