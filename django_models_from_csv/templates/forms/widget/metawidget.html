@@ -6,7 +6,7 @@
         padding: 5px 15px;
     }
     #content .meta-widget p {
-      margin: 0;
+        margin: 0;
     }
     .columns-selector-wrapper {
     }
@@ -14,10 +14,10 @@
         min-width: 200px;
         margin-right: 20px;
     }
-    .meta_columns .sortable tbody tr:nth-child(1) th {
-        border-bottom: 2px solid #cccccc;
+    #render-meta_columns tbody tr:nth-child(1) {
+        border-top: 2px solid #cccccc;
     }
-    .meta_columns .sortable tbody tr:nth-child(3) td {
+    #render-meta_columns tbody tr:nth-child(2) {
         border-bottom: 2px solid #cccccc;
     }
     .redactor-disabled{
@@ -35,50 +35,6 @@
       padding-bottom: 0;
     }
   </style>
-
-  <script type="text/template">
-    <tr class="column-selector">
-      <td class="grabber-column">
-        <span class="grippy"></span>
-      </td>
-      <td class="option">
-        <input type="text"
-               name="name"
-               value="{% verbatim %}{column.name}{% endverbatim %}" />
-      </td>
-      <td class="option">
-        {% verbatim %}
-        { column.type }
-        {% endverbatim %}
-      </td>
-      <td class="fourth-column option">
-        <!-- column type options selector -->
-        <input type="text"
-               name="name"
-               placeholder="Comma separated (e.g., option-1, option-2)"
-               value="{% verbatim %}{column.name}{% endverbatim %}" />
-        </input>
-      </td>
-      <td class="option">
-        <input type="checkbox"
-               name="searchable"
-               selected="{% verbatim %}{column.searchable}{% endverbatim %}" />
-      </td>
-      <td class="option">
-        <input type="checkbox"
-               name="filterable"
-               checked="{% verbatim %}{column.filterable}{% endverbatim %}" />
-        <!-- hidden fields, positional index -->
-        <input type="hidden"
-               name="ix"
-               value="{% verbatim %}{column.ix}{% endverbatim %}" />
-      </td>
-      <td class="option">
-        <img src="{% static 'admin/img/icon-deletelink.svg' %}" alt="Delete" />
-      </td>
-    </tr>
-  </script>
-
 {% endblock %}
 
 <div class="meta-widget {{ widget.name }}">
@@ -88,7 +44,7 @@
   overwrite this with proper JSON as users modify it
   {% endcomment %}
   <textarea style="display:none;"
-     name="{{ widget.name }}"
+            name="{{ widget.name }}"
      {% include "django/forms/widgets/attrs.html" %}>
     {% if widget.value %}{{ widget.value }}{% endif %}
   </textarea>
@@ -118,8 +74,10 @@
         </th>
       </tr>
     </thead>
-    <tbody rv-each-column="columns">
-      <tr class="column-selector">
+    <tbody class="{{ widget.name }}">
+      <tr class="column-selector"
+          rv-on-change="onchange"
+          rv-each-column="columns">
         <td class="grabber-column">
           <span class="grippy"></span>
         </td>
@@ -147,28 +105,36 @@
           </input>
           {% endcomment %}
         </td>
-        <td class="option">
+        <td class="option center">
           <input type="checkbox"
                  name="searchable"
+                 class="clickable"
                  rv-checked="column.searchable" />
         </td>
-        <td class="option">
+        <td class="option center">
           <input type="checkbox"
                  name="filterable"
+                 class="clickable"
                  rv-checked="column.filterable" />
           <!-- hidden fields, positional index -->
           <input type="hidden"
                  name="ix"
                  rv-value="column.ix" />
         </td>
-        <td class="option">
-          <img src="{% static 'admin/img/icon-deletelink.svg' %}" alt="Delete" />
+        <td class="option center">
+          <img rv-on-click="destroy"
+               class="clickable trashcan"
+               src="{% static 'django_models_from_csv/trash.svg' %}"
+               alt="Delete" />
         </td>
       </tr>
     </tbody>
   </table>
+
   <div class="add-record">
-    <span onClick="addField('#render-{{ widget.name }}')">+ Add Field</span>
+    <span onClick="COLLABaddField('#render-{{ widget.name }}')">
+      + Add Field
+    </span>
   </div>
 
 </div>

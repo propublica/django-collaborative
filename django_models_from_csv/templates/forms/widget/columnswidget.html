@@ -3,9 +3,12 @@
 
 {% block extrahead %}
   {{ widget.media }}
+  <link rel="stylesheet" href="{% static "ui/jquery-ui.css" %}">
+
   <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
   <script src="{% static "html5sortable/html5sortable.min.js" %}"></script>
-  <script src="{% static "django_models_from_csv/rivets.bundled.min.js" %}"></script>
+  <script src="{% static "django_models_from_csv/sightglass.js" %}"></script>
+  <script src="{% static "django_models_from_csv/rivets.js" %}"></script>
   <script src="{% static "django_models_from_csv/columnswidget.js" %}"></script>
 
   <style>
@@ -59,7 +62,7 @@
 
   <script type="text/javascript">
     $(function() {
-      const sortCSS = '.sortable tbody';
+      const sortCSS = '.main-data-sortable tbody';
       const options = {
           items: 'tr',
           forcePlaceholderSize: true,
@@ -192,7 +195,8 @@
   </textarea>
 
   {% if widget.value_obj %}
-  <table id="csv-models-columns" class="columns-selector-wrapper sortable">
+  <table id="csv-models-columns"
+         class="columns-selector-wrapper main-data-sortable sortable">
     <tr>
       <th>&nbsp;</th>
       <th>
@@ -250,21 +254,25 @@
       <td class="fourth-column">
           {{ column.original_name|verbose_name }}<br/>
       </td>
-      <td class="option">
+      <td class="option center">
         <input type="checkbox"
                name="searchable"
+               class="clickable"
                {% if column.searchable %}checked{% endif %} />
       </td>
-      <td class="option">
+      <td class="option center">
         <input type="checkbox"
                name="filterable"
+               class="clickable"
                {% if column.filterable %}checked{% endif %} />
       </td>
-      <td class="option">
+      <td class="option center">
         <input type="checkbox"
                name="redact"
                {% if not dlp_credentials_exist %}
                disabled="disabled" class="redactor-disabled"
+               {% else %}
+               class="clickable"
                {% endif %}
                {% if column.redact %}checked{% endif %} />
         <!-- hidden fields, positional index -->
