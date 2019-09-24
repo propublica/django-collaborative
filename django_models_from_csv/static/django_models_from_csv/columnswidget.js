@@ -13,6 +13,7 @@
       this.sortCSS = `table#render-${widgetName} tbody`;
 
       // TODO: fetch columns data from API or injected onto window
+      /*
       const columns = [{
         name: 'status',
         type: 'choice',
@@ -32,9 +33,10 @@
         filterable: true,
         searchable: true,
       }];
+      */
 
       this.data = {
-        columns: columns,
+        columns: this.getInitialColumns(),
         // type checker for rv-if on field options
         istype: (value, criteria) => {
           console.log("value", value, "criteria", criteria);
@@ -74,6 +76,12 @@
       this.addBound = rivets.bind($(`.${this.widgetName} .add-record`), this.data);
       this.startSortable();
 
+    }
+
+    getInitialColumns() {
+      const textArea = $(`#json-${this.widgetName}`);
+      const jsonStr = textArea.val();
+      return JSON.parse(jsonStr);
     }
 
     dbgColumns(d) {

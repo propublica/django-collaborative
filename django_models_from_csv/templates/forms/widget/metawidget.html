@@ -49,6 +49,12 @@
      {% include "django/forms/widgets/attrs.html" %}>
     {% if widget.value %}{{ widget.value }}{% endif %}
   </textarea>
+  <textarea style="display:none;"
+            id="hidden-{{ widget.name }}"
+            name="hidden-{{ widget.name }}"
+     {% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.hidden_columns %}{{ widget.hidden_columns }}{% endif %}
+  </textarea>
 
   <table id="render-{{ widget.name }}"
          class="columns-selector-wrapper sortable meta-models-columns">
