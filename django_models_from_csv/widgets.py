@@ -10,6 +10,7 @@ except ImportError:
     import six
 
 from django_models_from_csv import models
+from django_models_from_csv.validators import META_COLUMN_TYPES
 
 
 class ColumnsWidget(JSONWidget):
@@ -65,18 +66,24 @@ class MetaWidget(ColumnsWidget):
         context = {}
         attrs = self.build_attrs(self.attrs, attrs)
         columns = json.loads(value)
-        indexed_columns = []
+        editable_columns = []
+        # these will be hidden from the user and appended
+        # upon post. users cannot see or modify/remove them
+        hidden_fields = []
         for i in range(len(columns)):
-            indexed_columns.append({
-                "ix": i,
-                **columns[i]
+            column = columns[i]
+            if column["type"] not in META_COLUMN_TYPES:
+                hidden_fields.append(column)
+                continue
+            editable_columns.append({
+                **column
             })
         context['widget'] = {
             'name': name,
             'is_hidden': self.is_hidden,
             'required': self.is_required,
-            'value_obj': indexed_columns,
-            'value': json.dumps(indexed_columns, indent=2),
+            'value_obj': editable_columns,
+            'value': json.dumps(editable_columns, indent=2),
             'column_types': self.COLUMN_TYPES,
             'attrs': attrs,
             'template_name': self.template_name,

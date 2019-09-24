@@ -243,6 +243,8 @@ def refine_and_import(request, id):
             })
 
         columns = refine_form.cleaned_data["columns"]
+        meta_columns = refine_form.cleaned_data["meta_columns"]
+        contactmeta_columns = refine_form.cleaned_data["contactmeta_columns"]
         dynmodel.columns = columns
 
         errors = None

@@ -14,21 +14,18 @@
 
       // TODO: fetch columns data from API or injected onto window
       const columns = [{
-        ix: 0,
         name: 'status',
         type: 'choice',
         value: 'Available,Spam',
         filterable: true,
         searchable: true,
       },{
-        ix: 1,
         name: 'assigned-to',
         type: 'short-text',
         value: 'option-3',
         filterable: true,
         searchable: true,
       },{
-        ix: 2,
         name: 'test',
         type: 'text',
         value: null,
@@ -58,7 +55,6 @@
           // need to start sorting *after* we mutate the columns list.
           //sortable(sortCSS, "destroy");
           this.data.columns = this.data.columns.concat([{
-            ix: this.data.columns.length,
             name: '',
             type: 'text',
             value: null,
@@ -82,7 +78,7 @@
 
     dbgColumns(d) {
       d.columns.forEach((c, ix) => {
-        console.log("Column", ix, c.ix, c.name||"[blank]", c.type);
+        console.log("Column", ix, c.name||"[blank]", c.type);
       });
     }
 
