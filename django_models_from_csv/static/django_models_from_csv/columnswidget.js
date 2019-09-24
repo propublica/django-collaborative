@@ -1,16 +1,20 @@
 // Rivets.js
 (() => {
-  const sortCSS = "table#render-meta_columns tbody";
+  const widgetName = "meta_columns"
+  const sortCSS = `table#render-${widgetName} tbody`;
   const dbgColumns = (d) => {
     d.columns.forEach((c, ix) => {
       console.log("Column", ix, c.ix, c.name||"[blank]", c.type);
     });
   };
 
-  // TODO: update the textarea with the state of the columns
   const updateState = (d) => {
-    console.info("updateState");
-    dbgColumns(d);
+    console.info("updateState", d.columns);
+    const jsonStr = JSON.stringify(d.columns, null, 2);
+    const textArea = $(`#json-${widgetName}`);
+    console.log("textArea", textArea);
+    console.log("jsonStr", jsonStr);
+    textArea.val(jsonStr);
   };
 
   // TODO: fetch columns data from API or injected onto window
@@ -37,16 +41,20 @@
       filterable: true,
       searchable: true,
     }],
+    // type checker for rv-if on field options
+    istype: (value, criteria) => {
+      console.log("value", value, "criteria", criteria);
+      return value === criteria;
+    },
+    // remove a field
     destroy: (ev, scope) => {
       data.columns.splice(scope.index, 1);
     },
+    // if any selector/input is changed, this is called
     onchange: (ev, scope) => {
       updateState(data);
     },
-    swapitems: (a, b) => {
-      console.log("a", a, "b", b);
-      console.log("this", this);
-    },
+    // add a new, blank field to the list
     addField: (ev, scope) => {
       console.log("Adding field");
       // re-enable the sortable to get the new field to work. we
@@ -61,6 +69,7 @@
         searchable: false,
       }]);
       //startSortable();
+      updateState(data);
       dbgColumns(data);
     },
   };
@@ -110,8 +119,10 @@
   };
 
   const main = () => {
-    rivets.bind($("#render-meta_columns"), data);
-    rivets.bind($(".meta_columns .add-record"), data);
+    // bind our main list to the table
+    rivets.bind($(`#render-${widgetName}`), data);
+    // and bind our add button, which is outside the scope of the table
+    rivets.bind($(`.${widgetName} .add-record`), data);
     startSortable();
   };
 

@@ -43,7 +43,7 @@
   user saves this before editing. the JS of this widget will
   overwrite this with proper JSON as users modify it
   {% endcomment %}
-  <textarea style="display:none;"
+  <textarea {% comment %}style="display:none;"{% endcomment %}
             id="json-{{ widget.name }}"
             name="{{ widget.name }}"
      {% include "django/forms/widgets/attrs.html" %}>
@@ -97,14 +97,18 @@
           </select>
         </td>
         <td class="fourth-column option">
-          <!-- column type options selector -->
-          {% comment %}
           <input type="text"
-                 name="name"
-                 placeholder="E.g., option-1, option-2"
-                 rv-value="column.name" />
+                 name="options"
+                 placeholder="Max length (default: 500 chars)"
+                 rv-if="istype|call column.type 'short-text'"
+                 rv-value="column.options" />
           </input>
-          {% endcomment %}
+          <input type="text"
+                 name="options"
+                 placeholder="Choices (e.g.: option-1, option-2)"
+                 rv-if="istype|call column.type 'choice'"
+                 rv-value="column.options" />
+          </input>
         </td>
         <td class="option center">
           <input type="checkbox"
