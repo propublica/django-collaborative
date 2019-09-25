@@ -22,5 +22,5 @@ class ColumnsField(JSONField):
         return super().formfield(**defaults)
 
     def validate(self, value, model_instance):
-        super(ColumnsField, self).validate(value, model_instance)
+        super().validate(value, model_instance)
         validate_columns(value)

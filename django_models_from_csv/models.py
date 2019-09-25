@@ -58,6 +58,11 @@ FIELD_TYPES = {
     "integer": models.IntegerField,
     "foreignkey": models.ForeignKey,
     "tagging": TaggableManager,
+    # this is a custom char field, limited to the options
+    # provided, but stored as text. we add a very long
+    # max length to this by default to avoid having people
+    # set that additional variable (1024 chars)
+    "choice": models.CharField,
 }
 
 

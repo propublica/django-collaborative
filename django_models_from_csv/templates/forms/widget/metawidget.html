@@ -103,18 +103,22 @@
           </select>
         </td>
         <td class="fourth-column option">
-          <input type="text"
-                 name="options"
-                 placeholder="Max length (default: 500 chars)"
-                 rv-if="istype|call column.type 'short-text'"
-                 rv-value="column.options" />
-          </input>
-          <input type="text"
-                 name="options"
-                 placeholder="Choices (e.g.: option-1, option-2)"
-                 rv-if="istype|call column.type 'choice'"
-                 rv-value="column.options" />
-          </input>
+          <span rv-if="istype|call column.type 'short-text'">
+            <label for="options">{% trans 'Max length (characters)' %}</label>
+            <input type="text"
+                   name="options"
+                   placeholder="{% trans 'e.g., 120' %}"
+                   rv-value="column.attrs.max_length" />
+            </input>
+          </span>
+          <span rv-if="istype|call column.type 'choice'">
+            <label for="options">{% trans 'Choices (comma separated)' %}</label>
+            <input type="text"
+                   name="options"
+                   placeholder="{% trans 'e.g., option-1, option-2' %}"
+                   rv-value="column.attrs.choices" />
+            </input>
+          </span>
         </td>
         <td class="option center">
           <input type="checkbox"

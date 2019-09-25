@@ -18,6 +18,7 @@ def get_contact_metamodel_name(name):
     return "%scontactmetadata" % name
 
 
+# Legacy
 DEFAULT_STATUSES = (
     (0, "Available"),
     (1, "In Progress"),
@@ -29,12 +30,23 @@ DEFAULT_STATUSES = (
     (7, "False"),
 )
 
+DEFAULT_STATUS_CHOICES = (
+    "Available",
+    "In Progress",
+    "Verified",
+    "Spam",
+    "Duplicate",
+    "Not Applicable",
+    "Inconclusive",
+    "False",
+)
+
 DEFAULT_META_COLUMNS = [{
     "name": "status",
-    "type": "integer",
+    "type": "choice",
     "attrs": {
-        "choices": DEFAULT_STATUSES,
-        "default": DEFAULT_STATUSES[0][0],
+        "choices": ", ".join(DEFAULT_STATUS_CHOICES),
+        "default": DEFAULT_STATUS_CHOICES[0],
     },
 },{
     "name": "assigned_to",
@@ -54,10 +66,18 @@ DEFAULT_META_COLUMNS = [{
     },
 }]
 
+
+# Legacy
 DEFAULT_CONTACT_METHODS = (
     (0, "Email"),
     (1, "Phone call"),
     (2, "In person"),
+)
+
+DEFAULT_CONTACT_METHOD_CHOICES = (
+    "Email",
+    "Phone call",
+    "In person",
 )
 
 DEFAULT_CONTACT_COLUMNS = [{
@@ -68,10 +88,10 @@ DEFAULT_CONTACT_COLUMNS = [{
     }
 },{
     "name": "method",
-    "type": "integer",
+    "type": "choice",
     "attrs": {
-        "choices": DEFAULT_CONTACT_METHODS,
-        "default": DEFAULT_CONTACT_METHODS[0][0],
+        "choices": ", ".join(DEFAULT_CONTACT_METHOD_CHOICES),
+        "default": DEFAULT_CONTACT_METHOD_CHOICES[0],
     },
 }]
 

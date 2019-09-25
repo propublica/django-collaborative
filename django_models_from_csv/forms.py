@@ -26,7 +26,7 @@ class ColumnsFormField(JSONFormField):
 
     def validate(self, value):
         super().validate(value)
-        validate_columns(value)
+        validate_columns(value, model_type="base")
 
 
 class MetaFormField(JSONFormField):
@@ -41,7 +41,7 @@ class MetaFormField(JSONFormField):
 
     def validate(self, value):
         super().validate(value)
-        validate_columns(value)
+        validate_columns(value, model_type="meta")
 
 
 class SchemaRefineForm(forms.Form):
