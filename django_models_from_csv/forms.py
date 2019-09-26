@@ -35,7 +35,7 @@ class MetaFormField(JSONFormField):
     def __init__(self, *args, **kwargs):
         if "widget" not in kwargs:
             kwargs["widget"] = MetaWidget(
-                column_types=META_COLUMN_TYPES
+                column_types=META_COLUMN_TYPES,
             )
         super().__init__(*args, **kwargs)
 

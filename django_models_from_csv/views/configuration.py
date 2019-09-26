@@ -125,53 +125,55 @@ def begin(request):
             "sd_form_id": sd_form_id,
             "service_account_email": service_account_email,
         }
-        try:
-            if csv_url and csv_sheets_private:
-                name = slugify(request.POST.get("csv_name"))
-                # pull the credentials from FILE or saved model
-                credentials = None
-                if csv_google_credentials_file:
-                    credentials = csv_google_credentials_file.read(
-                    ).decode("utf-8")
-                    cr, _ = CredentialStore.objects.get_or_create(
-                        name="csv_google_credentials",
-                    )
-                    cr.credentials = credentials
-                    cr.save()
-                elif creds_model:
-                    credentials = creds_model.credentials
-                else:
-                    # TODO: raise if we got a check marked private,
-                    # but couldn't find the credential and none uploaded
-                    # here. we should direct them to the google page
-                    pass
-                dynmodel = from_private_sheet(
-                    name, csv_url,
-                    credentials=credentials,
-                )
-            elif csv_url:
-                name = slugify(request.POST.get("csv_name"))
-                dynmodel = from_csv_url(
-                    name, csv_url,
-                )
-            elif sd_api_key:
-                name = slugify(request.POST.get("sd_name"))
-                dynmodel = from_screendoor(
-                    name,
-                    sd_api_key,
-                    int(sd_project_id),
-                    form_id=int(sd_form_id) if sd_form_id else None
-                )
-            elif csv_file:
-                dynmodel = from_csv_file(
-                    csv_file.name, csv_file,
-                )
-            else:
-                return render(request, 'begin.html', {
-                    "errors": "No data source selected!",
-                    **context
-                })
 
+        if csv_url and csv_sheets_private:
+            name = slugify(request.POST.get("csv_name"))
+            # pull the credentials from FILE or saved model
+            credentials = None
+            if csv_google_credentials_file:
+                credentials = csv_google_credentials_file.read(
+                ).decode("utf-8")
+                cr, _ = CredentialStore.objects.get_or_create(
+                    name="csv_google_credentials",
+                )
+                cr.credentials = credentials
+                cr.save()
+            elif creds_model:
+                credentials = creds_model.credentials
+            else:
+                # TODO: raise if we got a check marked private,
+                # but couldn't find the credential and none uploaded
+                # here. we should direct them to the google page
+                pass
+            dynmodel = from_private_sheet(
+                name, csv_url,
+                credentials=credentials,
+            )
+        elif csv_url:
+            name = slugify(request.POST.get("csv_name"))
+            dynmodel = from_csv_url(
+                name, csv_url,
+            )
+        elif sd_api_key:
+            name = slugify(request.POST.get("sd_name"))
+            dynmodel = from_screendoor(
+                name,
+                sd_api_key,
+                int(sd_project_id),
+                form_id=int(sd_form_id) if sd_form_id else None
+            )
+        elif csv_file:
+            dynmodel = from_csv_file(
+                csv_file.name, csv_file,
+            )
+        else:
+            return render(request, 'begin.html', {
+                "errors": "No data source selected!",
+                **context
+            })
+
+        try:
+            pass
         except Exception as e:
             # TODO: roll back
             if not isinstance(e, GenericCSVError):
@@ -220,6 +222,7 @@ def refine_and_import(request, id):
     it exists.
     """
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
+    n_records = dynmodel.get_model().objects.count()
     meta_name = "%smetadata" % (dynmodel.name)
     meta_dynmodel = DynamicModel.objects.get(name=meta_name)
     contactmeta_name = "%scontactmetadata" % (dynmodel.name)
@@ -233,25 +236,50 @@ def refine_and_import(request, id):
         return render(request, 'refine-and-import.html', {
             "form": refine_form,
             "dynmodel": dynmodel,
+            "n_records": n_records,
         })
-    elif  request.method == "POST":
+    elif request.method == "POST":
         refine_form = SchemaRefineForm(request.POST)
         if not refine_form.is_valid():
             return render(request, 'refine-and-import.html', {
                 "form": refine_form,
                 "dynmodel": dynmodel,
+                "error_message": refine_form.errors,
+                "n_records": n_records,
             })
 
         columns = refine_form.cleaned_data["columns"]
         meta_columns = refine_form.cleaned_data["meta_columns"]
         contactmeta_columns = refine_form.cleaned_data["contactmeta_columns"]
+
+        # TODO: convert choice fields back into their slugified representation
+        print("\n\nDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDEBUG")
+        print("meta_columns", meta_columns)
+        print("contactmeta_columns", contactmeta_columns)
+        print("\n\nENDDDDDDDDDDDDDDDDDDDDDDDDDDDDDEBUG")
+
+        # add the new columns to the related base models
         dynmodel.columns = columns
+        metamodel_name = "%smetadata" % (dynmodel.name)
+        metamodel = DynamicModel.objects.get(name=metamodel_name)
+        metamodel.columns = meta_columns
+
+        contactmetamodel_name = "%scontactmetadata" % (dynmodel.name)
+        contactmetamodel = DynamicModel.objects.get(name=contactmetamodel_name)
+        contactmetamodel.columns = contactmeta_columns
+
+        # Alter the DB, first base then metas
+        dynmodel.save()
+        metamodel.save()
+        contactmetamodel.save()
+        # then refresh the models
+        dynmodel.refresh_from_db()
+        metamodel.refresh_from_db()
+        contactmetamodel.refresh_from_db()
 
         errors = None
         try:
-            # Alter the DB
-            dynmodel.save()
-            dynmodel.refresh_from_db()
+            # then import data into the base model
             errors = dynmodel.import_data()
         except Exception as e:
             if not isinstance(e, GenericCSVError):

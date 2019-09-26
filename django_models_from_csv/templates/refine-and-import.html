@@ -58,6 +58,18 @@ Database Columns | {{ block.super }}
             imported records list, before all other fields.
         {% endblocktrans %}
         </p>
+
+        {% if n_records %}
+        <ul class="messagelist">
+          <li class="warning">
+            {% blocktrans trimmed %}
+            You have data imported. If you delete a field, the data for
+            that field will be lost.
+            {% endblocktrans %}
+          </li>
+        </ul>
+        {% endif %}
+
         {{ form.meta_columns }}
         <h4>{% trans 'Contact Log/History' %}</h4>
         <p>
@@ -72,6 +84,10 @@ Database Columns | {{ block.super }}
         {{ form.contactmeta_columns }}
       </div>
       <div class="continue">
+          <input type="hidden"
+                 id="n_records"
+                 name="n_records"
+                 value="{{ n_records }}" />
           <input type="submit" value="{% trans "Continue" %}" />
       </div>
       {% csrf_token %}

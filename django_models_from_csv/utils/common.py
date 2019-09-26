@@ -15,6 +15,12 @@ def slugify(name):
     Does the same as django's slugify, but replaces dash with underscore.
     We do this because deleting a table doesn't like table names with
     dashes.
+
+    NOTE: It's important that this routine is synced with the one we
+    have running in the widget UI choices formatter publish method:
+
+    file: django_models_from_csv/static/django_models_from_csv/columnswidget.js
+    function: rivets.formatters.choices:publish
     """
     return re.sub('-', '_', og_slugify(name)).lower()
 

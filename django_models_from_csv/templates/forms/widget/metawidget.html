@@ -1,42 +1,5 @@
 {% load static i18n %}
 
-{% block extrahead %}
-  <style>
-    #content div.meta-widget {
-        padding: 5px 15px;
-    }
-    #content .meta-widget p {
-        margin: 0;
-    }
-    .columns-selector-wrapper {
-    }
-    .columns-selector-wrapper input[type=text] {
-        min-width: 200px;
-        margin-right: 20px;
-    }
-    #render-meta_columns tbody tr:nth-child(1) {
-        border-top: 2px solid #cccccc;
-    }
-    #render-meta_columns tbody tr:nth-child(2) {
-        border-bottom: 2px solid #cccccc;
-    }
-    .redactor-disabled{
-      cursor: not-allowed;
-    }
-    .meta-widget .add-record {
-      text-align: center;
-      font-size: 0.8em;
-      text-decoration: underline;
-      padding: 0;
-      cursor: pointer;
-      color: #304154;
-    }
-    #csv-models-config table.meta-models-columns {
-      padding-bottom: 0;
-    }
-  </style>
-{% endblock %}
-
 <div class="meta-widget {{ widget.name }}">
   {% comment %}
   we need the json.dumps version here, by default, in case the
@@ -91,10 +54,13 @@
         <td class="option">
           <input type="text"
                  name="name"
+                 rv-disabled="isOriginalColumn|call column.name"
                  rv-value="column.name" />
         </td>
         <td class="option">
-          <select name="type" rv-value="column.type">
+          <select name="type"
+                  rv-value="column.type"
+                  rv-disabled="isOriginalColumn|call column.name">
             {% for column_value, column_name in widget.column_types %}
             <option value="{{ column_value }}">
             {{ column_name }}
@@ -103,11 +69,13 @@
           </select>
         </td>
         <td class="fourth-column option">
-          <span rv-if="istype|call column.type 'short-text'">
+          <!-- rv-if="istype|call column.type 'short-text'"-->
+          <span style="display: none">
             <label for="options">{% trans 'Max length (characters)' %}</label>
             <input type="text"
                    name="options"
                    placeholder="{% trans 'e.g., 120' %}"
+                   rv-disabled="isOriginalColumn|call column.name"
                    rv-value="column.attrs.max_length" />
             </input>
           </span>
@@ -116,7 +84,8 @@
             <input type="text"
                    name="options"
                    placeholder="{% trans 'e.g., option-1, option-2' %}"
-                   rv-value="column.attrs.choices" />
+                   rv-disabled="isOriginalColumn|call column.name"
+                   rv-value="column.attrs.choices|choices" />
             </input>
           </span>
         </td>

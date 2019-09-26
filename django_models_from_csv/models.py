@@ -65,6 +65,8 @@ FIELD_TYPES = {
     "choice": models.CharField,
 }
 
+# Default CharField maximum length
+DEFAULT_MAXLEN = 256
 
 def random_token(length=16):
     return User.objects.make_random_password(length=length)
@@ -437,13 +439,28 @@ def create_model_attrs(dynmodel):
 
         original_to_model_headers[og_column_name] = column_name
 
+        # this accesses the correct django field class. it will be
+        # instantiated with the columns below (if it's not a foreign key
+        # field, which we handle separately and statically)
         Field = FIELD_TYPES[column_type]
+
+        # configure user-hidden foreignkey field
         if column_type == "foreignkey":
+            print("FOREIGNKEY")
             fk_model_name = column_args[0]
             fk_on_delete = getattr(models, column_args[1])
             attrs[column_name] = Field(
                 fk_model_name, fk_on_delete, **column_attrs
             )
+        # handle max-length dependent fields
+        elif str(Field) == "<class 'django.db.models.fields.CharField'>":
+            print("CHAR FIELD")
+            maxlen = column_attrs.get("max_length")
+            print("maxlen", maxlen)
+            if not maxlen:
+                column_attrs["max_length"] = DEFAULT_MAXLEN
+            column_attrs["max_length"] = maxlen
+
         else:
             verbose = column_name
             if og_column_name:
@@ -461,6 +478,12 @@ def create_model_attrs(dynmodel):
         choices = column_attrs.get("choices")
         if choices:
             choices_attr = "%s_CHOICES" % column_name.upper()
+            if isinstance(choices, str):
+                choices_verbose = choices.split(",")
+                hydrated_choices = []
+                for choice in choices:
+                    slug = slugify(choice.lower())
+                    hydrated_choices.append((slug, choice))
             attrs[choices_attr] = choices
 
     attrs["HEADERS_LOOKUP"] = original_to_model_headers

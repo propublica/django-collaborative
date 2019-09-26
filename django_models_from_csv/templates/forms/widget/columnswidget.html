@@ -276,6 +276,7 @@
                {% endif %}
                {% if column.redact %}checked{% endif %} />
         <!-- hidden fields, positional index -->
+        {# TODO: this should be obsolete, now. make sure and then remove #}
         <input type="hidden"
                name="ix"
                value="{{ column.ix }}" />

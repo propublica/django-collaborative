@@ -68,26 +68,23 @@ class MetaWidget(ColumnsWidget):
         columns = json.loads(value)
         editable_columns = []
         editable_keys = [c[0] for c in META_COLUMN_TYPES]
-        print("editable_keys", editable_keys)
         # these will be hidden from the user and appended
         # upon post. users cannot see or modify/remove them
         hidden_columns = []
         for i in range(len(columns)):
             column = columns[i]
-            print("column type", column["type"])
             if column["type"] not in editable_keys:
                 hidden_columns.append(column)
                 continue
             editable_columns.append({
                 **column
             })
-        print("editable_columns", editable_columns)
-        print("hidden_columns", hidden_columns)
         context['widget'] = {
             'name': name,
             'is_hidden': self.is_hidden,
             'required': self.is_required,
             'value_obj': editable_columns,
+            # 'value': json.dumps(editable_columns, indent=2),
             'value': json.dumps(editable_columns, indent=2),
             'hidden_columns': json.dumps(hidden_columns, indent=2),
             'column_types': self.COLUMN_TYPES,

@@ -31,22 +31,22 @@ DEFAULT_STATUSES = (
 )
 
 DEFAULT_STATUS_CHOICES = (
-    "Available",
-    "In Progress",
-    "Verified",
-    "Spam",
-    "Duplicate",
-    "Not Applicable",
-    "Inconclusive",
-    "False",
+    ("available", "Available"),
+    ("in-progress", "In Progress"),
+    ("verified", "Verified"),
+    ("spam", "Spam"),
+    ("duplicate", "Duplicate"),
+    ("not-applicable", "Not Applicable"),
+    ("inconclusive", "Inconclusive"),
+    ("false", "False"),
 )
 
 DEFAULT_META_COLUMNS = [{
     "name": "status",
     "type": "choice",
     "attrs": {
-        "choices": ", ".join(DEFAULT_STATUS_CHOICES),
-        "default": DEFAULT_STATUS_CHOICES[0],
+        "choices": DEFAULT_STATUS_CHOICES,
+        "default": DEFAULT_STATUS_CHOICES[0][0],
     },
 },{
     "name": "assigned_to",
@@ -75,9 +75,9 @@ DEFAULT_CONTACT_METHODS = (
 )
 
 DEFAULT_CONTACT_METHOD_CHOICES = (
-    "Email",
-    "Phone call",
-    "In person",
+    ("email", "Email"),
+    ("phone-call", "Phone call"),
+    ("in-person", "In person"),
 )
 
 DEFAULT_CONTACT_COLUMNS = [{
@@ -90,8 +90,8 @@ DEFAULT_CONTACT_COLUMNS = [{
     "name": "method",
     "type": "choice",
     "attrs": {
-        "choices": ", ".join(DEFAULT_CONTACT_METHOD_CHOICES),
-        "default": DEFAULT_CONTACT_METHOD_CHOICES[0],
+        "choices": DEFAULT_CONTACT_METHOD_CHOICES,
+        "default": DEFAULT_CONTACT_METHOD_CHOICES[0][0],
     },
 }]
 

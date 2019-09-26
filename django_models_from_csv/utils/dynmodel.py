@@ -11,7 +11,7 @@ from django_models_from_csv.commands.manage_py import run_inspectdb
 from django_models_from_csv.exceptions import (
     UniqueColumnError, DataSourceExistsError, NoPrivateSheetCredentialsError,
 )
-from django_models_from_csv.models import DynamicModel
+from django_models_from_csv.models import DynamicModel, DEFAULT_MAXLEN
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
 from django_models_from_csv.utils.models_py import (
@@ -92,6 +92,18 @@ def from_models_py(name, models_py, **model_attrs):
 
         field_type = extract_field_type(declaration)
         logger.info("field_type: %s" % (field_type))
+
+        # handle max-length dependent fields
+        print(
+            "!!!!!!!!!!!!!!!!!!!!!!\n"
+            "field_name", field_name,
+            "type", field_type,
+            "model_attrs", model_attrs
+        )
+        if field_type in ["choice", "short-text"]:
+            maxlen = model_attrs.get("max_length")
+            if not maxlen:
+                model_attrs["max_length"] = DEFAULT_MAXLEN
 
         try:
             original_name = kwargs.pop("db_column")

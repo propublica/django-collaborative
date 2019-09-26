@@ -5,12 +5,11 @@ from django.utils.translation import gettext_lazy as _
 # NOTE: when these change, ensure the columnswidget.html
 # JavasCript changes to include any new fields
 COLUMN_TYPES = (
-    ("text", "Textbox field"),
-    ("short-text", "Text field"),
-    ("date", "Only date field"),
-    ("time", "Only time field"),
-    ("datetime", "Date and time field"),
-    ("number", "Number field"),
+    ("text", "Text"),
+    ("date", "Date only"),
+    ("time", "Time only"),
+    ("datetime", "Date and time"),
+    ("number", "Number"),
     # ("foreignkey", "Associated Table"),
     # ("tagging", "Tags field"),
 )
@@ -19,16 +18,22 @@ COLUMN_TYPES = (
 # not in here (commented out) will be automatically
 # added and never allowed to be changed/added/removed
 META_COLUMN_TYPES = (
-    ("text", "Textbox field"),
-    ("short-text", "Text field"),
-    ("date", "Only date field"),
-    ("time", "Only time field"),
-    ("datetime", "Date and time field"),
-    ("number", "Number field"),
-    ("choice", "Choice selection field"),
-    # ("foreignkey", "Associated Table"),
-    # ("tagging", "Tags field"),
-    # ("created-at", "Create time (readonly)"),
+    ("text", "Text"),
+    ("date", "Date only"),
+    ("time", "Time only"),
+    ("datetime", "Date and time"),
+    ("number", "Number"),
+    ("choice", "Choice selection"),
+)
+# These fields can be allowed (validated), but aren't
+# displayed to the user. These are either deprecated
+# column field types or simply hidden ones.
+HIDDEN_FIELDS = (
+   ("foreignkey", "Associated data"),
+   ("tagging", "Tags field"),
+   ("created-at", "Create time (readonly)"),
+   ("integer", "Floating point number (deprecated)"),
+   ("short-text", "Text"),
 )
 
 # fields required by all model types. this
@@ -70,11 +75,14 @@ def validate_columns(value, model_type=None):
                     _("A column contains invalid field: %s" % field_name)
                 )
 
-        column_types = META_COLUMN_TYPES + COLUMN_TYPES
+        # figure out what fields are allowed in this context
+        column_types = HIDDEN_FIELDS
         if model_type == "base":
-            column_types = COLUMN_TYPES
+            column_types += COLUMN_TYPES
         elif model_type == "meta":
-            column_types = META_COLUMN_TYPES
+            column_types += META_COLUMN_TYPES
+        else:
+            column_types += META_COLUMN_TYPES + COLUMN_TYPES
 
         col_type = col.get("type")
         valid_type_names = [v[0] for v in column_types]
