@@ -40,14 +40,9 @@ def check_apps_need_reloading(sender, environ, **kwargs):
     registered_models = list(conf.get_models())
     n_registered = len(registered_models)
 
-    logger.debug("Checking apps n_dynmodels=%s n_registered=%s" % (
-        n_dynmodels, n_registered
-    ))
-
     # subtract one for DynamicModel, one for CredentialStore which won't
     # be in the DynamicModels count()
     if n_dynmodels != (n_registered - 2):
-        logger.debug("Re-registering django apps models...")
         last_model = DynamicModel.objects.last()
         if last_model:
             last_model.model_cleanup()
@@ -61,26 +56,18 @@ def check_apps_need_reloading(sender, environ, **kwargs):
             continue
         n_admins += 1
 
-    logger.debug("Checking admins n_dynmodels=%s n_admins=%s" % (
-        n_dynmodels, n_admins
-    ))
-
     # since each data source has three models (source data, meta and
     # contact), but we only build admins for the main data source
     # model. so we divide by three because we only want to count base
     # model admins and it's quicker to do a divide than to re-query,
     # filtering by name
-    if True or (n_dynmodels / 3) > n_admins:
-        logger.debug("Re-registering django admins...")
+    if True: # or (n_dynmodels / 3) > n_admins:
         # re-register apps. the goal here is to get the AdminSite's
         # internal _registry to be updated with the new app.
         from collaborative.admin import AdminMetaAutoRegistration
         AdminMetaAutoRegistration(
             include="django_models_from_csv.models"
         ).register()
-        logger.debug("Completed re-register in %s seconds." % (
-            time.time() - start
-        ))
 
 
 class DjangoDynamicModelsConfig(AppConfig):
