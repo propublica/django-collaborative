@@ -1,0 +1,72 @@
+{% extends "django_models_from_csv/base.html" %}
+{% load i18n static %}
+
+{% block title %}
+Database Columns | {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+  {{ block.super }}
+  {{ widget.media }}
+  <link rel="stylesheet" href="{% static "ui/jquery-ui.css" %}">
+  <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+  <script src="{% static "ui/jquery-ui.js" %}"></script>
+  <script src="{% static "django_models_from_csv/rivets.bundled.min.js" %}"></script>
+  <script src="{% static "django_models_from_csv/metawidget.js" %}"></script>
+{% endblock %}
+
+{% block content %}
+<div id="csv-models-config">
+  <h2>Meta Data Configuration</h2>
+  {% if n_records %}
+  <ul class="messagelist">
+    <li class="warning">
+      {% blocktrans trimmed %}
+      If you delete a field here, anything you've entered into that
+      field will be lost.
+      {% endblocktrans %}
+    </li>
+  </ul>
+  {% endif %}
+
+  <form action="{% url 'csv_models:meta-configuration' dynmodel.id %}" method="POST">
+      {% if error_message %}
+      <h3>Save Error</h3>
+      <p>
+          {{error_message}}
+      </p>
+      {% endif %}
+      <div id="meta-models">
+        <h4>{% trans 'Metadata' %}</h4>
+        <p>
+        {% blocktrans trimmed %}
+            Metadata fields allow you to annotate, tag and enhance your
+            imported data. The first two fields will be displayed in
+            imported records list, before other imported data fields.
+        {% endblocktrans %}
+        </p>
+
+        {{ form.meta_columns }}
+        <h4>{% trans 'Contact Log/History' %}</h4>
+        <p>
+        {% blocktrans trimmed %}
+            The contact log lets you maintain an ordered record of information
+            related to your imported rows. This can be used for keeping
+            track of contact with sources or investigation progress. These
+            fields will not be shown in the imported records list, but will
+            be available on the individual record page.
+        {% endblocktrans %}
+        </p>
+        {{ form.contactmeta_columns }}
+      </div>
+      <div class="continue">
+          <input type="hidden"
+                 id="n_records"
+                 name="n_records"
+                 value="{{ n_records }}" />
+          <input type="submit" value="{% trans "Continue" %}" />
+      </div>
+      {% csrf_token %}
+  </form>
+</div>
+{% endblock %}

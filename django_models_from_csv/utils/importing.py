@@ -3,10 +3,13 @@ import logging
 
 from dateutil import parser as dt_parser
 from django.conf import settings
+from django.db.utils import OperationalError
 from import_export.resources import (
     ModelResource, ModelDeclarativeMetaclass,
 )
 from tablib import Dataset
+
+from django_models_from_csv import models
 
 
 logger = logging.getLogger(__name__)

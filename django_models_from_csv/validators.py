@@ -11,9 +11,22 @@ COLUMN_TYPES = (
     ("time", "Only time field"),
     ("datetime", "Date and time field"),
     ("number", "Number field"),
-    # ("foreignkey", "Associated Table"),
     ("tagging", "Tags field"),
 )
+META_COLUMN_TYPES = (
+    ("text", "Textbox field"),
+    ("short-text", "Text field"),
+    ("date", "Only date field"),
+    ("time", "Only time field"),
+    ("datetime", "Date and time field"),
+    ("number", "Number field"),
+)
+HIDDEN_COLUMN_TYPES = (
+    ("foreignkey", "Associated Table"),
+    ("tagging", "Tags field"),
+    ("integer", "Integer field"),
+)
+
 REQUIRED_FIELDS = (
     "name", "type",
 )
@@ -41,7 +54,7 @@ def validate_columns(value):
                 )
 
         col_type = col.get("type")
-        valid_type_names = [v[0] for v in COLUMN_TYPES]
+        valid_type_names = [v[0] for v in COLUMN_TYPES + HIDDEN_COLUMN_TYPES]
         if col_type not in valid_type_names:
             raise ValidationError(_("A column has invalid type: %s" % col_type))
 

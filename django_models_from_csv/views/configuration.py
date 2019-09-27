@@ -11,7 +11,9 @@ from requests.exceptions import ConnectionError
 
 from django_models_from_csv import models
 from django_models_from_csv.exceptions import GenericCSVError
-from django_models_from_csv.forms import SchemaRefineForm
+from django_models_from_csv.forms import (
+    SchemaRefineForm, MetaRefineForm
+)
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv
 from django_models_from_csv.utils.dynmodel import (
@@ -270,14 +272,9 @@ def refine_and_import(request, id):
         logger.info("Doing post-import, re-setup save for admin...")
         dynmodel.save()
 
-        next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
-        if next:
-            return redirect(next)
-
-        return render(request, "import-complete.html", {
-            "dynmodel": dynmodel,
-            "n_records": Model.objects.count(),
-        })
+        logger.info("Doing post-import, re-setup save for admin...")
+        dynmodel.save()
+        return redirect("csv_models:meta-configuration", dynmodel.id)
 
 
 @login_required
@@ -287,19 +284,59 @@ def refine_and_import_by_name(request, name):
 
 
 @login_required
-def import_data(request, id):
-    """
-
-    NOTE: We do the import as a POST as a security precaution. The
-    GET phase isn't really necessary, so the page just POSTs the
-    form automatically via JS on load.
-    """
-
+def meta_configuration(request, id):
     dynmodel = get_object_or_404(models.DynamicModel, id=id)
-    if request.method == "GET":
-        return render(request, 'import-data.html', {
-            "dynmodel": dynmodel
-        })
-    elif request.method == "POST":
-        Model = dynmodel.get_model()
+    n_records = dynmodel.get_model().objects.count()
+    meta_name = "%smetadata" % (dynmodel.name)
+    meta_dynmodel = models.DynamicModel.objects.get(name=meta_name)
+    contactmeta_name = "%scontactmetadata" % (dynmodel.name)
+    contactmeta_dynmodel = models.DynamicModel.objects.get(name=contactmeta_name)
 
+    if request.method == "GET":
+        refine_form = MetaRefineForm({
+            "columns": dynmodel.columns,
+            "meta_columns": meta_dynmodel.columns,
+            "contactmeta_columns": contactmeta_dynmodel.columns,
+        })
+        return render(request, 'meta-configuration.html', {
+            "form": refine_form,
+            "dynmodel": dynmodel,
+            "n_records": n_records,
+        })
+
+    elif request.method == "POST":
+        refine_form = MetaRefineForm(request.POST)
+        if not refine_form.is_valid():
+            return render(request, 'meta-configuration.html', {
+                "form": refine_form,
+                "dynmodel": dynmodel,
+                "error_message": refine_form.errors,
+                "n_records": n_records,
+            })
+
+        meta_columns = refine_form.cleaned_data["meta_columns"]
+        contactmeta_columns = refine_form.cleaned_data["contactmeta_columns"]
+        print("meta_columns", meta_columns)
+        print("contactmeta_columns", contactmeta_columns)
+
+        meta_dynmodel.columns = meta_columns
+        # if not meta_dynmodel.attrs:
+        #     meta_dynmodel.attrs = {}
+        # meta_dynmodel.attrs["type"] = MODEL_TYPES.META
+
+        contactmeta_dynmodel.columns = contactmeta_columns
+        # if not contactmeta_dynmodel.attrs:
+        #     contactmeta_dynmodel.attrs = {}
+        # contactmeta_dynmodel.attrs["type"] = MODEL_TYPES.META
+
+        meta_dynmodel.save()
+        contactmeta_dynmodel.save()
+
+        next = get_setting("CSV_MODELS_WIZARD_REDIRECT_TO")
+        if next:
+            return redirect(next)
+
+        return render(request, "import-complete.html", {
+            "dynmodel": dynmodel,
+            "n_records": Model.objects.count(),
+        })

@@ -1,0 +1,118 @@
+{% load static i18n %}
+
+<div class="meta-widget {{ widget.name }}">
+  {% comment %}
+  we need the json.dumps version here, by default, in case the
+  user saves this before editing. the JS of this widget will
+  overwrite this with proper JSON as users modify it
+  {% endcomment %}
+  <textarea style="display:none;"
+            id="json-{{ widget.name }}"
+            name="{{ widget.name }}"
+     {% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.value %}{{ widget.value }}{% endif %}
+  </textarea>
+  <textarea style="display:none;"
+            id="hidden-{{ widget.name }}"
+            name="hidden-{{ widget.name }}"
+     {% include "django/forms/widgets/attrs.html" %}>
+    {% if widget.hidden_columns %}{{ widget.hidden_columns }}{% endif %}
+  </textarea>
+
+  <table id="render-{{ widget.name }}"
+         class="columns-selector-wrapper sortable meta-models-columns">
+    <thead>
+      <tr>
+        <th>&nbsp;</th>
+        <th>
+          Column name
+        </th>
+        <th>
+          Data type
+        </th>
+        <th>
+          Field Options
+        </th>
+        <th>
+          Searchable
+        </th>
+        <th>
+          Filterable
+        </th>
+        <th>
+          Delete
+        </th>
+      </tr>
+    </thead>
+    <tbody class="{{ widget.name }}">
+      <tr class="column-selector"
+          rv-on-change="onchange"
+          rv-each-column="columns">
+        <td class="grabber-column">
+          <span class="grippy"></span>
+        </td>
+        <td class="option">
+          <input type="text"
+                 name="name"
+                 rv-disabled="isOriginalColumn|call column.name"
+                 rv-value="column.name" />
+        </td>
+        <td class="option">
+          <select name="type"
+                  rv-value="column.type"
+                  rv-disabled="isOriginalColumn|call column.name">
+            {% for column_value, column_name in widget.column_types %}
+            <option value="{{ column_value }}">
+            {{ column_name }}
+            </option>
+            {% endfor %}
+          </select>
+        </td>
+        <td class="fourth-column option">
+          <!-- rv-if="istype|call column.type 'short-text'"-->
+          <span style="display: none">
+            <label for="options">{% trans 'Max length (characters)' %}</label>
+            <input type="text"
+                   name="options"
+                   placeholder="{% trans 'e.g., 120' %}"
+                   rv-disabled="isOriginalColumn|call column.name"
+                   rv-value="column.attrs.max_length" />
+            </input>
+          </span>
+          <span rv-if="istype|call column.type 'choice'">
+            <label for="options">{% trans 'Choices (comma separated)' %}</label>
+            <input type="text"
+                   name="options"
+                   placeholder="{% trans 'e.g., option-1, option-2' %}"
+                   rv-disabled="isOriginalColumn|call column.name"
+                   rv-value="column.attrs.choices|choices" />
+            </input>
+          </span>
+        </td>
+        <td class="option center">
+          <input type="checkbox"
+                 name="searchable"
+                 class="clickable"
+                 rv-checked="column.searchable" />
+        </td>
+        <td class="option center">
+          <input type="checkbox"
+                 name="filterable"
+                 class="clickable"
+                 rv-checked="column.filterable" />
+        </td>
+        <td class="option center">
+          <img rv-on-click="destroy"
+               class="clickable trashcan"
+               src="{% static 'django_models_from_csv/trash.svg' %}"
+               alt="Delete" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="add-record">
+    <span rv-on-click="addField">
+      + Add Field
+    </span>
+  </div>
+</div>
