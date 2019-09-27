@@ -36,6 +36,46 @@ def modelresource_factory(model, resource_class=ModelResource, extra_attrs=None)
     return metaclass(class_name, (resource_class,), class_attrs)
 
 
+def attach_blank_meta_to_record(instance, **kwargs):
+    """
+    This gets ran when a new CSV-backed form response record
+    gets added to the system.
+
+    Here, we manage creating & linking blank metadata foreignkeys to
+    new records upon their creation. This signal handler assumes
+    its only provided Models that are backed by a CSV (not manually
+    managed).
+    """
+    logger.debug("attach_blank_meta_to_record: %s" % (instance))
+    if not instance:
+        return
+
+    meta_model_name = "%smetadata" % instance._meta.object_name
+    try:
+        meta_model_desc = models.DynamicModel.objects.get(name=meta_model_name)
+    except (models.DynamicModel.DoesNotExist, OperationalError) as e:
+        logger.debug("Not attaching meta on non-existant model: %s => %s" % (
+            instance._meta.object_name, meta_model_name
+        ))
+        return
+
+    MetaModel = meta_model_desc.get_model()
+    meta_direct = MetaModel.objects.filter(
+        metadata__id=instance.id
+    ).first()
+    if meta_direct:
+        logger.debug("Already attached meta (%s) to %s" % (
+            meta_direct, instance
+        ))
+        return
+
+    # create a blank metadata record
+    logger.debug("Creating meta for instance...")
+    metadata = MetaModel.objects.create(
+        metadata=instance
+    )
+
+
 # TODO: handle invaliddimensions from dataset.load
 def import_records_list(csv, dynmodel):
     """
@@ -192,5 +232,8 @@ def import_records(csv, Model, dynmodel):
                     obj_data.get("id"), e
                 ))
                 continue
+
+            attach_blank_meta_to_record(obj)
+
 
     return errors
