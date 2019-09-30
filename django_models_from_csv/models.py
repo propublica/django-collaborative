@@ -300,22 +300,16 @@ class DynamicModel(models.Model):
             OldModel = apps.get_model("django_models_from_csv", self.name)
         except LookupError:
             OldModel = None
-        NewModel = construct_model(self)
+
+        NewModel = construct_model(self, force_new=True)
         new_desc = self
-        # TODO: if new or name changed, run this (or just run it)
         ModelSchemaEditor(OldModel).update_table(NewModel)
 
-        # TODO: figure out a way to reconcile the old columns/table
-        # with the new. we need a way to figure out what's been removed
-        # and added vs what's been changed.
-        # TODO: handle delete by checking for old fields not existing in new
         for new_field in NewModel._meta.fields:
             if new_field.name == "id":
                 continue
-            # TODO: ONLY call this when it's changed!
             old_field = self.find_old_field(OldModel, new_field)
-            if old_field:
-                FieldSchemaEditor(old_field).update_column(NewModel, new_field)
+            FieldSchemaEditor(old_field).update_column(NewModel, new_field)
 
     def model_cleanup(self):
         create_models()
@@ -462,7 +456,7 @@ def create_model_attrs(dynmodel):
     return attrs
 
 
-def construct_model(dynmodel):
+def construct_model(dynmodel, force_new=False):
     """
     This creates the model instance from a dynamic model description record.
     """
@@ -472,7 +466,7 @@ def construct_model(dynmodel):
     if not hasattr(sys.modules[__name__], model_name):
         setattr(sys.modules[__name__], model_name, _model)
 
-    if _model:
+    if _model and not force_new:
         return _model
 
     attrs = create_model_attrs(dynmodel)

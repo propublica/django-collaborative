@@ -185,8 +185,7 @@ def main():
     dynmodel = create_dynmodel("places_weather")
     updating_choice_column_option_names(dynmodel)
     changing_column_datatype(dynmodel)
-    # TODO: fix meta add, it explodes for some reason here...
-    # adding_new_column(dynmodel)
+    adding_new_column(dynmodel)
     removing_a_column(dynmodel)
     dynmodel.delete()
 
