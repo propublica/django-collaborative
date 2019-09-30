@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-08-07 05:52+0000\n"
+"POT-Creation-Date: 2019-09-30 17:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,122 +22,132 @@ msgstr ""
 msgid "tag"
 msgstr ""
 
-#: django_models_from_csv/exceptions.py:23
+#: django_models_from_csv/exceptions.py:33
 #, python-format
 msgid ""
 "Duplicate header column '%s' found. Please rename the column in your source "
 "spreadsheet and continue again, below."
 msgstr ""
 
-#: django_models_from_csv/exceptions.py:36
+#: django_models_from_csv/exceptions.py:46
 #, python-format
 msgid ""
 "Data source '%s' already exists. Please choose another name or re-import the "
 "existing data source from the administration panel."
 msgstr ""
 
-#: django_models_from_csv/fields.py:16
+#: django_models_from_csv/exceptions.py:55
+msgid ""
+"We can't find a valid CSV from the URL provided. If this is a Google Sheet, "
+"make sure you copied the share link. If it's a private sheet, make sure you "
+"used the private sheet checkbox, have uploaded a credential file, and shared "
+"the sheet with the service account email. Otherwise, make sure there are no "
+"typos or errors in your URL."
+msgstr ""
+
+#: django_models_from_csv/exceptions.py:66
+msgid ""
+"We couldn't find any private Google sheet credentials saved. If you intended "
+"to import a private sheet, please make sure you went through the "
+"instructions for getting credentials and upload them upon import. If you "
+"need to re-upload credentials, you can do so via the 'Configure Google "
+"Credentials' link at the top of the Collaborate dashboard."
+msgstr ""
+
+#: django_models_from_csv/fields.py:14
 msgid "Columns in a spreadsheet"
 msgstr ""
 
-#: django_models_from_csv/models.py:115
+#: django_models_from_csv/models.py:170
 msgid "Successful Import"
 msgstr ""
 
-#: django_models_from_csv/models.py:116
+#: django_models_from_csv/models.py:171
 msgid "Successful Imports"
 msgstr ""
 
-#: django_models_from_csv/templates/admin/index.html:48
+#: django_models_from_csv/templates/admin/django_models_from_csv/taggable_actions.html:249
+msgid "Run the selected action"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/django_models_from_csv/taggable_actions.html:249
+msgid "Go"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/django_models_from_csv/taggable_actions.html:257
+msgid "Click here to select the objects across all pages"
+msgstr ""
+
+#: django_models_from_csv/templates/admin/django_models_from_csv/taggable_actions.html:257
 #, python-format
-msgid "Models in the %(name)s application"
+msgid "Select all %(total_count)s %(module_name)s"
 msgstr ""
 
-#: django_models_from_csv/templates/admin/index.html:49
-msgid "Delete"
+#: django_models_from_csv/templates/admin/django_models_from_csv/taggable_actions.html:259
+msgid "Clear selection"
 msgstr ""
 
-#: django_models_from_csv/templates/admin/index.html:49
-msgid "Delete an Import"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:61
-msgid "Add"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:68
-msgid "View Records"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:69
-#: django_models_from_csv/templates/django_models_from_csv/change_list_reimport.html:10
-msgid "Re-import"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:71
-msgid "View"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:73
-msgid "Change"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:86
-msgid "You don't have permission to view or edit anything."
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:94
-msgid "Recent actions"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:95
-msgid "My actions"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:99
-msgid "None available"
-msgstr ""
-
-#: django_models_from_csv/templates/admin/index.html:113
-msgid "Unknown content"
-msgstr ""
-
-#: django_models_from_csv/templates/begin.html:92
+#: django_models_from_csv/templates/begin.html:111
 msgid "Data Source Label"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:105
+#: django_models_from_csv/templates/begin.html:124
 msgid "Google Sheet URL"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:140
-msgid "Google Auth Code"
+#: django_models_from_csv/templates/begin.html:153
+msgid "Show Private Sheet Setup Instructions"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:147
-msgid "Paste Google code here"
+#: django_models_from_csv/templates/begin.html:172
+msgid "Credentials File"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:176
+#: django_models_from_csv/templates/begin.html:210
 msgid "API key"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:188
+#: django_models_from_csv/templates/begin.html:224
 msgid "Project ID"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:200
+#: django_models_from_csv/templates/begin.html:238
 msgid "Form ID (optional)"
 msgstr ""
 
-#: django_models_from_csv/templates/begin.html:213
-#: django_models_from_csv/templates/refine-and-import.html:37
-#: templates/setup-auth.html:127
+#: django_models_from_csv/templates/begin.html:275
+#: django_models_from_csv/templates/meta-configuration.html:67
+#: django_models_from_csv/templates/refine-and-import.html:53
+#: templates/setup-credentials.html:397
 msgid "Continue"
 msgstr ""
 
-#: django_models_from_csv/templates/django_models_from_csv/change_list_reimport.html:11
+#: django_models_from_csv/templates/django_models_from_csv/change_list_dynmodel.html:88
+#: templates/admin/change_form.html:18
+msgid "Home"
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/change_list_dynmodel.html:106
+#: templates/admin/index.html:69
+msgid "Re-import"
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/change_list_dynmodel.html:107
 msgid "Export"
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/change_list_dynmodel.html:116
+#: templates/admin/change_form.html:43 templates/admin/login.html:36
+msgid "Please correct the error below."
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/change_list_dynmodel.html:116
+#: templates/admin/change_form.html:43 templates/admin/login.html:36
+msgid "Please correct the errors below."
+msgstr ""
+
+#: django_models_from_csv/templates/django_models_from_csv/change_list_dynmodel.html:127
+msgid "Filter"
 msgstr ""
 
 #: django_models_from_csv/templates/django_models_from_csv/exceptions/unique_column_error.html:4
@@ -158,17 +168,84 @@ msgstr ""
 msgid "administration panel"
 msgstr ""
 
-#: django_models_from_csv/templates/refine-and-import.html:21
+#: django_models_from_csv/templates/forms/widget/columnswidget.html:216
+msgid "Google redactions credentials missing."
+msgstr ""
+
+#: django_models_from_csv/templates/forms/widget/columnswidget.html:217
 msgid ""
-"These are the column names and types we found in your sheet. Feel free to "
-"double check and correct any mistakes before continuing."
+"In order to use Google redaction, you need to set it up from the Configure "
+"Google Credentials page. Click here to open the page in a new tab"
+msgstr ""
+
+#: django_models_from_csv/templates/forms/widget/metawidget.html:75
+msgid "Max length (characters)"
+msgstr ""
+
+#: django_models_from_csv/templates/forms/widget/metawidget.html:78
+msgid "e.g., 120"
+msgstr ""
+
+#: django_models_from_csv/templates/forms/widget/metawidget.html:84
+msgid "Choices (comma separated)"
+msgstr ""
+
+#: django_models_from_csv/templates/forms/widget/metawidget.html:87
+msgid "e.g., option-1, option-2"
+msgstr ""
+
+#: django_models_from_csv/templates/meta-configuration.html:24
+msgid ""
+"If you delete a field here, anything you've entered into that field will be "
+"lost."
+msgstr ""
+
+#: django_models_from_csv/templates/meta-configuration.html:40
+msgid "Metadata"
+msgstr ""
+
+#: django_models_from_csv/templates/meta-configuration.html:42
+msgid ""
+"Metadata fields allow you to annotate, tag and enhance your imported data. "
+"The first two fields will be displayed in imported records list, before "
+"other imported data fields."
+msgstr ""
+
+#: django_models_from_csv/templates/meta-configuration.html:50
+msgid "Contact Log/History"
+msgstr ""
+
+#: django_models_from_csv/templates/meta-configuration.html:52
+msgid ""
+"The contact log lets you maintain an ordered record of information related "
+"to your imported rows. This can be used for keeping track of contact with "
+"sources or investigation progress. These fields will not be shown in the "
+"imported records list, but will be available on the individual record page."
 msgstr ""
 
 #: django_models_from_csv/templates/refine-and-import.html:28
 msgid ""
+"These are the columns we found in your sheet. Feel free to change the data "
+"types or set fields you want to search, filter or redact."
+msgstr ""
+
+#: django_models_from_csv/templates/refine-and-import.html:35
+msgid ""
 "The first five columns (below) will be displayed in the imported records "
 "list. The remaining columns will only be shown inside each record's full "
 "detail page. Re-order the columns by dragging them around."
+msgstr ""
+
+#: django_models_from_csv/templates/refine-and-import.html:43
+msgid "In order to use redaction on your columns, you need to"
+msgstr ""
+
+#: django_models_from_csv/templates/refine-and-import.html:46
+msgid "set up Google Cloud Data Loss Prevention credentials here."
+msgstr ""
+
+#: django_models_from_csv/templates/refine-and-import.html:47
+msgid "When you are done, refresh the page."
 msgstr ""
 
 #: django_models_from_csv/templates/wait.html:54
@@ -182,43 +259,73 @@ msgid ""
 "shortly, please <a id=\"nextPage\" href=\"%(next)s\">click here</a>."
 msgstr ""
 
-#: django_models_from_csv/utils/csv.py:23
+#: django_models_from_csv/utils/csv.py:25
 msgid "Invalid Google Sheets share URL"
 msgstr ""
 
-#: django_models_from_csv/validators.py:35
+#: django_models_from_csv/utils/csv.py:65
+msgid "Error importing from CSV URL."
+msgstr ""
+
+#: django_models_from_csv/utils/google_sheets.py:104
+#: django_models_from_csv/utils/google_sheets.py:140
+msgid "Bad URL or permission denied to sheet."
+msgstr ""
+
+#: django_models_from_csv/validators.py:49
 #, python-format
 msgid "A column is missing required field: %s"
 msgstr ""
 
-#: django_models_from_csv/validators.py:39
+#: django_models_from_csv/validators.py:53
 #, python-format
 msgid "A column contains invalid field: %s"
 msgstr ""
 
-#: django_models_from_csv/validators.py:45
+#: django_models_from_csv/validators.py:59
 #, python-format
 msgid "A column has invalid type: %s"
 msgstr ""
 
-#: django_models_from_csv/validators.py:49
+#: django_models_from_csv/validators.py:63
 msgid "Column attributes must be a dictionary"
 msgstr ""
 
-#: django_models_from_csv/views/configuration.py:90
+#: django_models_from_csv/views/configuration.py:189
 msgid ""
 "Invalid data source. Please make sure you linked to a valid CSV data source."
 msgstr ""
 
-#: django_models_from_csv/views/configuration.py:99
+#: django_models_from_csv/views/configuration.py:199
 msgid ""
 "Invalid URL. Please make sure there aren't typos in the URL, and that the "
 "data isn't protected. If you're trying to use a protected Google Sheet, you "
 "need to use the private Sheet authenticator, below."
 msgstr ""
 
-#: templates/admin/change_form.html:18
-msgid "Home"
+#: templates/admin/auth/user/add_form.html:7
+msgid ""
+"If you are creating a user for logging in via Google Sign In, add their "
+"email address as their username, below. You do not need to add a password. "
+"An unusable password will be created if you leave it blank. Otherwise, "
+"create a username and password and provide it to your user if you're not "
+"using Google Sign In."
+msgstr ""
+
+#: templates/admin/auth/user/add_form.html:16
+msgid "Enter a username and password."
+msgstr ""
+
+#: templates/admin/base_site.html:99
+msgid "Add new data source"
+msgstr ""
+
+#: templates/admin/base_site.html:99
+msgid "Configure Google Services"
+msgstr ""
+
+#: templates/admin/base_site.html:104
+msgid "Django administration"
 msgstr ""
 
 #: templates/admin/change_form.html:21
@@ -226,12 +333,57 @@ msgstr ""
 msgid "Add %(name)s"
 msgstr ""
 
-#: templates/admin/change_form.html:43 templates/admin/login.html:36
-msgid "Please correct the error below."
+#: templates/admin/index.html:37
+msgid "No data sources added. Import one here."
 msgstr ""
 
-#: templates/admin/change_form.html:43 templates/admin/login.html:36
-msgid "Please correct the errors below."
+#: templates/admin/index.html:48
+#, python-format
+msgid "Models in the %(name)s application"
+msgstr ""
+
+#: templates/admin/index.html:49
+msgid "Delete"
+msgstr ""
+
+#: templates/admin/index.html:49
+msgid "Delete an Import"
+msgstr ""
+
+#: templates/admin/index.html:61
+msgid "Add"
+msgstr ""
+
+#: templates/admin/index.html:68
+msgid "View Records"
+msgstr ""
+
+#: templates/admin/index.html:71
+msgid "View"
+msgstr ""
+
+#: templates/admin/index.html:73
+msgid "Change"
+msgstr ""
+
+#: templates/admin/index.html:86
+msgid "You don't have permission to view or edit anything."
+msgstr ""
+
+#: templates/admin/index.html:94
+msgid "Recent actions"
+msgstr ""
+
+#: templates/admin/index.html:95
+msgid "My actions"
+msgstr ""
+
+#: templates/admin/index.html:99
+msgid "None available"
+msgstr ""
+
+#: templates/admin/index.html:113
+msgid "Unknown content"
 msgstr ""
 
 #: templates/admin/login.html:21
@@ -263,39 +415,138 @@ msgstr ""
 msgid "Log in"
 msgstr ""
 
-#: templates/setup-auth.html:62
+#: templates/setup-complete.html:12
+msgid ""
+"Congratulations, you've successfully configured Collaborate. Clicking below "
+"will complete the process, bringing you the login screen. </p> <p> From "
+"there, you can manage your imported data and add users. Good luck! </p>"
+msgstr ""
+
+#: templates/setup-credentials.html:5
+msgid "Google Credentials Setup"
+msgstr ""
+
+#: templates/setup-credentials.html:40
+msgid "Google Credentials"
+msgstr ""
+
+#: templates/setup-credentials.html:42
+msgid ""
+"Google provides several services that can be integrated into Collaborate. In "
+"order to enable them, you first need to set up each one by following the "
+"provided instructions."
+msgstr ""
+
+#: templates/setup-credentials.html:55
 msgid ""
 "In order to allow users to sign in with their Google account, you need to "
 "request access from Google to do this. Specifically, you need something "
-"called OAuth2 keys from Google. To get these keys, follow these steps: </p> "
-"<ol> <li> Go to the <a href=\"https://console.developers.google.com/\" "
-"target=\"_blank\">Google Developer's Console</a>. </li> <li> Create a new "
-"project. </li> <li> On the left, select \"Credentials\" </li> <li> Select "
-"the \"OAuth consent screen\" </li> <li> Give your application a name and "
-"support email. Click \"Save\" at the bottom. </li> <li> Go back to the "
-"\"Credentials\" tab. Click \"Create credentials\" &rarr; \"OAuth client ID"
-"\". </li> <li> Select \"Web application\". This will expose more options. </"
-"li> <li> Under \"Authorized JavaScript origins\" enter: <code>http://"
-"localhost/</code><br/> Under \"Authorized redirect URIs\" enter: "
-"<code>http://localhost/complete/google-oauth2/</code><br/> Click \"Save\". </"
-"li> <li> This will bring up a prompt containing the Google OAuth2 Key and "
-"Secret. Copy each to the below input boxes. </li> </ol>"
+"called OAuth2 keys from Google. To get these keys, follow these steps:"
 msgstr ""
 
-#: templates/setup-auth.html:108
-msgid "Google OAuth2 Key"
+#: templates/setup-credentials.html:65
+msgid "Go to the Google Developer's Console"
 msgstr ""
 
-#: templates/setup-auth.html:117
+#: templates/setup-credentials.html:69
+msgid "Create a new project (or select an existing one)."
+msgstr ""
+
+#: templates/setup-credentials.html:74
+msgid "On the left, select \"Credentials\""
+msgstr ""
+
+#: templates/setup-credentials.html:79
+msgid "Select the \"OAuth consent screen\""
+msgstr ""
+
+#: templates/setup-credentials.html:84
+msgid ""
+"Give your application a name and support email. Click \"Save\" at the bottom"
+msgstr ""
+
+#: templates/setup-credentials.html:90
+msgid ""
+"Go back to the \"Credentials\" tab. Click \"Create credentials\" &rarr; "
+"\"OAuth client ID\""
+msgstr ""
+
+#: templates/setup-credentials.html:96
+msgid "Select \"Web application\". This will expose more options."
+msgstr ""
+
+#: templates/setup-credentials.html:101
+msgid "Under \"Authorized JavaScript origins\" enter:"
+msgstr ""
+
+#: templates/setup-credentials.html:105
+msgid "Under \"Authorized redirect URIs\" enter:"
+msgstr ""
+
+#: templates/setup-credentials.html:109
+msgid "Click \"Save\"."
+msgstr ""
+
+#: templates/setup-credentials.html:114
+msgid ""
+"This will bring up a prompt containing the Google OAuth2 Key and Secret. "
+"Copy each to the below input boxes."
+msgstr ""
+
+#: templates/setup-credentials.html:121
+msgid ""
+"Optionally, you can select one or more domains to whitelist. This will let "
+"users whose email addresses are within the whitelisted domain sign in, "
+"without needing to first create their user account."
+msgstr ""
+
+#: templates/setup-credentials.html:128
+msgid ""
+"If you didn't whitelist any domains, you'll need to pre-create each user "
+"that you want to be able sign in via Google Sign In. This can be done from "
+"the users section of the admin dashboard."
+msgstr ""
+
+#: templates/setup-credentials.html:137
+msgid "Google OAuth2 Client ID"
+msgstr ""
+
+#: templates/setup-credentials.html:149
 msgid "Google OAuth2 Secret"
 msgstr ""
 
-#: templates/setup-complete.html:12
-#, python-format
+#: templates/setup-credentials.html:161
+msgid "Whitelist Domains (Optional)"
+msgstr ""
+
+#: templates/setup-credentials.html:179
 msgid ""
-"Congratulations, you've successfully configured your collaborative tip-"
-"gathering system. Clicking below will complete the process, bringing you the "
-"login screen, where you'll log in using: </p> <p> Username: "
-"%(user.username)s<br/> Password: ••••••••<br/> </p> <p> From there, you can "
-"manage your imported data and add users. Good luck! </p>"
+"To have the app automatically redact personally identifiable information "
+"(names, phone numbers, email addresses, etc) upon import from a spreadsheet, "
+"you can use the Google Data Loss Prevention (DLP) service. This requires you "
+"to create a DLP credentials file and setting up a billing account with "
+"Google, by following the instructions below."
+msgstr ""
+
+#: templates/setup-credentials.html:188
+msgid ""
+"Note: This will not remove the information from the source data. This will "
+"only prevent it from being saved to Collaborate's database."
+msgstr ""
+
+#: templates/setup-credentials.html:265 templates/setup-credentials.html:382
+msgid "Credentials file"
+msgstr ""
+
+#: templates/setup-credentials.html:284
+msgid ""
+"To grant Collaborate access to private sheets, you need to follow the "
+"instructions below and upload the Google credentials file."
+msgstr ""
+
+#: templates/setup-credentials.html:290
+msgid ""
+"If you've already gone through these steps (if you already imported a "
+"private Google spreadsheet), you don't need to go through them again. If you "
+"need to re-upload credentials, you can do it here."
 msgstr ""
