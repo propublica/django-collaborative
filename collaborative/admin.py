@@ -5,6 +5,7 @@ from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
+from django.contrib.admin import AdminSite
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
@@ -14,6 +15,7 @@ from django.db.models.functions import Lower
 from django.db.utils import OperationalError
 from django.forms import modelform_factory
 from django.utils.html import mark_safe, format_html
+from django.views.decorators.cache import never_cache
 from import_export.admin import ExportMixin
 from social_django.models import Association, Nonce, UserSocialAuth
 from taggit.models import Tag
@@ -23,7 +25,7 @@ from collaborative.export import collaborative_modelresource_factory
 from collaborative.filters import TagListFilter
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.forms import create_taggable_form
-from django_models_from_csv.models import DynamicModel
+from django_models_from_csv.models import DynamicModel, CredentialStore
 
 
 logger = logging.getLogger(__name__)
@@ -389,6 +391,24 @@ class TagAdmin(admin.ModelAdmin):
         app_label = "Tags"
 
 
+@never_cache
+def login(*args, **kwargs):
+    """
+    Override login view to hide Google Sign In button if no
+    OAuth credentials added.
+    """
+    extra_context = kwargs.get("extra_context", {})
+    have_oauth_creds = CredentialStore.objects.filter(
+        name="google_oauth_credentials"
+    ).count()
+    extra_context["google_oauth_credentials"] = have_oauth_creds > 0
+    if "first_login" in extra_context:
+        extra_context["first_login"] = False
+    kwargs["extra_context"] = extra_context
+    return AdminSite().login(*args, **kwargs)
+
+
+admin.site.login = login
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"

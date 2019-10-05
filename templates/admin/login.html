@@ -65,7 +65,7 @@ function toggleLogin() {
     {% endif %}
 
 
-    {% if not first_login %}
+    {% if not first_login and google_oauth_credentials %}
     <div id="social-login" style="text-align: center">
         <a href="{% url 'social:begin' 'google-oauth2' %}">
             <img src="{% static 'collaborative/btn_google_signin_light_normal_web.png' %}" />
@@ -80,7 +80,7 @@ function toggleLogin() {
     {% endif %}
 
     <form action="{{ app_path }}" method="post"
-          {% if not first_login %}style="display:none;"{% endif %}
+          {% if not first_login and google_oauth_credentials %}style="display:none;"{% endif %}
           id="login-form">
         {% csrf_token %}
         <div class="form-row">
@@ -106,7 +106,7 @@ function toggleLogin() {
         </div>
     </form>
 
-    {% if not first_login %}
+    {% if not first_login and google_oauth_credentials %}
     <div style="text-align: center">
         <a id="lets-see" onclick="toggleLogin()" href="#">
             {% trans "Or, sign in with a password" %}

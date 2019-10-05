@@ -301,7 +301,12 @@ class DynamicModel(models.Model):
         except LookupError:
             OldModel = None
 
-        NewModel = construct_model(self, force_new=True)
+        # TODO: for some reason force_new=True makes the model show up
+        # multiple times in the admin. but setting this to False makes the
+        # meta schema migrations not work properly w/o restarting the system.
+        # I need to fix this, along with custom meta in general, but for now
+        # we need to reinstate sane working defaults.
+        NewModel = construct_model(self, force_new=False)
         new_desc = self
         ModelSchemaEditor(OldModel).update_table(NewModel)
 
