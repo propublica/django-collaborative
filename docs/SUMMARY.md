@@ -16,6 +16,7 @@
     * [Assigned-To](using-collaborate/adding-metadata/assigned-to.md)
     * [Notes](using-collaborate/adding-metadata/notes.md)
     * [Contact Log](using-collaborate/adding-metadata/contact-log.md)
+    * [Customizing Metadata](using-collaborate/adding-metadata/customizing-metadata.md)
     * [Creating Tags](using-collaborate/adding-metadata/creating-tags.md)
   * [Updating Your Data](using-collaborate/updating-your-data.md)
   * [Exporting Your Data](using-collaborate/exporting-your-data.md)
@@ -26,6 +27,4 @@
   * [Deleting a Project or Entry](using-collaborate/deleting-a-project-or-entry.md)
   * [Changing Your Password](using-collaborate/changing-your-password.md)
   * [Language Support](using-collaborate/language-support.md)
-
-## How to launch
 
