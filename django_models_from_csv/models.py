@@ -301,12 +301,13 @@ class DynamicModel(models.Model):
         except LookupError:
             OldModel = None
 
-        # TODO: for some reason force_new=True makes the model show up
-        # multiple times in the admin. but setting this to False makes the
-        # meta schema migrations not work properly w/o restarting the system.
-        # I need to fix this, along with custom meta in general, but for now
-        # we need to reinstate sane working defaults.
-        NewModel = construct_model(self, force_new=False)
+        # TODO: for some reason force_new=True (removed now, but forces re-
+        # creation of the model class) makes the model show up multiple
+        # times in the admin. but setting this to False makes the meta
+        # schema migrations not work properly w/o restarting the system.
+        # I need to fix this, along with custom meta in general, but for
+        # now we need to reinstate sane working defaults.
+        NewModel = construct_model(self)
         new_desc = self
         ModelSchemaEditor(OldModel).update_table(NewModel)
 
@@ -314,7 +315,8 @@ class DynamicModel(models.Model):
             if new_field.name == "id":
                 continue
             old_field = self.find_old_field(OldModel, new_field)
-            FieldSchemaEditor(old_field).update_column(NewModel, new_field)
+            if old_field:
+                FieldSchemaEditor(old_field).update_column(NewModel, new_field)
 
     def model_cleanup(self):
         create_models()
@@ -461,7 +463,7 @@ def create_model_attrs(dynmodel):
     return attrs
 
 
-def construct_model(dynmodel, force_new=False):
+def construct_model(dynmodel):
     """
     This creates the model instance from a dynamic model description record.
     """
@@ -471,7 +473,7 @@ def construct_model(dynmodel, force_new=False):
     if not hasattr(sys.modules[__name__], model_name):
         setattr(sys.modules[__name__], model_name, _model)
 
-    if _model and not force_new:
+    if _model:
         return _model
 
     attrs = create_model_attrs(dynmodel)
