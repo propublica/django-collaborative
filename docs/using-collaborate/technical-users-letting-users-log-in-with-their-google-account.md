@@ -2,7 +2,7 @@
 
 In order to allow users to sign in with their Google account, you need to request access from Google to do this. Specifically, you need something called OAuth2 keys from Google. To get these keys, follow these steps:
 
-1. Go to the Google Developer's Console.
+1. Go to the [Google Developer's Console](https://console.developers.google.com/).
 2. Create a new project \(or select an existing one\).
 3. On the left, select "Credentials."
 4. Select the "OAuth consent screen."
@@ -17,7 +17,7 @@ In order to allow users to sign in with their Google account, you need to reques
 
 9. Click "Save."
 
-This will bring up a prompt containing the Google OAuth2 Key and Secret. Copy each to the input boxes.
+This will bring up a prompt containing the Google OAuth2 Key and Secret. In another browser window, go to your Collaborate install and find the Configure Google Services link at the top of the screen. Inside that panel, paste in your Client ID and Secret in the appropriate boxes
 
 Optionally, you can select one or more domains to whitelist. This will let users whose email addresses are within the whitelisted domain sign in, without needing to first create their user account.
 
