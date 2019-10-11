@@ -1,7 +1,9 @@
 # Table of contents
 
 * [About Collaborate](README.md)
+* [Launching Collaborate](launching-collaborate.md)
 * [How to Launch Collaborate \(using Heroku\)](how-to-launch-collaborate-using-heroku.md)
+* [How to Launch Collaborate \(Using Google Cloud\)](how-to-launch-collaborate-using-google-cloud.md)
 * [How to Upload Your Data](how-to-upload-your-data/README.md)
   * [Using a CSV File](how-to-upload-your-data/using-a-csv-file.md)
   * [Using Google Sheets](how-to-upload-your-data/using-google-sheets/README.md)
