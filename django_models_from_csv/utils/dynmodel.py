@@ -1,30 +1,25 @@
 from functools import wraps
 import logging
 import re
-import string
 from io import StringIO
 
-from django.contrib.auth.models import User
 from django.db import connections, transaction
 from tablib import Dataset
 
 from django_models_from_csv.commands.csvsql import run_csvsql
 from django_models_from_csv.commands.manage_py import run_inspectdb
 from django_models_from_csv.exceptions import (
-    UniqueColumnError, DataSourceExistsError
+    UniqueColumnError, DataSourceExistsError, NoPrivateSheetCredentialsError,
 )
 from django_models_from_csv.models import DynamicModel
 from django_models_from_csv.utils.common import get_setting, slugify
 from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
 from django_models_from_csv.utils.models_py import (
-    fix_models_py, extract_field_declaration_args,
-    extract_field_declaration_args_eval,
+    fix_models_py, extract_field_declaration_args_eval,
     extract_field_type, extract_fields
 )
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
-from django_models_from_csv.utils.google_sheets import (
-    GoogleOAuth, PrivateSheetImporter
-)
+from django_models_from_csv.utils.google_sheets import PrivateSheetImporter
 
 
 logger = logging.getLogger(__name__)
@@ -113,8 +108,8 @@ def from_models_py(name, models_py, **model_attrs):
         columns.append(column)
         logger.info("from_models_py Columns: %s" % column)
     dynmodel = DynamicModel.objects.create(
-        name = name,
-        columns = columns,
+        name=name,
+        columns=columns,
         **model_attrs
     )
     return dynmodel
@@ -157,15 +152,15 @@ def from_csv_file(filename, file):
     if no_ext:
         name = no_ext[0]
     dynmodel = from_csv(slugify(name), csv)
-    fio = StringIO()
-    fio.write(csv)
-    dynmodel.csv_file.save(name, fio)
-    dynmodel.save()
-    return dynmodel
+    with StringIO() as fio:
+        fio.write(csv)
+        dynmodel.csv_file.save(name, fio)
+        dynmodel.save()
+        return dynmodel
 
 
 @require_unique_name
-def from_csv_url(name, csv_url, csv_google_sheets_auth_code=None):
+def from_csv_url(name, csv_url):
     """
     Build a dynamic model from a CSV URL. This supports Google
     Sheets share URLs and normal remote CSVs.
@@ -194,22 +189,18 @@ def from_screendoor(name, api_key, project_id, form_id=None):
 
 
 @require_unique_name
-def from_private_sheet(name, sheet_url, auth_code=None, refresh_token=None):
+def from_private_sheet(name, sheet_url, credentials=None):
     """
-    Build a model from a private Google Sheet, given an OAuth auth code
-    or refresh token, private sheet URL and name. This, of course,
-    assumes the user has already gone through the Google Auth flow and
-    explicitly granted Sheets view access.
+    Build a model from a private Google Sheet. Credentials is the
+    service account secrets JSON data, provided by the google API
+    console. It should either be a JSON string or a JSON file (bytes).
     """
-    GOOGLE_CLIENT_ID = get_setting("GOOGLE_CLIENT_ID")
-    GOOGLE_CLIENT_SECRET = get_setting("GOOGLE_CLIENT_SECRET")
-    oauther = GoogleOAuth(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
-    access_data = oauther.get_access_data(
-        code=auth_code, refresh_token=refresh_token
-    )
-    token = access_data["access_token"]
-    csv = PrivateSheetImporter(token).get_csv_from_url(sheet_url)
+    if not credentials:
+        raise NoPrivateSheetCredentialsError(
+            "No private sheet credentials found."
+        )
+    csv = PrivateSheetImporter(credentials).get_csv_from_url(sheet_url)
     return from_csv(name, csv, **dict(
         csv_url=sheet_url,
-        csv_google_refresh_token=refresh_token or access_data["refresh_token"],
+        csv_google_sheet_private=True,
     ))

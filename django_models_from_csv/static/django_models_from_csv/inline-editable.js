@@ -33,9 +33,7 @@
       value: value,
       csrfmiddlewaretoken: csrf,
     };
-    console.log("url:", url, "body:", body);
     $.post(url, body, (data, status, xhr) => {
-      console.log("Response data:", data, "status:", status, "xhr:", xhr);
       notify(xhr.status === 200, data.message);
     }, "json");
   };
@@ -69,12 +67,6 @@
       .find("input[type='checkbox'].action-select")[0]
       .value;
 
-    console.log(
-      "content-type:", ctId,
-      "object-id:", objId,
-      "field-name:", name,
-      "value:", value
-    );
     doUpdate(ctId, objId, name, value);
   };
 
@@ -96,7 +88,6 @@
     $(el)
       .find(".select2-selection__choice")
       .each((i, e) => {
-        console.log("getting tag", e.title);
         tags.push(e.title);
       });
     return tags;
@@ -107,57 +98,18 @@
       .find(".select2-selection__choice")
       .each((i, e) => {
         if (tagList.indexOf(e.title) === -1) {
-          console.log("setting tag", e.title);
           tagList.push(e.title);
         }
       });
-  };
-
-  const updateTags = (originalTags, newTags) => {
-    console.log("originalTags", originalTags, "newTags", newTags);
-    const updatedTags = [];
-    // we removed a tag
-    if (originalTags.length < newTags.length) {
-      console.log("ADDED TAG");
-    }
-    // we added a tag
-    else if (originalTags.length > newTags.length) {
-      console.log("REMOVED TAG");
-    }
-  };
-
-  const tagChanged = (originalTags, el, event) => {
-    // We need the timeout due to an inability of normal onchange event
-    // to work with the select2 library. I've identified one reason why
-    // javascript developers tend to go insane with time.
-    setTimeout(() => {
-      console.log("--------------------");
-      console.log("originalTags", originalTags);
-      const newTags = getTags(el);
-      console.log("newTags", newTags);
-      updateTags(originalTags, newTags);
-    }, 500);
   };
 
   const setupTagsSaving = (index, el) => {
     const originalTags = [];
     setTags(el, originalTags);
 
-    console.log("--------------------");
-    console.log("setupTagsSaving tags:", originalTags);
-    //window.ELL = el;
-
     const thisRowColumn = $(el).closest("td");
     const id = `${Date.now()}.${Math.random()}`.replace(/\./g, "");
-    console.log("id", id);
     $(el).attr("id", id);
-    //$(el.parentElement).on("change", tagChanged.bind(this, originalTags, el));
-    $(el.parentElement).on("select2:select", () => {
-      alert("HELLO");
-    });
-    $(el.parentElement).on("select2:unselect", () => {
-      alert("BYE");
-    });
   };
 
   const main = () => {

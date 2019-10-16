@@ -9,6 +9,9 @@
  * #405670 // Lighter version of Propublica bluw -- subheaders
  * #557395 // Accent blue, for hover, etc, brief/small things
  */
+div#csv-models-config p {
+    padding: 0px 0px;
+}
 div#csv-models-config {
     max-width: 900px;
     font-size: 18px;
@@ -16,7 +19,8 @@ div#csv-models-config {
 }
 #csv-models-config h2 {
     font-size: 25px;
-    padding: 15px 0;
+    padding: 10px 0;
+    margin: 5px 0px;
 }
 #csv-models-config h3 {
     font-size: 20px;
@@ -54,6 +58,11 @@ div#csv-models-config {
 #csv-models-config table {
   padding-left: 10px;
 }
+div#csv-models-config #first-run {
+    background-color: #eeeeee;
+    padding: 15px;
+    margin: 15px;
+}
 #csv-models-config .set-password input,
 #csv-models-config .google-oauth input {
   min-width: 300px;
@@ -64,6 +73,23 @@ div#csv-models-config {
 #csv-models-config input[type=submit] {
   font-size: 18px;
   font-weight: bold;
+}
+#csv-models-config h4.instructions-modal-button {
+  cursor: pointer;
+  font-size: 1.2em;
+  margin-top: 15px;
+}
+#csv-models-config h4 {
+  font-size: 1.1em;
+  margin-bottom: 5px;
+}
+
+#csv-models-config .private-sheet-instructions .svc_acct_email {
+  font-family: monospace;
+  font-weight: bold;
+}
+#csv-models-config input[type=checkbox] {
+  margin-right: 10px;
 }
 #csv-models-config .click-to-login {
   text-align: center;
@@ -91,6 +117,48 @@ div#csv-models-config {
   font-weight: bold;
   color: #440000;
 }
+
+#csv-models-config .instructions-list li,
+#csv-models-config ol.instructions-list {
+  padding-top: 5px;
+  margin-top: 10px;
+}
+.instructions-list img {
+  border: 1px solid black;
+}
+.instructions-list li {
+  margin-top: 25px;
+}
+.instructions-list h1 {
+  margin-top: 35px;
+  margin-bottom: 25px;
+}
+.instructions-list h2 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+.instructions-list h3 {
+  margin-top: 20px;
+}
+.instructions-list a {
+  text-decoration: underline;
+}
+.ui-dialog {
+  box-shadow: rgb(0, 0, 0, 0.5) 10px 10px 15px;
+}
+.instructions-modal-button span {
+  background-color: #304154;
+  color: white;
+  font-size: 0.9em;
+  margin: 1px;
+  padding: 3px 5px;
+  display: inline-block;
+  text-align: center;
+  border-radius: 10px;
+  width: 13px;
+  font-weight: bold;
+}
+
 </style>
 {% endblock %}
 

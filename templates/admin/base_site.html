@@ -3,6 +3,14 @@
 {% load i18n %}
 
 {% block extrahead %}
+<!-- Desktop browsers (including 16x6, 32x32 & 48x48 PNGs) -->
+<link rel="shortcut icon" href="{% static 'collaborative/favicon.ico' %}">
+
+<!-- Modern browsers (196x196 should cover all modern browsers) -->
+<link rel="icon" type="image/png" href="{% static 'collaborative/favicon.png' %}">
+
+<!-- iOS & other mobile devices (ideally 180x180, at least 120x120) -->
+<link rel="apple-touch-icon" href="{% static 'collaborative/touch-icon-iphone.png' %}">
 <style>
 #header {
     background-color: #304154;
@@ -58,8 +66,8 @@
   background-color: #405670;
 }
 
-#csv-models-config h4,
-#csv-models-config h3 {
+#csv-models-config h4.hideable,
+#csv-models-config h3.hideable {
     cursor: pointer;
 }
 
@@ -88,8 +96,12 @@
 
 
 {% block userlinks %}
-/ <a href="/db-config/begin?addnew=true">Add new data source</a> /
+/ <a href="{% url 'csv_models:begin' %}?addnew=true">{% trans 'Add new data source' %}</a> / <a href="{% url 'setup-credentials' %}">{% trans 'Configure Google Services' %}</a> /
 {{ block.super }}
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}"><img style="display: inline-block" height=50 src="{% static 'collaborative/collaborate-logo.svg' %}" /> {{ site_header|default:_('Django administration') }}</a></h1>
 {% endblock %}
 
 {% block nav-global %}

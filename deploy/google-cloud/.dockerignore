@@ -1,0 +1,6 @@
+*.sqlite3
+Dockerfile
+*.pyc
+*.pyo
+*.pyd
+__pycache__

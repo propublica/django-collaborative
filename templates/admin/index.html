@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
+{% load i18n static sort_apps %}
 
 {% block extrastyle %}{{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">
@@ -24,8 +24,8 @@
 <div id="content-main">
 
 {% if app_list %}
-    {% for app in app_list %}
-        {% if app.app_label == "django_models_from_csv" and not app.models %}
+    {% for app in app_list|sort_apps %}
+    {% if app.app_label == "django_models_from_csv" and app.models|length <= 1 %}
         <div class="app-{{ app.app_label }} module">
             <table>
                 <caption>
@@ -34,7 +34,7 @@
                 <tr class="model-{{ model.object_name|lower }}">
                     <th>
                         <a class="section" href="/db-config/begin?addnew=true">
-                            No data sources added. Import one here.
+                          {% trans 'No data sources added. Import one here.' %}
                         </a>
                     </th>
                     <th>&nbsp;</th>

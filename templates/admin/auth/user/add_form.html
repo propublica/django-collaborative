@@ -1,0 +1,18 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{% block form_top %}
+  {% if not is_popup %}
+  <p>
+  {% blocktrans trimmed %}
+  If you are creating a user for logging in via Google Sign In,
+  add their email address as their username, below. You do not need to add a
+  password. An unusable password will be created if you leave it blank.
+  Otherwise, create a username and password and provide it to your user
+  if you're not using Google Sign In.
+  {% endblocktrans %}
+  </p>
+  {% else %}
+  <p>{% trans "Enter a username and password." %}</p>
+  {% endif %}
+{% endblock %}

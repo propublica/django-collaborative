@@ -4,39 +4,49 @@ import re
 from django.apps import apps
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from django.contrib.admin import AdminSite
 from django.contrib.admin.models import LogEntry
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import FieldError, FieldDoesNotExist
 from django.db import connection
 from django.db.models.functions import Lower
+from django.db.utils import OperationalError
 from django.forms import modelform_factory
-from django.urls import reverse
 from django.utils.html import mark_safe, format_html
+from django.views.decorators.cache import never_cache
 from import_export.admin import ExportMixin
-from import_export.resources import modelresource_factory
-
-from dal import autocomplete
-import social_django.models as social_models
 from social_django.models import Association, Nonce, UserSocialAuth
+from taggit.models import Tag
+from taggit.apps import TaggitAppConfig
 
+from collaborative.export import collaborative_modelresource_factory
 from collaborative.filters import TagListFilter
-from collaborative.models import AppSetting
 from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
 from django_models_from_csv.forms import create_taggable_form
-from django_models_from_csv.models import DynamicModel
-
-
-UserAdmin.list_display = ("username","email","first_name","last_name")
-# UserAdmin.list_editable = ("first_name", "last_name")
-
-UserAdmin.add_fieldsets = ((None, {
-    'fields': ('username', 'email', 'password1', 'password2'),
-    'classes': ('wide',)
-}),)
+from django_models_from_csv.models import DynamicModel, CredentialStore
 
 
 logger = logging.getLogger(__name__)
+
+
+class NewUserAdmin(UserAdmin):
+    list_display = ("username", "email", "first_name", "last_name")
+    add_form_template = 'admin/auth/user/add_form.html'
+
+    def add_view(self, request, *args, **kwargs):
+        if request.method != "POST":
+            return super().add_view(request, *args, **kwargs)
+        password1 = request.POST.get("password1")
+        password2 = request.POST.get("password2")
+        if not password1 and not password2:
+            newpass = User.objects.make_random_password(length=32)
+            request.POST._mutable = True
+            request.POST["password1"] = newpass
+            request.POST["password2"] = newpass
+            request.POST._mutable = False
+        return super().add_view(request, *args, **kwargs)
 
 
 def widget_for_object_field(obj, field_name):
@@ -58,6 +68,8 @@ def make_getter(rel_name, attr_name, getter_name, field=None):
             return None
 
         rel = getattr(self, rel_name).first()
+        if not rel:
+            return None
         fieldname = "%s__%s" % (rel_name, attr_name)
         content_type_id = ContentType.objects.get_for_model(self).id
 
@@ -114,22 +126,6 @@ class ReimportMixin(ExportMixin):
     export button (from import_export module).
     """
     change_list_template = 'django_models_from_csv/change_list_dynmodel.html'
-
-
-# # TODO: if we find the performance of the make_getter for retrieving tags,
-# # metadata_tags, is really bad, we need to do something like this to prefetch
-# # all the tags and then use them in the tags metadata getter
-# class TagListMixin:
-#     """
-#     Provides a method for including tags via admin list_display. Once you
-#     include this, you'll be able to include 'tag_list' in your list_display.
-#     """
-#
-#     def get_queryset(self, request):
-#         return super().get_queryset(request).prefetch_related('tags')
-#
-#     def tag_list(self, obj):
-#         return u", ".join(o.name for o in obj.tags.all())
 
 
 class CaseInsensitiveChangeList(ChangeList):
@@ -195,7 +191,9 @@ class ReverseFKAdmin(admin.ModelAdmin):
 
 
                 getter_name = "%s_%s" % (rel_name, attr_name)
-                short_desc = re.sub(r"[\-_]+", " ", attr_name)
+                short_desc = re.sub(r"[\-_]+", " ", attr_name).replace(
+                    "assignee", "assigned to"
+                )
 
                 getter = make_getter(
                     rel_name, attr_name, getter_name, field=rel_field
@@ -247,7 +245,7 @@ class DynamicModelAdmin(admin.ModelAdmin):
         # models first to avoid a cascade
         return DynamicModel.objects.filter(
             pk__in=pks
-        )#.order_by("-id")
+        ).order_by("-id")
 
     def get_deleted_objects(self, queryset, request):
         extended_queryset = self.get_full_deletion_set(queryset)
@@ -274,13 +272,11 @@ class DynamicModelAdmin(admin.ModelAdmin):
 
 class AdminMetaAutoRegistration(AdminAutoRegistration):
     def should_register_admin(self, Model):
-        name = Model._meta.object_name
         # metadata models get admin created along with the base model
+        name = Model._meta.object_name
         if name.endswith("metadata"):
             return False
-        return super(
-            AdminMetaAutoRegistration, self
-        ).should_register_admin(Model)
+        return super().should_register_admin(Model)
 
     def create_dynmodel_admin(self, Model):
         name = Model._meta.object_name
@@ -328,34 +324,44 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             meta.append(MetaModelInline)
 
         # get searchable and filterable (from column attributes)
-        # TODO: order by something? number of results?
+        # should we order by something? number of results?
         try:
             model_desc = DynamicModel.objects.get(name=name)
+        except OperationalError:
+            return None
         except DynamicModel.DoesNotExist:
             logger.warning("Model with name: %s doesn't exist. Skipping" % name)
-            return super().create_admin(Model)
+            # return super().create_admin(Model)
+            return None
 
         cols = list(reversed(model_desc.columns))
         searchable = [c.get("name") for c in cols if c.get("searchable")]
         filterable = [c.get("name") for c in cols if c.get("filterable")]
 
         # Build our CSV-backed admin, attaching inline meta model
-        ro_fields = self.get_readonly_fields(Model)
         dynmodel = Model.source_dynmodel(Model)
         fields = self.get_fields(Model, dynmodel=dynmodel)
         associated_fields = ["get_view_label"]
         if name != "DynamicModel":
             test_item = Model.objects.first()
-            if hasattr(test_item, "metadata"):
+            if test_item and hasattr(test_item, "metadata"):
                 associated_fields.append("metadata_status")
                 filterable.append("metadata__status")
-                associated_fields.append("metadata_assignee")
-                filterable.append("metadata__assignee")
                 test_metadata = test_item.metadata.first()
-                if hasattr(test_metadata, "tags"):
+                if hasattr(test_metadata, "assigned_to"):
+                    associated_fields.append("metadata_assigned_to")
+                    filterable.append("metadata__assigned_to")
+                elif hasattr(test_metadata, "assignee"):
+                    associated_fields.append("metadata_assignee")
+                    filterable.append("metadata__assignee")
+                if test_metadata and hasattr(test_metadata, "tags"):
                     associated_fields.append("metadata_tags")
                     filterable.append(TagListFilter)
         list_display = associated_fields + fields[:5]
+
+        exporter = collaborative_modelresource_factory(
+            model=Model,
+        )
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin
         inheritance = (NoEditMixin, ReimportMixin, ReverseFKAdmin,)
@@ -365,21 +371,60 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
             "list_display": list_display,
             "search_fields": searchable,
             "list_filter": filterable,
-            "resource_class": modelresource_factory(model=Model)(),
+            "resource_class": exporter,
         })
 
 
-admin.site.register(LogEntry)
-admin.site.register(AppSetting)
+# Hide "taggit" name
+TaggitAppConfig.verbose_name = "Tagging"
 
+# Remove tagged item inline
+class TagAdmin(admin.ModelAdmin):
+    list_display = ["name", "slug"]
+    ordering = ["name", "slug"]
+    search_fields = ["name"]
+    prepopulated_fields = {"slug": ["name"]}
+
+    class Meta:
+        verbose_name = "Tags"
+        verbose_name_plural = "Tags"
+        app_label = "Tags"
+
+
+@never_cache
+def login(*args, **kwargs):
+    """
+    Override login view to hide Google Sign In button if no
+    OAuth credentials added.
+    """
+    extra_context = kwargs.get("extra_context", {})
+    have_oauth_creds = CredentialStore.objects.filter(
+        name="google_oauth_credentials"
+    ).count()
+    extra_context["google_oauth_credentials"] = have_oauth_creds > 0
+    if "first_login" in extra_context:
+        extra_context["first_login"] = False
+    kwargs["extra_context"] = extra_context
+    return AdminSite().login(*args, **kwargs)
+
+
+admin.site.login = login
 admin.site.site_header = "Collaborate"
 admin.site.index_title = "Welcome"
 admin.site.site_title = "Collaborate"
+# Remove the "view site" link from the admin header
+admin.site.site_url = None
 
 # unregister django social auth from admin
 admin.site.unregister(Association)
 admin.site.unregister(UserSocialAuth)
 admin.site.unregister(Nonce)
+admin.site.unregister(User)
+admin.site.unregister(Tag)
+
+admin.site.register(Tag, TagAdmin)
+admin.site.register(LogEntry)
+admin.site.register(User, NewUserAdmin)
 
 def register_dynamic_admins(*args, **kwargs):
     AdminMetaAutoRegistration(include="django_models_from_csv.models").register()

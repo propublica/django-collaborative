@@ -4,11 +4,12 @@ from django import forms
 from django.conf import settings
 from jsonfield.widgets import JSONWidget
 
-
 try:
     from django.utils import six
 except ImportError:
     import six
+
+from django_models_from_csv import models
 
 
 class ColumnsWidget(JSONWidget):
@@ -47,4 +48,11 @@ class ColumnsWidget(JSONWidget):
             'template_name': self.template_name,
             'media': self.media
         }
+
+        # look for redactor credentials
+        dlp_cred = models.CredentialStore.objects.filter(
+            name="google_dlp_credentials"
+        ).first()
+        if dlp_cred:
+            context["dlp_credentials_exist"] = True
         return context

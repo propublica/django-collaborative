@@ -1,11 +1,8 @@
 import logging
 import re
-import requests
-
-from django.contrib.auth.models import User
 
 from django_models_from_csv.utils.common import get_setting
-from django_models_from_csv.models import DynamicModel, TYPE_TO_FIELDNAME
+from django_models_from_csv.models import TYPE_TO_FIELDNAME
 
 
 logger = logging.getLogger(__name__)
@@ -50,17 +47,6 @@ def fix_models_py(models_py):
         fixed_lines.append(line)
 
     return "\n".join(fixed_lines)
-
-
-def normalize_fields(fields):
-    """
-    """
-    # shorten long column headers, append _1, _2 if duplicate
-    postfix = {}
-    fieldnames = fields.keys()
-    for h in headers:
-        new_headers.append(h)
-    return fieldnames
 
 
 def extract_fields(models_py):

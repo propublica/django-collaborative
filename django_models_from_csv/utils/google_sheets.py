@@ -1,101 +1,46 @@
+import json
 import logging
 import re
 
-import requests
+from apiclient import discovery
+from google.oauth2 import service_account
+from googleapiclient.errors import HttpError
+from django.core.files.base import File
+from django.utils.translation import gettext_lazy as _
 from tablib import Dataset
 
+from django_models_from_csv.exceptions import BadCSVError
 from django_models_from_csv.utils.csv import extract_key_from_csv_url
 
 
 logger = logging.getLogger(__name__)
 
 
-class GoogleOAuth:
-    API_HOST = "https://www.googleapis.com{path}"
-    GET_TOKEN_URL = "/oauth2/v4/token"
-
-    def __init__(self, client_id, client_secret):
-        self.client_id = client_id
-        self.client_secret = client_secret
-
-    def check_for_failure(self, response):
-        # TODO: handle failure response
-        return response.json()
-
-    def get_refreshed_token(self, refresh_token):
-        """
-        Refresh an expired access token. Returns the following
-        data structure on success:
-            {
-              'access_token':'TOKEN HERE',
-              'expires_in':3920,
-              'token_type':'Bearer'
-            }
-        """
-        data = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "refresh_token": refresh_token,
-            "grant_type": "refresh_token",
-        }
-        url = self.API_HOST.format(path=self.GET_TOKEN_URL)
-        r = requests.post(url, data=data)
-        return self.check_for_failure(r)
-
-    def get_initial_token(self, code):
-        """
-        Turn a user's copypasta access code into a usable API access
-        token. These expire quickly, so we need to act fast (or refresh
-        them).
-
-        As a referense, a successful Google OAuth token request response will
-        look like the following:
-            {
-              'access_token': 'ACCESS TOKEN HERRE',
-              'expires_in': 3600,
-              'refresh_token': 'REFRESH TOKEN HERE',
-              'scope': 'https://www.googleapis.com/auth/spreadsheets.readonly',
-              'token_type': 'Bearer'
-            }
-
-        Until we implement token refresh, users will be asked to re-auth
-        every time they need to update a private Sheet.
-        """
-        data = {
-            "code": code,
-            "client_id": self.client_id,
-            "grant_type": "authorization_code",
-            "client_secret": self.client_secret,
-            "redirect_uri": "urn:ietf:wg:oauth:2.0:oob"
-        }
-        url = self.API_HOST.format(path=self.GET_TOKEN_URL)
-        r = requests.post(url, data=data)
-        return self.check_for_failure(r)
-
-    def get_access_data(self, code=None, refresh_token=None):
-        """
-        Unified wrapper for getting auth data (access & refresh tokens)
-        from a code or refresh token. Handles refresh OAuth-ness.
-        """
-        # TODO: handle code failure (401), fallback to refresh if available
-        if code:
-            return self.get_initial_token(code)
-        elif refresh_token:
-            return self.get_refreshed_token(refresh_token)
-        else:
-            raise ValueError("No auth code or refresh token supplied for auth")
-
-
 class PrivateSheetImporter:
-    SHEETS_HOST = "https://sheets.googleapis.com"
-    GET_SHEET_URL = "/v4/spreadsheets/{sheet_id}"
-    GET_SHEET_VALUES_URL = "/v4/spreadsheets/{sheet_id}/values/{start}:{end}"
+    SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly"]
 
-    def __init__(self, access_token):
-        self.access_token = access_token
-
-    def authed_url(self, path):
-        return self.SHEETS_HOST + path + "?access_token=%s" % self.access_token
+    def __init__(self, credentials):
+        """
+        Initialize a Google Private sheets reader service, given a
+        service account credentials JSON. The credentials can either
+        be a dict, JSON string or file (bytes). This routine will do
+        all the proper conversions for internal use.
+        """
+        # file upload, parsed
+        if isinstance(credentials, bytes):
+            credentials = json.loads(credentials.decode("utf-8"))
+        elif isinstance(credentials, File):
+            credentials = json.loads(credentials.read().decode("utf-8"))
+        # JSON string, as stored in the DB
+        elif isinstance(credentials, str):
+            credentials = json.loads(credentials)
+        # we need to have a decoded credentials dict by here
+        creds = service_account.Credentials.from_service_account_info(
+            credentials, scopes=self.SCOPES
+        )
+        # TODO: catch authentication error, return friendly msg. (we
+        #       might we need to do this above as well)
+        self.service = discovery.build("sheets", "v4", credentials=creds)
 
     def get_sheet_information(self, sheet_id):
         """
@@ -151,11 +96,12 @@ class PrivateSheetImporter:
                 'spreadsheetUrl': 'SHEET BROWSER URL HERE'
             }
         """
-        path = self.GET_SHEET_URL.format(sheet_id=sheet_id)
-        url = self.authed_url(path)
-        r = requests.get(url)
-        data = r.json()
-        return data
+        try:
+            return self.service.spreadsheets().get(
+                spreadsheetId=sheet_id
+            ).execute()
+        except HttpError as e:
+            raise BadCSVError(_("Bad URL or permission denied to sheet."))
 
     def get_sheet_values(self, sheet_id, worksheet_index=0):
         """
@@ -181,14 +127,17 @@ class PrivateSheetImporter:
         """
         data = self.get_sheet_information(sheet_id)
         sheet = data["sheets"][worksheet_index]
-        end_row = sheet["properties"]["gridProperties"]["rowCount"]
-        path = self.GET_SHEET_VALUES_URL.format(
-            sheet_id=sheet_id, start=1, end=end_row
-        )
-        url = self.authed_url(path)
-        r = requests.get(url)
-        sheet_data = r.json()
-        return sheet_data["values"]
+
+        # name of the worksheet, if we pass this as the range
+        # to the sheets API, it will give us all values on this
+        # spreadsheet
+        title = sheet["properties"]["title"]
+        try:
+            return self.service.spreadsheets().values().get(
+                spreadsheetId=sheet_id, range=title
+            ).execute()["values"]
+        except HttpError as e:
+            raise BadCSVError(_("Bad URL or permission denied to sheet."))
 
     def get_csv_from_url(self, sheet_url):
         """

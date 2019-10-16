@@ -103,7 +103,7 @@
       <ul class="object-tools">
         {% block object-tools-items %}
           {% if has_export_permission or opts.app_label == "django_models_from_csv" %}
-          <li><a href="{% url 'csv_models:refine-and-import' module_name %}" class="export_link">{% trans "Re-import" %}</a></li>
+          <li><a href="{% url 'csv_models:refine-and-import' opts.model_name %}" class="export_link">{% trans "Re-import" %}</a></li>
           <li><a href="{% url opts|admin_urlname:'export' %}{{cl.get_query_string}}" class="export_link">{% trans "Export" %}</a></li>
           {% endif %}
           {{ block.super }}

@@ -45,7 +45,7 @@ class ScreendoorImporter:
             url = response.links.get('next', {}).get('url', None)
 
         # filter down responses to correct form
-        return [ d for d in all_data if d.get("form_id") == form_id ]
+        return [d for d in all_data if d.get("form_id") == form_id]
 
     def get_header_maps(self, form_data):
         header_map = {}
@@ -65,7 +65,7 @@ class ScreendoorImporter:
         id_to_label = self.get_header_maps(form_data)
         headers = ["id"]
         for c in id_to_label.values():
-            headers.append(re.sub("[\,\n\r]+", "", c))
+            headers.append(re.sub(r"[\,\n\r]+", "", c))
 
         data = Dataset(headers=headers)
         for response_info in response_data:
@@ -78,19 +78,37 @@ class ScreendoorImporter:
                     row.append(value)
                 # attachment
                 elif isinstance(value, list) and value[0].get("filename"):
-                    links = " ".join([ self.attachment_link(rec) for rec in value])
+                    links = " ".join([self.attachment_link(rec) for rec in value])
                     row.append(links)
                 elif value.get("checked"):
                     row.append(", ".join(value.get("checked")))
                 elif value.get("other_text"):
                     row.append(value.get("other_text"))
+                # this handles other_checked w/ blank response
+                elif value.get("other_checked"):
+                    row.append("(Other, blank)")
+                # Screendoor dates come across like this:
+                # {'day': '01', 'year': '2019', 'month': '01'}
+                elif value.get("day") and value.get("year") \
+                        and value.get("month"):
+                    row.append("{year}-{month}-{day}".format(
+                        **value
+                    ))
+                # location, sometimes it's w/o state
+                elif value.get("city") and value.get("country"):
+                    state = value.get("state")
+                    row.append("%s,%s%s" % (
+                        value.get("city"),
+                        " %s, " % state if state else " ",
+                        value.get("country")
+                    ))
                 else:
                     logger.error("Unhandled value type: %s (%s)." % (
                         value, type(value)
                     ))
-                    logger.error("Response data structure: %s" % (
-                        response
-                    ))
+                    # logger.error("Response data structure: %s" % (
+                    #     response
+                    # ))
                     row.append(None)
             data.append(row)
         return data.export("csv")

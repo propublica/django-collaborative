@@ -4,9 +4,6 @@ from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 
 from django_models_from_csv.models import DynamicModel, create_models
-from django_models_from_csv.commands.manage_py import (
-    make_and_apply_migrations
-)
 
 
 @csrf_exempt
@@ -37,7 +34,6 @@ def migrate(request):
     sheet.save()
     create_models()
 
-    # make_and_apply_migrations()
     return HttpResponse(200, "OK")
 
 

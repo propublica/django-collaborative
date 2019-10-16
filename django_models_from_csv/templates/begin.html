@@ -7,33 +7,32 @@ Add a Data Source | {{ block.super }}
 
 {% block extrahead %}
 {{ block.super }}
-<script type="text/javascript">
-/**
- * Toggle displaying the dropdowns. Keyed based on
- * the class name, triggered by H3 click.
- */
-function showHide(cls) {
-  var hide = "display: none;";
-  if (!cls) return;
+<link rel="stylesheet" href="{% static "ui/jquery-ui.css" %}">
+<script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>
+<script src="{% static "ui/jquery-ui.js" %}"></script>
+<script src="{% static "django_models_from_csv/show-hide.js" %}"></script>
 
-  var block = document.querySelector(`${cls}-body`);
-  if (block.getAttribute("style") === hide) {
-      document.querySelectorAll(`${cls}-body`).forEach((i) => {
-          i.setAttribute("style", "");
-      });
-      document.querySelector(`${cls} .icon`).innerText = "➖";
-      document.querySelectorAll(`${cls}-body input`).forEach((i) => {
-          i.value = "";
-      });
+<script type="text/javascript">
+function privateSheetToggled(event) {
+  const isChecked = event.target.checked;
+  if (isChecked) {
+    // show the instructions
+    document.querySelectorAll(".private-sheet-instructions").forEach((el) => {
+      el.setAttribute("style", "");
+    });
   } else {
-      document.querySelectorAll(`${cls}-body`).forEach((i) => {
-          i.setAttribute("style", hide);
-      });
-      document.querySelector(`${cls} .icon`).innerText = "➕";
-      document.querySelectorAll(`${cls}-body input`).forEach((i) => {
-          i.value = "";
-      });
+    // hide instructions
+    document.querySelectorAll(".private-sheet-instructions").forEach((el) => {
+      el.setAttribute("style", "display: none;");
+    });
   }
+}
+
+function showHelpModal() {
+  $("#dialog").dialog({
+    width: 950,
+    maxHeight: 500,
+  });
 }
 
 /**
@@ -41,17 +40,24 @@ function showHide(cls) {
  * just be shown. So this gracefully fails.
  */
 function init() {
-  document.querySelectorAll(".show-hide").forEach((d) => {
-      let found = false;
-      d.querySelectorAll("input").forEach((i) => {
-          if (i.value) {
-              found = true;
-          }
-      });
-      if (!found) {
-        d.setAttribute("style", "display: none;");
-      }
-  });
+  // hide the instructions by default
+  document
+    .querySelectorAll(".private-sheet-instructions")
+    .forEach((el) => {
+      el.setAttribute("style", "display: none;");
+    });
+
+  // hide the menus (from show-hide.js)
+  window.COLLAB_initShowHide();
+
+  // setup toggle on private sheet checkbox
+  document
+    .querySelector("#csv_google_sheet_private")
+    .onchange = privateSheetToggled;
+  const modalBtn = document.querySelector(".instructions-modal-button");
+  if (modalBtn) {
+    modalBtn.onclick = showHelpModal;
+  }
 }
 // No IE8
 document.addEventListener("DOMContentLoaded", function(event) {
@@ -61,10 +67,21 @@ document.addEventListener("DOMContentLoaded", function(event) {
 {% endblock %}
 
 {% block content %}
-<div id="csv-models-config">
+<div id="csv-models-config" class="begin-data-source">
+  {% if first_run %}
+  <div id="first-run">
+      <h2>Welcome to Collaborate!</h2>
+      <p>
+      Collaborate is a tool that newsrooms can use to work on with multiple reporters using a shared data set. Let's get started.
+      </p>
+      <p>
+      You can read the full documentation <a href="https://github.com/propublica/django-collaborative">here</a>.
+      </p>
+  </div>
+  {% endif %}
   <h2>Add a Data Source</h2>
   <p>
-  This step will not import any data, but will read the source data and give you a chance to double check and modify the column types. Importing will happen on the next screen. Select a data source to get started.
+  Select a data source to get started. This step will not import any data, but will read the source data and give you a chance to double check and modify the column types. Importing will happen on the next screen.
   </p>
   <p class="note">
   NOTE: Your data source must have uniquely named column headers.
@@ -81,12 +98,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
   <form action="{% url 'db-config:begin' %}"
         enctype="multipart/form-data"
         method="POST">
-      <h3 class="from-csv" onclick="showHide('.from-csv')">
+      <h3 class="from-csv hideable" onclick="showHide('.from-csv')">
           <span class="icon">➕</span> Import From Google Sheets/CSV URL
       </h3>
       <div class="show-hide from-csv-body">
           <p>
-          Add a Google Sheets share link below to import it into the system. Make sure the link is an "Anyone with link can view" link, found in the Share menu.
+          If your spreadsheet doesn't contain private or sensitive information, you can add a Google Sheet set to public. Make sure the link is set to "Anyone can view," which is found in the Share menu on Google Sheets. Be sure that your data is in the first tab of the workbook.
           </p>
           <table>
               <tr>
@@ -113,45 +130,59 @@ document.addEventListener("DOMContentLoaded", function(event) {
                              type="text"
                              value="{{ csv_url }}"
                              placeholder="e.g., https://docs.google.com/spreadsheets/d/1SiI_sOj_LcW1qXzDSoBaOgZ_SR8SioKZ05auN1o90hc/edit?usp=sharing" />
-                      <br/>
-                      <h4 class="needs-auth" onclick="showHide('.needs-auth')">
-                          <span class="icon">➕</span> This is a private Sheet (needs Google Sign In)
-                      </h4>
                   </td>
               </tr>
-              <tr class="show-hide needs-auth-body google-sheets-authentication">
+              <tr>
                   <td>
                       &nbsp;
                   </td>
                   <td>
-                      <h5>Google Authentication Instructions</h5>
-                      <video width="640" controls>
-                          <source src="{% static 'collaborative/google-sheets-instructions.mp4' %}" type="video/mp4" />
-                              Your browser does not support video.
-                      </video>
-                      <p>
-                          <a href="https://accounts.google.com/o/oauth2/v2/auth?client_id=507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/spreadsheets.readonly" target="_blank">
-                              <img src="{% static 'collaborative/btn_google_signin_light_normal_web.png' %}" /><br/>
-                              Click to get started with Google Authentication
-                          </a>
-                      </p>
+                      <input id="csv_google_sheet_private"
+                             name="csv_google_sheet_private"
+                             value="private"
+                             type="checkbox" />
+                      This is a private Google spreadsheet
                   </td>
               </tr>
-              <tr class="show-hide needs-auth-body">
+              {% if not service_account_email %}
+              <tr class="private-sheet-instructions">
+                  <td>&nbsp;</td>
                   <td>
-                      <label for="csv_google_sheets_auth_code">{% trans 'Google Auth Code' %}</label>
+                      <h4 class="instructions-modal-button hideable">
+                          <span class="help">?</span>
+                          {% trans 'Show Private Sheet Setup Instructions' %}
+                      </h4>
+                  </td>
+              </tr>
+              {% endif %}
+              <tr class="private-sheet-instructions">
+                  {% if service_account_email %}
+                  <td>
+                      &nbsp;
+                  </td>
+                  <td>
+                  Share your spreadsheet with:
+                  <span class="svc_acct_email">
+                      {{ service_account_email}}
+                  </span>
+                  </td>
+                  {% else %}
+                  <td>
+                      <label for="csv_google_credentials">
+                          {% trans 'Credentials File' %}
+                      </label>
                   </td>
                   <td>
                       <input style="min-width:600px;"
-                             name="csv_google_sheets_auth_code"
-                             type="text"
-                             value="{{ csv_google_sheets_auth_code }}"
-                             placeholder="{% trans 'Paste Google code here' %}" />
+                             name="csv_google_credentials"
+                             accept=".json"
+                             type="file" />
                   </td>
+                  {% endif %}
               </tr>
           </table>
       </div>
-      <h3 class="from-screendoor" onclick="showHide('.from-screendoor')">
+      <h3 class="from-screendoor hideable" onclick="showHide('.from-screendoor')">
           <span class="icon">➕</span> Import From Screendoor
       </h3>
       <div class="show-hide from-screendoor-body">
@@ -175,7 +206,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
               </tr>
               <tr>
                   <td>
-                      <label for="sd_api_key">{% trans 'API key' %}</label>
+                      <label for="sd_api_key">
+                          {% trans 'API key' %}
+                      </label>
                   </td>
                   <td>
                       <input style="min-width:600px;"
@@ -187,7 +220,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
               </tr>
               <tr>
                   <td>
-                      <label for="sd_project_id">{% trans 'Project ID' %}</label>
+                      <label for="sd_project_id">
+                          {% trans 'Project ID' %}
+                      </label>
                   </td>
                   <td>
                       <input style="min-width:600px;"
@@ -199,7 +234,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
               </tr>
               <tr>
                   <td>
-                      <label for="sd_form_id">{% trans 'Form ID (optional)' %}</label>
+                      <label for="sd_form_id">
+                          {% trans 'Form ID (optional)' %}
+                      </label>
                   </td>
                   <td>
                       <input style="min-width:600px;"
@@ -212,7 +249,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
           </table>
       </div>
 
-      <h3 class="from-csv-file" onclick="showHide('.from-csv-file')">
+      <h3 class="from-csv-file hideable" onclick="showHide('.from-csv-file')">
           <span class="icon">➕</span> File Upload (CSV)
       </h3>
       <div class="show-hide from-csv-file-body">
@@ -227,6 +264,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
                   <td>
                       <input style="min-width:600px;"
                              name="csv_file_upload"
+                             accept=".csv"
                              type="file" />
                   </td>
               </tr>
@@ -238,5 +276,149 @@ document.addEventListener("DOMContentLoaded", function(event) {
       </div>
       {% csrf_token %}
   </form>
+</div>
+
+<div id="dialog"
+	 class="instructions-list"
+     title="Google Private Sheets Instructions"
+	 style="display: none">
+
+  <h2>Initial Setup</h2>
+
+  <p>Importing private Google Sheets consists of several steps, when importing
+  one for the first time. The basic steps consist of creating a Google
+  <a href="https://cloud.google.com/iam/docs/understanding-service-accounts">service account</a>
+  that can access Google Sheets, uploading the account credentials file to
+  Collaborate, and sharing the sheet with the account email.</p>
+
+  <p>You only need to create a service account once. Subsequent imports will re-use
+  the service account credentials, granted you share the private spreadsheet
+  with account.</p>
+
+  <p>Step-by-step instructions are broken up into two steps: creating the account
+  and granting access to the sheet.</p>
+
+  <h3>Creating a service account and credentials file</h3>
+
+  <ol>
+    <li>
+      <p>Go to the <a href="https://console.developers.google.com/projectselector/apis/library?pli=1&amp;supportedpurview=project">Google Console</a> and create a new project.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/01-create-project.png' %}" alt="Create new project" title="Create a new project" />
+      </p>
+    </li>
+    <li>
+      <p>From the 'Enable APIs and Services' screen, search for "Google Sheets" and
+      click on the "Google Sheets API" box.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/02-goto-enable-apis-and-services.png' %}" alt="Click 'Enable APIs and Services'" title="Click 'Enable APIs and Services'" />
+      </p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/03-enable-sheets-apis.png' %}" alt="Enable Sheets API" title="Enable Sheets API" />
+      </p>
+    </li>
+    <li>
+      <p>In the left panel, click the "Credentials" button.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/04-click-credentials.png' %}" alt="Click 'Credentials'" title="Click 'Credentials'" />
+      </p>
+    </li>
+    <li>
+      <p>Then click "Create Credentials" menu towards the top of the page that loads
+      and select "Service account".</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/05-create-service-account.png' %}" alt="Create Service Account" title="Create Service Account credentials" />
+      </p>
+    </li>
+    <li>
+      <p>In the wizard that loads, name your service account. I chose
+      "private sheet reader". Then click "Create".</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/06-name-service-account.png' %}" alt="Name Service Account" title="Name your service account" />
+      </p>
+    </li>
+    <li>
+      <p>In the next page, add the "Viewer" role to your service account and
+      then click "Continue"</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/07-add-viewer-role.png' %}" alt="Add 'Viewer' role" title="Add the 'Viewer' role" />
+      </p>
+    </li>
+    <li>
+      <p>Towards the bottom of the next page, click "Create Key". A right tab will
+      appear.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/08-create-key.png' %}" alt="Click 'Create Key'" title="Click 'Create Key'" />
+      </p>
+    </li>
+    <li>
+      <p>Select the "JSON" option (should be default) and click "Done". Save the file
+      that it gives you.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/09-create-json-key.png' %}" alt="Create a JSON key" title="Create a JSON key" />
+      </p>
+    </li>
+    <li>
+      <p>Copy the service account email address in the "Service Accounts" list.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/10-copy-service-account-email.png' %}" alt="Copy account email" title="Copy the service account email" />
+      </p>
+    </li>
+  </ol>
+
+  <h3>Giving Collaborate the permission to view your sheet</h3>
+
+  <ol>
+    <li>
+      <p>Go back to your private google sheet and share it with the service account's email address. Click "Send".</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/11-share-with-service-account-email.png' %}" alt="Share your sheets with this account" title="Share your private sheets with this account" />
+      </p>
+    </li>
+    <li>
+      <p>Finally, upload the credentials JSON file below. Done! All future private
+      sheets can be imported by simply sharing it with the service account email
+      and checking the "private sheet" checkbox during the import.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/12-uploading-credentials.png' %}" alt="Uploading credentials" title="Uploading credentials" />
+      </p>
+    </li>
+  </ol>
+
+  <h2>Subsequent imports of private sheets</h2>
+
+  <p>Once the above instructions have been successfully followed, and your private
+  sheet has been imported successfully, you can import new private sheets in two
+  steps:</p>
+
+  <ol>
+    <li>
+      <p>Share your private spreadsheet with the service account.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/11-share-with-service-account-email.png' %}" alt="Share your sheets with this account" title="Share your private sheets with this account" />
+      </p>
+    </li>
+    <li>
+      <p>Select the "This is a private Google spreadsheet" option in the
+      import screen.</p>
+
+      <p>
+      <img src="{% static 'django_models_from_csv/instructions/13-check-private-sheet.png' %}" alt="Click the private sheet checkbox" title="Click the private sheet checkbox" />
+      </p>
+    </li>
+  </ol>
 </div>
 {% endblock %}

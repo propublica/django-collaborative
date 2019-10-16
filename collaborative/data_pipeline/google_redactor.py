@@ -1,26 +1,14 @@
 import logging
 import json
-import sys
+import tempfile
 
 from django.conf import settings
 import google.cloud.dlp
 
+from django_models_from_csv.models import CredentialStore
+
 
 logger = logging.getLogger(__name__)
-
-
-try:
-    COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE = getattr(
-        settings, "COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE"
-    )
-except AttributeError:
-    logger.error(
-        "The Google DLP data pipeline step is enabled, but the "
-        "setting COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE wasn't found. "
-        "In your settings.py file, set that variable to the "
-        "location of the Google DLP credentials file and try "
-        "again."
-    )
 
 
 COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS = getattr(
@@ -80,30 +68,44 @@ def deidentify_with_mask(project, string, info_types, masking_character=None,
     return response.item.value
 
 
-def run(row):
-    if not COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE:
+def run(row, columns=None):
+    try:
+        dlp_cred = CredentialStore.objects.get(
+            name="google_dlp_credentials"
+        )
+    except CredentialStore.DoesNotExist:
         return
 
-    with open(COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE) as f:
-        account_json_str = f.read()
+    account_json = json.loads(dlp_cred.credentials)
 
-    account_json = json.loads(account_json_str)
-
-    dlp = google.cloud.dlp.DlpServiceClient.from_service_account_json(
-        COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
-    )
-
-    project = account_json.get("project_id")
-
-    for header in row:
-        if not header.lower().endswith("_pii"):
-            continue
+    with tempfile.NamedTemporaryFile(mode='w', delete=False) as f_in:
+        f_in.write(dlp_cred.credentials)
+        f_in.flush()
         try:
-            row[header] = deidentify_with_mask(
-                project,
-                row[header],
-                COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS,
-                dlp=dlp,
-            )
+            # We have to close this in Windows
+            f_in.close()
         except Exception as e:
-            logger.warning("Google DLP error: %s" % (e))
+            pass # this means we're on a unix env
+
+        dlp = google.cloud.dlp.DlpServiceClient.from_service_account_json(
+            f_in.name
+        )
+        project = account_json.get("project_id")
+
+        redact_column_names = []
+        for column in columns:
+            if not column.get("redact"):
+                continue
+            redact_column_names.append(column.get("name"))
+        for header in row:
+            if header not in redact_column_names:
+                continue
+            try:
+                row[header] = deidentify_with_mask(
+                    project,
+                    row[header],
+                    COLLAB_PIPE_GOOGLE_DLP_PII_FILTERS,
+                    dlp=dlp,
+                )
+            except Exception as e:
+                logger.warning("Google DLP error: %s" % (e))

@@ -6,7 +6,6 @@ from jsonfield.forms import JSONFormField
 
 from dal import autocomplete
 from django_models_from_csv.widgets import ColumnsWidget
-from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.validators import validate_columns, COLUMN_TYPES
 
 
@@ -19,7 +18,7 @@ class ColumnsFormField(JSONFormField):
     def __init__(self, *args, **kwargs):
         if "widget" not in kwargs:
             kwargs["widget"] = ColumnsWidget(
-                column_types = COLUMN_TYPES
+                column_types=COLUMN_TYPES
             )
         super(ColumnsFormField, self).__init__(*args, **kwargs)
 

@@ -2,6 +2,7 @@ agate==1.6.1
 agate-dbf==0.2.1
 agate-excel==0.2.3
 agate-sql==0.5.4
+apscheduler==3.6.1
 Babel==2.6.0
 backports.csv==1.0.7
 certifi==2019.3.9
@@ -20,6 +21,8 @@ et-xmlfile==1.0.1
 future==0.17.1
 gunicorn==19.9.0
 google-cloud-dlp==0.12.1
+google-api-python-client==1.7.11
+google-auth-httplib2==0.0.3
 idna==2.8
 isodate==0.6.0
 jdcal==1.4

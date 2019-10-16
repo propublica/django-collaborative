@@ -28,16 +28,7 @@ SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY", 'gq301$(s^m%n*k$k#u5xw%532tj-nrn4o^26!yb-%=cmu#3swx'
 )
 
-# Google OAuth for Private Sheets Access
-GOOGLE_CLIENT_ID = "507707897389-566t26bmm0mjsrpm6opt1m459j5esqrd.apps.googleusercontent.com"
-# Not secret! We're using public client security model. This
-# puts the burden on the user to explicitly grant access (via
-# copy and paste into the application)
-GOOGLE_CLIENT_SECRET = "Uk1AHTyOgNNTXz9EUa4Ezph7"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
+DEBUG = True
 ALLOWED_HOSTS = ['*',]
 
 # Application definition
@@ -80,8 +71,6 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             TEMPLATES_DIR,
-            # TODO: figure out a way to auto import admin template overrides
-            # from within the csv models module
             'django_models_from_csv/templates'
         ],
         'APP_DIRS': True,
@@ -103,12 +92,25 @@ FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
 WSGI_APPLICATION = 'collaborative.wsgi.application'
 
 CSV_MODELS_TEMP_DB = "schemabuilding"
-CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-auth/"
+CSV_MODELS_WIZARD_REDIRECT_TO = "/setup-credentials?postsave=True"
 CSV_MODELS_AUTO_REGISTER_ADMIN = False
+
+# Put model names here that you want to show up first
+# note that these need to be the app_label, not display name
+APP_ORDER = [
+    # imported data sources
+    'django_models_from_csv',
+    # django Users
+    'auth',
+    'taggit',
+]
 
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
+# Set up the database connection dynamically from the DATABASE_URL
+# environment variable. Don't change the second database as it's a
+# critical part of data source importing.
 db_from_env = dj_database_url.config()
 DATABASES = {
     'default': {
@@ -121,7 +123,6 @@ DATABASES = {
     }
 }
 DATABASES['default'].update(db_from_env)
-#DATABASES[CSV_MODELS_TEMP_DB].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
@@ -142,7 +143,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'collaborative.auth.GoogleOAuth2',
+    'collaborative.auth.WhitelistedGoogleOAuth2',
     'social_core.backends.slack.SlackOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
@@ -153,6 +154,7 @@ AUTHENTICATION_BACKENDS = (
 # and, if not, will direct them to the wizard. If sources have been
 # created, this will direct users to the admin, as usual.
 LOGIN_REDIRECT_URL = "/setup-check/"
+LOGIN_URL = "/admin"
 
 # You can pass each row imported from a spreadsheet through a custom
 # data pipeline function.  Every row gets passed into these functions in
@@ -160,21 +162,14 @@ LOGIN_REDIRECT_URL = "/setup-check/"
 # please see the documentation at http://TKTKTK.
 DATA_PIPELINE = [
     # To have the app automatically redact personally identifiable
-    # information from a spreadsheet, uncomment the line of code below,
-    # and make sure the header of the columns you want to redact end
-    # with "-PII". Also make sure to set the COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE
-    # setting to the path for your DLP credentials.json file (below).
-    # 'collaborative.data_pipeline.google_redactor',
+    # information from a spreadsheet, setup the credentials in the
+    # google credentials page and then select columns using the
+    # redact checkbox.
+    'collaborative.data_pipeline.google_redactor',
 
     # Example data pipeline processor that uppercases everything
     # 'collaborative.data_pipeline.uppercase',
 ]
-
-# Google DLP credentials JSON file location (if you're deploying the
-# file, you may want to follow the TEMPLATES_DIR example at the top
-# of this file and use relative directories). Just make sure your
-# credentials file isn't available to the web!
-# COLLAB_PIPE_GOOGLE_DLP_CREDS_FILE = "/path/to/credentials.json"
 
 # Types of private information to filter out, here are some example
 # options. A full list can be found here:
@@ -183,6 +178,10 @@ DATA_PIPELINE = [
 #     "EMAIL_ADDRESS", "FIRST_NAME", "LAST_NAME", "PHONE_NUMBER",
 #     "STREET_ADDRESS",
 # ]
+
+# Eliminate social auth trailing slashes because Google OAuth
+# explodes if you tell it to call back to a slash-ending URL
+SOCIAL_AUTH_TRAILING_SLASH = False
 
 # Google Sign In
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ""
@@ -216,9 +215,16 @@ SOCIAL_AUTH_PIPELINE = (
     # Checks if the current social-account is already associated in the site.
     'social_core.pipeline.social_auth.social_user',
 
+    # Create the user account if they're in a domain (assuming one is defined)
+    # If a domains whitelist isn't defined or the user trying to authenticate
+    # isn't within the domain, we *do not* create the user. They will be
+    # rejected by the subsequent step.
+    'collaborative.user.create_user_in_domain_whitelist',
+
     # Associates the current social details with another user account with
-    # a similar email address. Disabled by default.
-    # Pause the pipeline if user isn't granted access
+    # the same email address. Otherwise, pause the pipeline if user
+    # isn't granted access and tell them to request a user be created by
+    # an admin.
     # 'social_core.pipeline.social_auth.associate_by_email',
     'collaborative.user.associate_by_email_or_pause',
 
@@ -261,7 +267,7 @@ LANGUAGES = [
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
-USE_TZ = True
+USE_TZ = False
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -274,35 +280,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static"),
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 try:
     from collaborative.settings_dev import *
 except ModuleNotFoundError:
     pass
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django_models_from_csv': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-        },
-        'collaborative': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'DEBUG'),
-        },
-    },
-}
-
-# Setings (OAuth, etc) from configuration wizard
-# This is a stopgap until we find a better credential
-# storage solution
 try:
     from collaborative.settings_prod import *
 except ModuleNotFoundError:

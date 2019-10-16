@@ -7,10 +7,20 @@
   "addons": [
      "heroku-postgresql:hobby-dev"
   ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    },
+    "clock": {
+      "quantity": 1,
+      "size": "free"
+    }
+  },
   "env": {
     "COLLAB_ADMIN_USERNAME": {
       "description": "Default admin account username.",
-      "value": "admin"
+      "required": true
     },
     "COLLAB_ADMIN_EMAIL": {
       "description": "Default admin account email for recovery.",

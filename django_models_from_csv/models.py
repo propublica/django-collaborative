@@ -4,14 +4,10 @@ import logging
 import re
 import sys
 
-from django import forms
 from django.apps import apps
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
-from django.core.exceptions import ValidationError, AppRegistryNotReady
-from django.utils.functional import cached_property
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.urls.base import clear_url_caches
@@ -20,22 +16,14 @@ from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
 from taggit.managers import TaggableManager
 
-try:
-    from django.utils import six
-except ImportError:
-    import six
-
-import django_models_from_csv
 from django_models_from_csv.fields import ColumnsField
 from django_models_from_csv.permissions import (
     hydrate_models_and_permissions, wipe_models_and_permissions,
 )
 from django_models_from_csv.schema import ModelSchemaEditor, FieldSchemaEditor
-from django_models_from_csv.utils.common import get_setting, slugify
-from django_models_from_csv.utils.csv import fetch_csv, clean_csv_headers
-from django_models_from_csv.utils.google_sheets import (
-   GoogleOAuth, PrivateSheetImporter
-)
+from django_models_from_csv.utils.common import slugify
+from django_models_from_csv.utils.csv import fetch_csv
+from django_models_from_csv.utils.google_sheets import PrivateSheetImporter
 from django_models_from_csv.utils.importing import import_records
 from django_models_from_csv.utils.screendoor import ScreendoorImporter
 
@@ -50,9 +38,11 @@ TYPE_TO_FIELDNAME = {
     "models.DateField": "date",
     "models.TimeField": "time",
     "models.DateTimeField": "datetime",
-    "models.IntegerField": "number",
+    "models.FloatField": "number",
+    "models.IntegerField": "integer",
     "models.ForeignKey": "foreignkey",
 }
+
 # configurable field types for dynamic models.
 # any that aren't above, but are below will be
 # possible to create in the code/by modifying
@@ -64,7 +54,8 @@ FIELD_TYPES = {
     "date": models.DateField,
     "time": models.TimeField,
     "datetime": models.DateTimeField,
-    "number": models.IntegerField,
+    "number": models.FloatField,
+    "integer": models.IntegerField,
     "foreignkey": models.ForeignKey,
     "tagging": TaggableManager,
 }
@@ -72,6 +63,59 @@ FIELD_TYPES = {
 
 def random_token(length=16):
     return User.objects.make_random_password(length=length)
+
+
+class CredentialStore(models.Model):
+    """
+    A place to store data source related credentials.
+    """
+    CREDENTIAL_TYPES = {
+        "google_oauth_credentials": "JSON",
+        "google_dlp_credentials": "JSON",
+        "csv_google_credentials": "JSON",
+    }
+    # Currently used keyspaces:
+    # Key                       Type         Descripion
+    # ========================= ============ ================================
+    # google_oauth_credentials  json string  Google OAuth client secrets
+    # google_dlp_credentials    json string  Google DLP credentials
+    # csv_google_credentials    json string  Google Sheets credentials
+    name = models.CharField(max_length=1024)
+    credentials = models.TextField(null=True, blank=True)
+
+    @property
+    def credentials_json(self):
+        if not self.credentials:
+            return self.credentials
+        try:
+            return json.loads(self.credentials)
+        except json.JSONDecodeError as e:
+            logger.error("Bad Google OAuth credential found!")
+            return None
+
+    def clean_json(self, credentials):
+        """
+        Turn json of various types into a UTF-8 string for storage.
+        """
+        # file upload => string
+        if isinstance(credentials, bytes):
+            return credentials.decode("utf-8")
+        elif isinstance(credentials, dict):
+            return json.dumps(credentials)
+        return credentials
+
+    def create(self, **kwargs):
+        if "credentials" in kwargs:
+            kwargs["credentials"] = self.clean_json(kwargs.get("credentials"))
+        return super().create(**kwargs)
+
+    def save(self, **kwargs):
+        if self.credentials:
+            cleaned = self.clean_json(self.credentials)
+            self.credentials = cleaned
+        if "credentials" in kwargs:
+            kwargs["credentials"] = self.clean_json(kwargs.get("credentials"))
+        return super().save(**kwargs)
 
 
 class DynamicModel(models.Model):
@@ -88,10 +132,10 @@ class DynamicModel(models.Model):
 
     # URL to a Google Sheet or any source CSV for building model
     csv_url = models.URLField(null=True, blank=True)
-    # For Google Sheets manual copy/paste auth. This is the only
-    # method that can work across local and deployed environments
-    csv_google_refresh_token = models.CharField(
-        max_length=255, null=True, blank=True
+    # Flag marking this as private (we will use the service account
+    # credentials to access the sheet, assuming they exist)
+    csv_google_sheet_private = models.BooleanField(
+        default=False,
     )
 
     # Screendoor-specific columns
@@ -106,6 +150,12 @@ class DynamicModel(models.Model):
 
     # some attributes (as dict) to distinguish dynamic models from
     # eachother, to drive some business logic, etc. not used internally.
+    # Currently used attributes:
+    # Key   Type   Description
+    # ======================================================================
+    # type  int    Model type (1=Base model, 2=Metadata, 3=Contact log)
+    # dead  bool   If True, this model has been failing auto update and
+    #              will be skipped until a manual successful import succeeds
     attrs = JSONField(max_length=255, editable=True)
 
     # This is a bit of a hack, but since Django calls post_save
@@ -198,20 +248,19 @@ class DynamicModel(models.Model):
                 "using the confiruation wizard."
             ]
 
+        creds_model = CredentialStore.objects.filter(
+            name="csv_google_credentials"
+        ).first()
+
         csv = None
-        if self.csv_url and self.csv_google_refresh_token:
-            oauther = GoogleOAuth(
-                get_setting("GOOGLE_CLIENT_ID"),
-                get_setting("GOOGLE_CLIENT_SECRET")
-            )
-            access_data = oauther.get_access_data(
-                refresh_token=self.csv_google_refresh_token
-            )
-            token = access_data["access_token"]
-            csv = PrivateSheetImporter(token).get_csv_from_url(
+        if self.csv_url and creds_model:
+            csv = PrivateSheetImporter(
+                creds_model.credentials
+            ).get_csv_from_url(
                 self.csv_url
             )
         elif self.csv_url:
+            # NOTE: InvalidDimensions
             csv = fetch_csv(self.csv_url)
         elif self.sd_api_key:
             importer = ScreendoorImporter(api_key=self.sd_api_key)
@@ -251,32 +300,23 @@ class DynamicModel(models.Model):
             OldModel = apps.get_model("django_models_from_csv", self.name)
         except LookupError:
             OldModel = None
+
+        # TODO: for some reason force_new=True (removed now, but forces re-
+        # creation of the model class) makes the model show up multiple
+        # times in the admin. but setting this to False makes the meta
+        # schema migrations not work properly w/o restarting the system.
+        # I need to fix this, along with custom meta in general, but for
+        # now we need to reinstate sane working defaults.
         NewModel = construct_model(self)
         new_desc = self
-        # TODO: if new or name changed, run this (or just run it)
         ModelSchemaEditor(OldModel).update_table(NewModel)
 
-        # TODO: figure out a way to reconcile the old columns/table
-        # with the new. we need a way to figure out what's been removed
-        # and added vs what's been changed.
-        # TODO: handle delete by checking for old fields not existing in new
         for new_field in NewModel._meta.fields:
             if new_field.name == "id":
                 continue
-            # TODO: ONLY call this when it's changed!
             old_field = self.find_old_field(OldModel, new_field)
             if old_field:
                 FieldSchemaEditor(old_field).update_column(NewModel, new_field)
-
-    def unregister_model(self, name):
-        try:
-            admin.site.unregister(self.get_model())
-        except admin.sites.NotRegistered:
-            pass
-        try:
-            del apps.all_models["django_models_from_csv"][name]
-        except KeyError as err:
-            raise LookupError("'{}' not found.".format(model_name)) from err
 
     def model_cleanup(self):
         create_models()
@@ -301,12 +341,23 @@ class DynamicModel(models.Model):
         ModelSchemaEditor().drop_table(Model)
 
         # then remove django app and content-types/permissions
-        self.unregister_model(self.name)
         app_config = apps.get_app_config("django_models_from_csv")
         wipe_models_and_permissions(app_config, self.name)
 
         # finally kill the row
         super().delete(**kwargs)
+
+        # delete it from the django app registry
+        try:
+            del apps.all_models["django_models_from_csv"][self.name]
+        except KeyError as err:
+            raise LookupError("'{}' not found.".format(self.name))
+
+        # Unregister the model from the admin, before we wipe it out
+        try:
+            admin.site.unregister(Model)
+        except admin.sites.NotRegistered:
+            pass
 
 
 def verbose_namer(name, make_friendly=False):
@@ -315,6 +366,10 @@ def verbose_namer(name, make_friendly=False):
     this will make the column name friendly by removing dashes/underscore
     with spaces.
     """
+    if name.endswith("contactmetadata"):
+        return "Contact MetaData"
+    elif name.endswith("metadata"):
+        return "MetaData"
     no_sd_id = re.sub(r"\s*\(ID:\s*[a-z0-9]+\)$", "", name)
     if not make_friendly:
         return no_sd_id
@@ -327,7 +382,12 @@ def get_source_dynmodel(self):
         return DynamicModel.objects.get(name=name)
     except DynamicModel.DoesNotExist as e:
         logger.warning("Couldn't find DynamicModel with name=%s" % name)
-        pass
+
+
+def dynmodel__str__(self):
+    if hasattr(self, "name"):
+        return "Row from data source '%s'" % (self.name)
+    return "Row from data source"
 
 
 def create_model_attrs(dynmodel):
@@ -337,9 +397,9 @@ def create_model_attrs(dynmodel):
     """
     model_name = dynmodel.name
     Meta = type("Meta", (), dict(
-        managed = False,
-        verbose_name = verbose_namer(model_name, make_friendly=True),
-        verbose_name_plural = verbose_namer(model_name, make_friendly=True),
+        managed=False,
+        verbose_name=verbose_namer(model_name, make_friendly=True),
+        verbose_name_plural=verbose_namer(model_name, make_friendly=True),
     ))
 
     attrs = {
@@ -349,7 +409,15 @@ def create_model_attrs(dynmodel):
         # "tags": TaggableManager(blank=True),
     }
 
-    if type(dynmodel.columns) != list:
+    # make the objects displayed in the admin easy to understant. the
+    # default of '[Model name] (ID)' doesn't provide any useful information
+    # to the end user, so hide it here.
+    if not model_name.endswith("metadata"):
+        attrs["__str__"] = dynmodel__str__
+    else:
+        attrs["__str__"] = lambda s: model_name
+
+    if not isinstance(dynmodel.columns, list):
         return None
 
     original_to_model_headers = {}
@@ -378,8 +446,10 @@ def create_model_attrs(dynmodel):
                 verbose = re.sub(
                     r"\s*\(ID:\s*[a-z0-9]+\)$", "", og_column_name
                 )
+                verbose = re.sub(r"[_\-]+", " ", verbose)
+            if "verbose_name" not in column_attrs:
+                column_attrs["verbose_name"] = verbose
             attrs[column_name] = Field(
-                verbose_name=verbose,
                 *column_args, **column_attrs
             )
 
@@ -442,4 +512,3 @@ try:
     create_models()
 except Exception as e:
     logger.error("[!] Exception creating models: %s" % e)
-    pass

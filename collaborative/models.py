@@ -1,7 +1,6 @@
 from copy import copy
 
 from django.db import models
-from django.utils.timezone import now
 from jsonfield.fields import JSONField
 
 
@@ -23,7 +22,7 @@ DEFAULT_STATUSES = (
     (0, "Available"),
     (1, "In Progress"),
     (2, "Verified"),
-    (3, "Troll"),
+    (3, "Spam"),
     (4, "Duplicate"),
     (5, "Not Applicable"),
     (6, "Inconclusive"),
@@ -39,18 +38,19 @@ DEFAULT_META_COLUMNS = [{
     },
 },{
     "name": "status",
-    "type": "number",
+    "type": "integer",
     "attrs": {
         "choices": DEFAULT_STATUSES,
         "default": DEFAULT_STATUSES[0][0],
     },
 },{
-    "name": "assignee",
+    "name": "assigned_to",
     "type": "short-text",
     "attrs": {
         "max_length": 120,
         "blank": True,
-        "null": True
+        "null": True,
+        "verbose_name": "Assigned to",
     },
 },{
     "name": "notes",
@@ -75,7 +75,7 @@ DEFAULT_CONTACT_COLUMNS = [{
     }
 },{
     "name": "method",
-    "type": "number",
+    "type": "integer",
     "attrs": {
         "choices": DEFAULT_CONTACT_METHODS,
         "default": DEFAULT_CONTACT_METHODS[0][0],

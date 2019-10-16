@@ -1,6 +1,4 @@
-from django.contrib import admin
-from django.conf import settings
-from django.conf.urls import include, url
+from django.conf.urls import url
 from django.urls import path
 
 from django_models_from_csv import views

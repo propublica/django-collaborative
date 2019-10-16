@@ -17,11 +17,18 @@ Database Columns | {{ block.super }}
           </p>
       {% endfor %}
       {% endif %}
+
+      {% if error_message %}
+      <h3>Import Error</h3>
+      <p>
+          {{error_message}}
+      </p>
+      {% endif %}
       <p>
       {% blocktrans trimmed %}
-          These are the column names and types we found in
-          your sheet. Feel free to double check and correct
-          any mistakes before continuing.
+          These are the columns we found in your sheet. Feel free
+          to change the data types or set fields you want to search,
+          filter or redact.
       {% endblocktrans %}
       </p>
       <p>
@@ -30,6 +37,15 @@ Database Columns | {{ block.super }}
           imported records list. The remaining columns will
           only be shown inside each record's full detail page.
           Re-order the columns by dragging them around.
+      {% endblocktrans %}
+      </p>
+      <p>
+      {% blocktrans trimmed %}
+      In order to use redaction on your columns, you need to
+      {% endblocktrans %}
+      <a rel="noopener noreferrer" target="_blank" href="{% url 'setup-credentials' %}">{% trans 'set up Google Cloud Data Loss Prevention credentials here.' %}</a>
+      {% blocktrans trimmed %}
+      When you are done, refresh the page.
       {% endblocktrans %}
       </p>
       {{ form.columns }}

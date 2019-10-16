@@ -1,10 +1,12 @@
 import re
 
-from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 import requests
 from tablib import Dataset
+
+from django_models_from_csv.exceptions import BadCSVError
+
 
 
 SHEETS_BASE = "https://docs.google.com/spreadsheet"
@@ -20,10 +22,11 @@ def extract_key_from_csv_url(url):
         url
     )
     if not matches:
-        raise ValueError(_("Invalid Google Sheets share URL"))
+        raise BadCSVError(_("Invalid Google Sheets share URL"))
     return matches[0]
 
 
+# NOTE: InvalidDimensions
 def clean_csv_headers(csv):
     """
     Remove commas, line breaks, etc, anything that will screw
@@ -39,6 +42,7 @@ def clean_csv_headers(csv):
     return new_data.export("csv")
 
 
+# NOTE: InvalidDimensions
 def fetch_csv(csv_url):
     """
     Take a wither a Google Sheet share link like this ...
@@ -57,4 +61,6 @@ def fetch_csv(csv_url):
         )
     r = requests.get(url)
     data = r.text
+    if re.match(r"^\s*<!DOCTYPE html>", data, re.M|re.I):
+        raise BadCSVError(_("Error importing from CSV URL."))
     return clean_csv_headers(data)

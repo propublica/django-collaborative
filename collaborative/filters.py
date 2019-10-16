@@ -45,4 +45,3 @@ class TagListFilter(admin.SimpleListFilter):
         if not value:
             return queryset
         return queryset.filter(metadata__tags__name=value)
-

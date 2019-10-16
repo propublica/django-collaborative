@@ -1,6 +1,4 @@
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
-from jsonfield.widgets import JSONWidget
 from jsonfield.forms import JSONFormField
 from jsonfield.fields import JSONField
 
@@ -21,7 +19,7 @@ class ColumnsField(JSONField):
             'widget': ColumnsWidget(column_types=COLUMN_TYPES)
         }
         defaults.update(**kwargs)
-        return super(JSONField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
     def validate(self, value, model_instance):
         super(ColumnsField, self).validate(value, model_instance)
