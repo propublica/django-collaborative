@@ -105,6 +105,23 @@ We also included a configuration script for plain Nginx deploys here:
 This can be copied to your main Nginx sites configuration directory (e.g.,
 `/etc/nginx/sites-available/`).
 
+In order to get auto-updating data sources, make sure to add a cron job
+that runs the following `manage.py` command:
+
+    manage.py refresh_data_sources
+
+There's an example cron file that, when added to your `/etc/crontab`, will
+update data every 15 minutes:
+
+    ./deploy/cron/refresh_data_sources
+
+Note that if you use the above example, you probably want to add logrotate
+for the logfile the above cron config adds. You can find the logrotate
+script here (add it to `/etc/logrotate.d/refresh_data_sources`):
+
+    ./deploy/logrotate/refresh_data_sources
+
+
 [gc-proj]: https://console.cloud.google.com/projectselector2/home/dashboard
     "Google Cloud Project Selector"
 
