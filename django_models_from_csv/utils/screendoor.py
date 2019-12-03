@@ -67,18 +67,6 @@ class ScreendoorImporter:
         for c in id_to_label.values():
             headers.append(re.sub(r"[\,\n\r]+", "", c))
 
-        # responder information, not included in the form fields, is
-        # collected by screendoor. we want to extract this and append it
-        # to the fields. also, don't explode on empty responses here.
-        first_response = response_data[0] if response_data else {}
-        responder = first_response.get("responder", {})
-        responder_email = responder.get("email")
-        responder_name = responder.get("name")
-        if responder_email:
-            headers.append("Responder email (ID: resp_email)")
-        if responder_name:
-            headers.append("Responder name (ID: resp_name)")
-
         data = Dataset(headers=headers)
         for response_info in response_data:
             response = response_info.get("responses", {})
@@ -122,11 +110,6 @@ class ScreendoorImporter:
                     #     response
                     # ))
                     row.append(None)
-
-            responder = response_info.get("responder", {})
-            row.append(responder.get("email", ""))
-            row.append(responder.get("name", ""))
-
             data.append(row)
         return data.export("csv")
 
