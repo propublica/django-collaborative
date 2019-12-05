@@ -171,17 +171,14 @@ def setup_dynmodel_signals():
     only attach dynamically-generated signals to non-CSV backed
     models.
     """
+    logger.debug("Setting up dynamic model signals...")
     models.DynamicModel._POST_SAVE_SIGNALS.append(build_and_link_metadata_fk)
     for dynmodel in models.DynamicModel.objects.all():
         if dynmodel.get_attr("type") != MODEL_TYPES.CSV:
+            logger.debug("Skipping non-CSV model for signal: %s" % dynmodel)
             continue
         Model = getattr(models, dynmodel.name)
+        logger.debug("Attaching post-save signal to dynmodel: %s model: %s" % (
+            dynmodel, Model
+        ))
         post_save.connect(attach_blank_meta_to_record, sender=Model)
-
-
-try:
-    setup_dynmodel_signals()
-except OperationalError as e:
-    logger.debug("[!] Skipping operational error: %s" % (e))
-except Exception as e:
-    logger.error("[!] Error loading signals: %s" % (e))
