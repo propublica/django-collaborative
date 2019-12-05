@@ -193,4 +193,7 @@ def import_records(csv, Model, dynmodel):
                 ))
                 continue
 
+        from collaborative import signals
+        signals.attach_blank_meta_to_record(Model, obj)
+
     return errors
