@@ -23,7 +23,7 @@ from taggit.apps import TaggitAppConfig
 
 from collaborative.export import collaborative_modelresource_factory
 from collaborative.filters import TagListFilter
-from django_models_from_csv.admin import AdminAutoRegistration, NoEditMixin
+from django_models_from_csv.admin import AdminAutoRegistration
 from django_models_from_csv.forms import create_taggable_form
 from django_models_from_csv.models import DynamicModel, CredentialStore
 
@@ -280,7 +280,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
 
     def create_dynmodel_admin(self, Model):
         name = Model._meta.object_name
-        inheritance = (NoEditMixin, DynamicModelAdmin,)
+        inheritance = (DynamicModelAdmin,)
         return type("%sAdmin" % name, inheritance, {})
 
     def create_admin(self, Model):
@@ -364,7 +364,7 @@ class AdminMetaAutoRegistration(AdminAutoRegistration):
         )
 
         # Note that ExportMixin needs to be declared before ReverseFKAdmin
-        inheritance = (NoEditMixin, ReimportMixin, ReverseFKAdmin,)
+        inheritance = (ReimportMixin, ReverseFKAdmin,)
         return type("%sAdmin" % name, inheritance, {
             "inlines": meta,
             "readonly_fields": fields,
