@@ -124,8 +124,10 @@ class ScreendoorImporter:
                     row.append(None)
 
             responder = response_info.get("responder", {})
-            row.append(responder.get("email", ""))
-            row.append(responder.get("name", ""))
+            if responder_email:
+                row.append(responder.get("email", ""))
+            if responder_name:
+                row.append(responder.get("name", ""))
 
             data.append(row)
         return data.export("csv")
