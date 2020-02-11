@@ -145,4 +145,5 @@ class ScreendoorImporter:
         if not form_id:
             form_id = form_data["id"]
         response_data = self.get_responses(project_id, form_id)
+        logger.debug("Screendoor response_data: %s" % (str(response_data)))
         return self.build_csv_from_data(form_data, response_data)
