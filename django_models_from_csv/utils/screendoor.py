@@ -71,12 +71,10 @@ class ScreendoorImporter:
         # collected by screendoor. we want to extract this and append it
         # to the fields. also, don't explode on empty responses here.
         first_response = response_data[0] if response_data else {}
-        responder = first_response.get("responder", {})
-        responder_email = responder.get("email")
-        responder_name = responder.get("name")
-        if responder_email:
+        first_responder = first_response.get("responder", {})
+        if "email" in first_responder:
             headers.append("Responder email (ID: resp_email)")
-        if responder_name:
+        if "name" in first_responder:
             headers.append("Responder name (ID: resp_name)")
 
         data = Dataset(headers=headers)
@@ -124,9 +122,9 @@ class ScreendoorImporter:
                     row.append(None)
 
             responder = response_info.get("responder", {})
-            if responder_email:
+            if "email" in first_responder:
                 row.append(responder.get("email", ""))
-            if responder_name:
+            if "name" in first_responder:
                 row.append(responder.get("name", ""))
 
             data.append(row)
