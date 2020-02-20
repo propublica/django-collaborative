@@ -59,6 +59,7 @@ pylint*.log
 *.log
 local_settings.py
 *.sqlite3
+*.sqlite3-journal
 
 # Flask stuff:
 instance/
