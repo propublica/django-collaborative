@@ -10,10 +10,13 @@ logger = logging.getLogger(__name__)
 
 class ScreendoorImporter:
     def __init__(self, api_key=None, base_url="https://screendoor.dobt.co",
-                 per_page=100):
+                 per_page=100, max_import_records=None):
         self.api_key = api_key
         self.base_url = base_url
         self.per_page = per_page
+        # stop importing records after this number of records
+        # so we don't get 504
+        self.max_import_records = max_import_records
 
     def get_form(self, project_id, form_id=None):
         if not form_id:
@@ -38,10 +41,17 @@ class ScreendoorImporter:
         # get all pages. first page response has a Link header with
         # a list of next, pref, first, last URLs. Keep getting these
         # until no more pages exist. (stolen from Ken's electionland code)
+        records = 0
         all_data = []
         while url:
             response = requests.get(url)
             all_data += response.json()
+            records += len(all_data)
+            if self.max_import_records and records > self.max_import_records:
+                if len(all_data) > self.max_import_records:
+                    all_data = all_data[:self.max_import_records]
+                logger.warn("Maximum records imported. Skipping remaining.")
+                break
             url = response.links.get('next', {}).get('url', None)
 
         # filter down responses to correct form
@@ -128,6 +138,7 @@ class ScreendoorImporter:
                 row.append(responder.get("name", ""))
 
             data.append(row)
+
         return data.export("csv")
 
     def build_csv(self, project_id, form_id=None):

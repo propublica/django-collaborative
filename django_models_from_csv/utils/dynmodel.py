@@ -172,14 +172,18 @@ def from_csv_url(name, csv_url):
 
 
 @require_unique_name
-def from_screendoor(name, api_key, project_id, form_id=None):
+def from_screendoor(name, api_key, project_id, form_id=None,
+                    max_import_records=None):
     """
     Build a dynamic model from a screendoor project/form, given
     a supplied API KEY. This will fetch all the data from the
     API and build a CSV, which will be used to build the rest
     of the table.
     """
-    importer = ScreendoorImporter(api_key=api_key)
+    importer = ScreendoorImporter(
+        api_key=api_key,
+        max_import_records=max_import_records,
+    )
     csv = importer.build_csv(project_id, form_id=form_id)
     return from_csv(name, csv, **dict(
         sd_api_key=api_key,

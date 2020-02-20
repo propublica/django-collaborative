@@ -302,6 +302,13 @@ STATICFILES_DIRS = [
 ]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# total number of records to import for so we don't
+# get 504 errors on importing. this means large imports
+# will depend on the background importer, which has no
+# limit.
+# You can set this to None to disable timeouts
+MAX_IMPORT_RECORDS = 750
+
 try:
     from collaborative.settings_dev import *
 except ModuleNotFoundError:

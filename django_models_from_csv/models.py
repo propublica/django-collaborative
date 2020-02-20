@@ -235,7 +235,7 @@ class DynamicModel(models.Model):
         except LookupError as e:
             return None
 
-    def import_data(self):
+    def import_data(self, max_import_records=None):
         """
         Perform a (re)import on a previously loaded model. This takes
         the loaded columns into account, ignoring any new columns that
@@ -263,16 +263,21 @@ class DynamicModel(models.Model):
             # NOTE: InvalidDimensions
             csv = fetch_csv(self.csv_url)
         elif self.sd_api_key:
-            importer = ScreendoorImporter(api_key=self.sd_api_key)
+            importer = ScreendoorImporter(
+                api_key=self.sd_api_key,
+                max_import_records=max_import_records,
+            )
             csv = importer.build_csv(
                 self.sd_project_id, form_id=self.sd_form_id
             )
+
         elif self.csv_file:
             csv = self.csv_file.read().decode("utf-8")
         else:
             raise NotImplementedError("Invalid data source for %s" % self)
 
         return import_records(csv, self.get_model(), self)
+
 
     def make_token(self):
         return random_token(16)

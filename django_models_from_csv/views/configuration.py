@@ -2,6 +2,7 @@ import logging
 import json
 
 from django.apps import apps
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -160,7 +161,8 @@ def begin(request):
                     name,
                     sd_api_key,
                     int(sd_project_id),
-                    form_id=int(sd_form_id) if sd_form_id else None
+                    form_id=int(sd_form_id) if sd_form_id else None,
+                    max_import_records=settings.MAX_IMPORT_RECORDS,
                 )
             elif csv_file:
                 dynmodel = from_csv_file(
@@ -244,7 +246,9 @@ def refine_and_import(request, id):
             # Alter the DB
             dynmodel.save()
             dynmodel.refresh_from_db()
-            errors = dynmodel.import_data()
+            errors = dynmodel.import_data(
+                max_import_records=settings.MAX_IMPORT_RECORDS,
+            )
         except Exception as e:
             if not isinstance(e, GenericCSVError):
                 raise e
