@@ -66,24 +66,6 @@ def random_token(length=16):
     return User.objects.make_random_password(length=length)
 
 
-class BackgroundRefreshLog(models.Model):
-    """
-    A place for messages from the background updater to show up
-    to the end user in the admin.
-    """
-    dynmodel = models.ForeignKey(DynamicModel)
-    when = models.DateTimeField(
-        default=timezone.now
-    )
-    message = models.TextField(
-        default="Background importer hasn't run for this data source, yet. "
-        "If this message persists for more than a few days, then the "
-        "background updater hasn't been installed. See here for more "
-        "information: "
-        "https://github.com/propublica/django-collaborative/blob/master/docs/launching-collaborate.md"
-    )
-
-
 class CredentialStore(models.Model):
     """
     A place to store data source related credentials.
@@ -530,6 +512,24 @@ def create_models():
 
         these_models = apps.all_models["django_models_from_csv"]
         these_models[model_name] = _model
+
+
+class BackgroundRefreshLog(models.Model):
+    """
+    A place for messages from the background updater to show up
+    to the end user in the admin.
+    """
+    dynmodel = models.ForeignKey(DynamicModel, models.CASCADE)
+    when = models.DateTimeField(
+        default=timezone.now
+    )
+    message = models.TextField(
+        default="Background importer hasn't run for this data source, yet. "
+        "If this message persists for more than a few days, then the "
+        "background updater hasn't been installed. See here for more "
+        "information: "
+        "https://github.com/propublica/django-collaborative/blob/master/docs/launching-collaborate.md"
+    )
 
 
 try:
