@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.urls.base import clear_url_caches
+from django.utils import timezone
 from django.utils.module_loading import import_module
 from django.utils.translation import gettext_lazy as _
 from jsonfield.fields import JSONField
@@ -63,6 +64,24 @@ FIELD_TYPES = {
 
 def random_token(length=16):
     return User.objects.make_random_password(length=length)
+
+
+class BackgroundRefreshLog(models.Model):
+    """
+    A place for messages from the background updater to show up
+    to the end user in the admin.
+    """
+    dynmodel = models.ForeignKey(DynamicModel)
+    when = models.DateTimeField(
+        default=timezone.now
+    )
+    message = models.TextField(
+        default="Background importer hasn't run for this data source, yet. "
+        "If this message persists for more than a few days, then the "
+        "background updater hasn't been installed. See here for more "
+        "information: "
+        "https://github.com/propublica/django-collaborative/blob/master/docs/launching-collaborate.md"
+    )
 
 
 class CredentialStore(models.Model):
