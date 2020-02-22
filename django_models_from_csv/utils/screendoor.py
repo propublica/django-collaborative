@@ -122,6 +122,13 @@ class ScreendoorImporter:
                         " %s, " % state if state else " ",
                         value.get("country")
                     ))
+                # time: {'am_pm': 'PM', 'hours': '05', 'minutes': '30'}
+                elif value.get("am_pm"):
+                    row.append("%s:%s %s" % (
+                        value.get("hours", ""),
+                        value.get("minutes", ""),
+                        value.get("am_pm", "")
+                    ))
                 else:
                     logger.error("Unhandled value type: %s (%s)." % (
                         value, type(value)
