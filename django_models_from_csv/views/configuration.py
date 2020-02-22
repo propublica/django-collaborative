@@ -157,12 +157,15 @@ def begin(request):
                 )
             elif sd_api_key:
                 name = slugify(request.POST.get("sd_name"))
+                max_import_records = None
+                if hasattr(settings, "MAX_IMPORT_RECORDS"):
+                    max_import_records = settings.MAX_IMPORT_RECORDS
                 dynmodel = from_screendoor(
                     name,
                     sd_api_key,
                     int(sd_project_id),
                     form_id=int(sd_form_id) if sd_form_id else None,
-                    max_import_records=settings.MAX_IMPORT_RECORDS,
+                    max_import_records=max_import_records,
                 )
             elif csv_file:
                 dynmodel = from_csv_file(
@@ -243,11 +246,14 @@ def refine_and_import(request, id):
 
         errors = None
         try:
+            max_import_records = None
+            if hasattr(settings, "MAX_IMPORT_RECORDS"):
+                max_import_records = settings.MAX_IMPORT_RECORDS
             # Alter the DB
             dynmodel.save()
             dynmodel.refresh_from_db()
             errors = dynmodel.import_data(
-                max_import_records=settings.MAX_IMPORT_RECORDS,
+                max_import_records=max_import_records,
             )
         except Exception as e:
             if not isinstance(e, GenericCSVError):
