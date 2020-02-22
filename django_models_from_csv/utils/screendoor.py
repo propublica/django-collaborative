@@ -45,13 +45,13 @@ class ScreendoorImporter:
         all_data = []
         while url:
             response = requests.get(url)
-            all_data += response.json()
-            records += len(all_data)
-            if self.max_import_records and records > self.max_import_records:
-                if len(all_data) > self.max_import_records:
-                    all_data = all_data[:self.max_import_records]
-                logger.warn("Maximum records imported. Skipping remaining.")
-                break
+            for row in response.json():
+                if self.max_import_records and records > self.max_import_records:
+                    logger.warn("Maximum records imported. Skipping remaining.")
+                    break
+                if row.get("form_id") == form_id:
+                    records += 1
+                    yield row
             url = response.links.get('next', {}).get('url', None)
 
         # filter down responses to correct form
@@ -71,7 +71,7 @@ class ScreendoorImporter:
             data.get("id")
         )
 
-    def build_csv_from_data(self, form_data, response_data):
+    def build_csv_from_data(self, form_data, project_id, form_id):
         id_to_label = self.get_header_maps(form_data)
         headers = ["id"]
         for c in id_to_label.values():
@@ -80,7 +80,12 @@ class ScreendoorImporter:
         # responder information, not included in the form fields, is
         # collected by screendoor. we want to extract this and append it
         # to the fields. also, don't explode on empty responses here.
-        first_response = response_data[0] if response_data else {}
+        response_data = self.get_responses(project_id, form_id)
+        first_response = response_data.__next__()
+        if not first_response:
+            logger.errror("No records found for Screendoor import!.")
+            return
+
         first_responder = first_response.get("responder", {})
         if "email" in first_responder:
             headers.append("Responder email (ID: resp_email)")
@@ -88,6 +93,7 @@ class ScreendoorImporter:
             headers.append("Responder name (ID: resp_name)")
 
         data = Dataset(headers=headers)
+        response_data = self.get_responses(project_id, form_id)
         for response_info in response_data:
             response = response_info.get("responses", {})
             row_id = response_info["id"]
@@ -160,6 +166,4 @@ class ScreendoorImporter:
         form_data = self.get_form(project_id, form_id=form_id)
         if not form_id:
             form_id = form_data["id"]
-        response_data = self.get_responses(project_id, form_id)
-        logger.debug("Screendoor response_data: %s" % (str(response_data)))
-        return self.build_csv_from_data(form_data, response_data)
+        return self.build_csv_from_data(form_data, project_id, form_id)
