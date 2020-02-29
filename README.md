@@ -41,7 +41,7 @@ automatically configures scheduled data re-importing.
 
 ## Google Cloud
 
-[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=cloud-run&cloudshell_working_dir=deploy/google-cloud)
+[![Run on Google Cloud](https://storage.googleapis.com/cloudrun/button.svg)](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=master&cloudshell_working_dir=deploy/google-cloud)
 
 The Google Cloud Run button launches Collaborate into the Google Cloud
 environment. This deploy requires you to [setup a Google Project][gc-proj],
