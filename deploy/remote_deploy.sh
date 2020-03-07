@@ -62,9 +62,6 @@ sudo virtualenv -p $(which python3) /opt/collaborative/app/venv \
 sudo /opt/collaborative/app/venv/bin/pip install \
     -r /opt/collaborative/app/requirements.txt \
     || die "Failure installing Python deps"
-sudo /opt/collaborative/app/venv/bin/pip install \
-    -r /opt/collaborative/app/requirements-deploy.txt \
-    || die "Failure installing deplotment Python deps"
 
 # Run migrations
 sudo /opt/collaborative/app/venv/bin/python \
