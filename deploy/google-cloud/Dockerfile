@@ -11,8 +11,6 @@ RUN apt-get update -qqy \
 ENV COLLABORATE_SRC=app
 ENV COLLABORATE_SRVHOME=/srv
 ENV COLLABORATE_SRVPROJ=$COLLABORATE_SRVHOME/$COLLABORATE_SRC
-# Default expected cloud run port
-ENV PORT=8080
 
 # Create base application subdirectories for dynamic data
 WORKDIR $COLLABORATE_SRVHOME
@@ -25,7 +23,7 @@ VOLUME ["$COLLABORATE_SRVHOME/media/", "$COLLABORATE_SRVHOME/logs/"]
 # things from an upper level directory, we pull from the repo.
 # Eventually we'll want to either add a specific commit or find a
 # way to reconcile between Google app.json and Heroku app.json.
-RUN rm -rf cloud-run && git clone -b master \
+RUN rm -rf $COLLABORATE_SRVPROJ && git clone -b master \
       https://github.com/propublica/django-collaborative \
       $COLLABORATE_SRVPROJ
 
@@ -44,8 +42,6 @@ RUN ln -s /etc/nginx/sites-available/django_nginx.conf /etc/nginx/sites-enabled
 RUN echo "daemon off;" >> /etc/nginx/nginx.conf
 
 ENV DJANGO_SETTINGS_MODULE "collaborative.settings"
-
-EXPOSE $PORT
 
 # intend gunicorn-start to be the entrypoint command for this image
 CMD  python manage.py migrate --noinput \
