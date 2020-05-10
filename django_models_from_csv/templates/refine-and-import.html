@@ -8,7 +8,9 @@ Database Columns | {{ block.super }}
 {% block content %}
 <div id="csv-models-config">
   <h2>Refine Database</h2>
-  <form action="{% url 'csv_models:refine-and-import' dynmodel.id %}" method="POST">
+  <form action="{% url 'csv_models:refine-and-import' dynmodel.id %}"
+        enctype="multipart/form-data"
+        method="POST">
       {% if errors %}
       <h3>Import Errors</h3>
       {% for err in errors %}
@@ -48,6 +50,30 @@ Database Columns | {{ block.super }}
       When you are done, refresh the page.
       {% endblocktrans %}
       </p>
+
+      {% if dynmodel.csv_file %}
+      <h4>Updating your CSV file</h4>
+      <p>
+          <div class="reimport-csv">
+              <input style="min-width:600px;"
+                     id="csv_file_upload"
+                     name="csv_file_upload"
+                     accept=".csv"
+                     type="file" />
+          </div>
+          <p>
+          {% blocktrans trimmed %}
+          You can update this dataset by adding a CSV with more data, above.
+          Make sure this file has the same columns and headers as the
+          original, and that you haven't removed any rows from it. Trying to
+          re-upload a CSV that has missing rows or different column headers
+          will result in failure. For a fully dynamic experience, choose any
+          of the other import options (e.g. Google Sheet).
+          {% endblocktrans %}
+          </p>
+      </p>
+      {% endif %}
+
       {{ form.columns }}
       <div class="continue">
           <input type="submit" value="{% trans "Continue" %}" />

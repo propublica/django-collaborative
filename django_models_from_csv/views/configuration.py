@@ -244,6 +244,9 @@ def refine_and_import(request, id):
         columns = refine_form.cleaned_data["columns"]
         dynmodel.columns = columns
 
+        # CSV File Upload (update)
+        csv_file = request.FILES.get("csv_file_upload")
+
         errors = None
         try:
             max_import_records = None
@@ -254,6 +257,7 @@ def refine_and_import(request, id):
             dynmodel.refresh_from_db()
             errors = dynmodel.import_data(
                 max_import_records=max_import_records,
+                csv_file=csv_file,
             )
         except Exception as e:
             if not isinstance(e, GenericCSVError):

@@ -235,7 +235,7 @@ class DynamicModel(models.Model):
         except LookupError as e:
             return None
 
-    def import_data(self, max_import_records=None):
+    def import_data(self, max_import_records=None, csv_file=None):
         """
         Perform a (re)import on a previously loaded model. This takes
         the loaded columns into account, ignoring any new columns that
@@ -270,7 +270,8 @@ class DynamicModel(models.Model):
             csv = importer.build_csv(
                 self.sd_project_id, form_id=self.sd_form_id
             )
-
+        elif csv_file:
+            csv = csv_file.read().decode("utf-8")
         elif self.csv_file:
             csv = self.csv_file.read().decode("utf-8")
         else:
