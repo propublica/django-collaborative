@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.7
 
 # System dependencies
 RUN apt-get update -qqy \
