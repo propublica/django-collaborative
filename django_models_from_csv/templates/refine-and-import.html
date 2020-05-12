@@ -65,10 +65,11 @@ Database Columns | {{ block.super }}
           {% blocktrans trimmed %}
           You can update this dataset by adding a CSV with more data, above.
           Make sure this file has the same columns and headers as the
-          original, and that you haven't removed any rows from it. Trying to
-          re-upload a CSV that has missing rows or different column headers
-          will result in failure. For a fully dynamic experience, choose any
-          of the other import options (e.g. Google Sheet).
+          original, and that you haven't removed any rows from it. New records
+          must be added to the end of the CSV. Trying to re-upload a CSV that
+          has missing rows or different column headers will result in failure.
+          For a fully dynamic experience, choose any of the other import
+          options (e.g. Google Sheet).
           {% endblocktrans %}
           </p>
       </p>
