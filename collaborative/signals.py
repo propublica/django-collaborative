@@ -135,7 +135,7 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
     its only provided Models that are backed by a CSV (not manually
     managed).
     """
-    logger.debug("attach_blank_meta_to_record: %s" % (instance))
+    # logger.debug("attach_blank_meta_to_record: %s" % (instance))
     if not instance:
         return
 
@@ -153,9 +153,9 @@ def attach_blank_meta_to_record(sender, instance, **kwargs):
         metadata__id=instance.id
     ).first()
     if meta_direct:
-        logger.debug("Already attached meta (%s) to %s" % (
-            meta_direct, instance
-        ))
+        # logger.debug("Already attached meta (%s) to %s" % (
+        #     meta_direct, instance
+        # ))
         return
 
     # create a blank metadata record
