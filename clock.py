@@ -3,7 +3,15 @@ import os
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 
-sched = BlockingScheduler()
+sched = BlockingScheduler({
+    'apscheduler.executors.default': {
+        'class': 'apscheduler.executors.pool:ThreadPoolExecutor',
+        'max_workers': '1'
+    },
+    'apscheduler.job_defaults.coalesce': 'false',
+    'apscheduler.job_defaults.max_instances': '1',
+    'apscheduler.timezone': 'UTC'
+})
 
 
 @sched.scheduled_job('interval', minutes=15)
