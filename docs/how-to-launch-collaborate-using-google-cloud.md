@@ -55,7 +55,8 @@ You'll see this confirmation.
 
 After you've followed these three steps, you'll be ready to deploy your instance of Collaborate. 
 
-1. [Click here](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=cloud-run&cloudshell_working_dir=deploy/google-cloud) to start. Make sure you're logged into the Google account you used for the setup process.
+                
+1. [Click here](https://console.cloud.google.com/cloudshell/editor?shellonly=true&cloudshell_image=gcr.io/cloudrun/button&cloudshell_git_repo=https://github.com/propublica/django-collaborative.git&cloudshell_git_branch=master&cloudshell_working_dir=deploy/google-cloud) to start. Make sure you're logged into the Google account you used for the setup process.
 
 2. Check the end-user agreement box \(making sure you understand what you’re committing to\) and click "Start Cloud Shell."
 
