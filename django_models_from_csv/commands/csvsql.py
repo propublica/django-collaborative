@@ -75,6 +75,8 @@ class CSVSQLWrap(CSVSQL):
 
     def __init__(self):
         self.args = FakeArgs()
+        self.reader_kwargs = self._extract_csv_reader_kwargs()
+        self.writer_kwargs = self._extract_csv_writer_kwargs()
 
 
 def run_csvsql(csv):
